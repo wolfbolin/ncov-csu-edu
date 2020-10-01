@@ -20,7 +20,7 @@ base_path = os.path.split(os.path.abspath(__file__))[0]
 app = Flask(__name__)
 app.config.from_mapping(app_config)
 CORS(app, supports_credentials=True,
-     resources={r"/*": {"origins": ["http://127.0.0.1:8080", "https://covid19.csu-edu.cn"]}})
+     resources={r"/*": {"origins": app_config["BASE"]["web_host"]}})
 
 # 服务日志
 file_logger = logging.getLogger('file_log')
@@ -69,6 +69,7 @@ def user_login():
             "message": str(data)
         })
     cookies = json.dumps(data.cookies.get_dict())
+    Util.write_log(conn, user_info["username"], status, "用户登录成功", run_err)
 
     # 登录成功写入session
     cursor = conn.cursor()
@@ -134,8 +135,7 @@ def user_logout():
 
 @app.route('/check')
 def check_list():
-    # time_now = Util.str_time("%H:%M")
-    time_now = "00:03"
+    time_now = Util.str_time("%H:%M")
     conn = app.mysql_pool.connection()
     # 查询当前时间需要打开的用户
     cursor = conn.cursor(pymysql.cursors.DictCursor)

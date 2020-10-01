@@ -37,9 +37,9 @@ def send_sms_message(user_name, user_phone, result):
     app.logger.info("SMS Result:", res.text.strip())
 
 
-def write_log(conn, username, status, data, run_err):
+def write_log(conn, username, status, message, run_err):
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     sql = "INSERT `log`(`username`, `result`, `message`, `error`) " \
           "VALUES (%s, %s, %s, %s)"
-    cursor.execute(query=sql, args=[username, status, data, run_err])
+    cursor.execute(query=sql, args=[username, status, message, run_err])
     conn.commit()
