@@ -148,7 +148,7 @@ def check_list():
         if user_info["sms"] == "YES":
             Util.send_sms_message(user_info["nickname"], user_info["phone"], str(data))
         Util.write_log(conn, user_info["username"], status, data, run_err)
-    return "Done"
+    return "Check time: %s" % time_now
 
 
 if __name__ == '__main__':
