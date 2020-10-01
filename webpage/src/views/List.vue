@@ -56,6 +56,11 @@ export default {
                     if (res.data.status === 'success') {
                         that.loading = false;
                         that.tableData = res.data.data
+                    }else{
+                        that.$message({
+                            message: res.data.message,
+                            type: 'error'
+                        });
                     }
                 })
                 .catch(function (res) {

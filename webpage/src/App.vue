@@ -65,7 +65,7 @@ export default {
             } else if (window.location.host.indexOf("127.0.0.1") !== -1) {
                 this.$store.commit("setData", {key: "host", val: "http://127.0.0.1:12880"})
             } else {
-                this.$store.commit("setData", {key: "host", val: "https://core.wolfbolin.com"})
+                this.$store.commit("setData", {key: "host", val: "https://api.covid19.csu-edu.cn"})
             }
             console.log("Server location:", this.$store.state.host);
             // 设置激活导航栏

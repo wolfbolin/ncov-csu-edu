@@ -17,6 +17,7 @@ ENV SERVICE_ENV production
 
 WORKDIR /var/app
 COPY . /var/app
+COPY ./Config/openssl.cnf /etc/ssl
 
 RUN pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --upgrade pip \
     && pip install -i https://pypi.tuna.tsinghua.edu.cn/simple gunicorn \

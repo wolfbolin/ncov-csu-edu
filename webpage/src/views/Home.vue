@@ -103,6 +103,11 @@ export default {
                             type: 'success'
                         });
                         that.$router.push("/list");
+                    }else{
+                        that.$message({
+                            message: res.data.message,
+                            type: 'error'
+                        });
                     }
                 })
                 .catch(function (res) {
