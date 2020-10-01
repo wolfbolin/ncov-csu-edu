@@ -19,7 +19,8 @@ base_path = os.path.split(os.path.abspath(__file__))[0]
 # 初始化应用
 app = Flask(__name__)
 app.config.from_mapping(app_config)
-CORS(app, supports_credentials=True, resources={r"/*": {"origins": ["http://127.0.0.1:8080", "http://covid19.csu-edu.cn"]}})
+CORS(app, supports_credentials=True,
+     resources={r"/*": {"origins": ["http://127.0.0.1:8080", "https://covid19.csu-edu.cn"]}})
 
 # 服务日志
 file_logger = logging.getLogger('file_log')
