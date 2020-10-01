@@ -7,13 +7,13 @@
             <el-form class="form" ref="form" label-position="left" label-width="60px"
                      v-loading="loading" :rules="rules" :model="formData">
                 <el-form-item label="账号" prop="username">
-                    <el-input v-model="formData.username" placeholder="信息门户账户" type="number"></el-input>
+                    <el-input v-model="formData.username" placeholder="信息门户账户"></el-input>
                 </el-form-item>
                 <el-form-item label="密码" prop="password">
                     <el-input v-model="formData.password" placeholder="不会存储密码" show-password></el-input>
                 </el-form-item>
                 <el-form-item label="昵称" prop="nickname">
-                    <el-input v-model="formData.nickname" placeholder="给自己起名字"></el-input>
+                    <el-input v-model="formData.nickname" placeholder="起个帅气名字"></el-input>
                 </el-form-item>
                 <el-form-item label="手机" prop="phone">
                     <el-input v-model="formData.phone" placeholder="用于发送结果" type="number"></el-input>
@@ -23,7 +23,7 @@
                                     format="HH:mm" value-format="HH:mm" placeholder="选择打卡时间">
                     </el-time-picker>
                 </el-form-item>
-                <el-button type="success" @click="check_form" plain>提交验证</el-button>
+                <el-button type="success" @click="check_form" plain>提交任务</el-button>
             </el-form>
             <div class="tips">
                 <h2>这是什么？</h2>
@@ -33,6 +33,14 @@
                     自动打卡脚本改写为在线的自动签到服务了<br/>
                     仅需要账号密码登录一次后<br/>
                     即可为你每天自动打卡
+                </p>
+                <h2>要怎么用？</h2>
+                <p>只要你打过卡<br/>
+                    每日程序会定时重打开<br/>
+                    用的是你前一日的打卡数据<br/>
+                    如果要修改你的打卡信息<br/>
+                    在任务设定的时间前<br/>
+                    自己打卡就好<br/>
                 </p>
                 <h2>这安全吗？</h2>
                 <p>不存储你的密码<br/>
