@@ -15,8 +15,13 @@
                 <el-button type="success" @click="check_form" plain>删除任务</el-button>
             </el-form>
             <div class="tips">
-                <h2>阿巴阿巴</h2>
-                <p>阿巴阿巴阿巴阿巴阿巴阿巴阿巴阿巴阿巴阿巴阿巴阿巴阿巴阿巴阿巴阿巴阿巴阿巴阿巴阿巴</p>
+                <h2>有啥问题</h2>
+                <p>认真的？<br/>
+                    这么实在的工具为何放弃？<br/>
+                    信息填错重写登录即可覆盖现在的<br/>
+                    删除功能做着玩的(能用)<br/>
+                    你为啥要用<br/>
+                </p>
             </div>
         </div>
     </div>
@@ -114,6 +119,11 @@ export default {
             display: inline-block;
             padding: 4px;
             border-bottom: #91BEF0 3px solid;
+        }
+
+        p {
+            font-size: 16px;
+            line-height: 32px;
         }
     }
 }
