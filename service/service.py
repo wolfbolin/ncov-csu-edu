@@ -134,8 +134,13 @@ def user_logout():
 
 
 @app.route('/check')
-def check_list():
-    time_now = Util.str_time("%H:%M")
+@app.route('/check/<string:check_time>')
+def check_list(check_time=None):
+    if check_time is None:
+        time_now = Util.str_time("%H:%M")
+    else:
+        unix_time = Util.timestamp2unix("2020-01-01 " + check_time + ":00")
+        time_now = Util.unix2timestamp(unix_time, pattern="%H:%M")
     conn = app.mysql_pool.connection()
     # 查询当前时间需要打开的用户
     cursor = conn.cursor(pymysql.cursors.DictCursor)
