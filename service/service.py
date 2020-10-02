@@ -4,10 +4,12 @@ import json
 import Util
 import pymysql
 import logging
+import requests
 from flask import abort
 from flask import Flask
 from flask import jsonify
 from flask import request
+from requests import utils
 from flask_cors import CORS
 from Config import get_config
 from dbutils.pooled_db import PooledDB
@@ -154,8 +156,22 @@ def check_list(check_time=None):
     cursor.execute(query=sql, args=[time_now])
     user_list = cursor.fetchall()
     for user_info in user_list:
+        # 初始化连接
+        session = requests.Session()
         cookies = json.loads(user_info["cookies"])
-        status, data, run_err = Util.user_clock(cookies)
+        cookies_jar = requests.utils.cookiejar_from_dict(cookies)
+        session.cookies = cookies_jar
+        # 执行签到
+        status, data, run_err = Util.user_clock(session)
+        # 检查更新
+        session_cookies = session.cookies.get_dict()
+        if session_cookies != cookies and len(session_cookies.keys()) != 0:
+            app.logger.info("User {} cookies update".format(user_info["username"]))
+            new_cookies = json.dumps(session_cookies)
+            cursor = conn.cursor()
+            sql = "UPDATE `user` SET `cookies` = %s WHERE `username` = %s"
+            cursor.execute(query=sql, args=[new_cookies, user_info["username"]])
+
         if user_info["sms"] == "Yes":
             Util.send_sms_message(user_info["nickname"], user_info["phone"], str(data))
         Util.write_log(conn, user_info["username"], status, data, run_err)
