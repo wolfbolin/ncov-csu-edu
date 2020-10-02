@@ -39,12 +39,13 @@ app.mysql_pool = PooledDB(creator=pymysql, **mysql_config, **pool_config)
 
 
 @app.route('/')
+@app.route('/api/')
 def hello_world():
     app.logger.info('Trigger "Hello,world!"')
     return "Hello, world!"
 
 
-@app.route('/user/login', methods=["POST"])
+@app.route('/api/user/login', methods=["POST"])
 def user_login():
     # 检查请求数据
     user_info = request.get_data(as_text=True)
@@ -87,7 +88,7 @@ def user_login():
     })
 
 
-@app.route('/user/list')
+@app.route('/api/user/list')
 def get_user_list():
     conn = app.mysql_pool.connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
@@ -105,7 +106,7 @@ def get_user_list():
     }
 
 
-@app.route('/user/logout', methods=["POST"])
+@app.route('/api/user/logout', methods=["POST"])
 def user_logout():
     # 检查请求数据
     user_info = request.get_data(as_text=True)
@@ -137,8 +138,8 @@ def user_logout():
         })
 
 
-@app.route('/check')
-@app.route('/check/<string:check_time>')
+@app.route('/api/check')
+@app.route('/api/check/<string:check_time>')
 def check_list(check_time=None):
     if check_time is None:
         time_now = Util.str_time("%H:%M")
