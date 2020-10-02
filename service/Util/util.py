@@ -5,7 +5,9 @@ import requests
 from flask import current_app as app
 
 
-def str_time(pattern='%Y-%m-%d %H:%M:%S', timing=time.time()):
+def str_time(pattern='%Y-%m-%d %H:%M:%S', timing=None):
+    if timing is None:
+        timing = time.time()
     return time.strftime(pattern, time.localtime(timing))
 
 
