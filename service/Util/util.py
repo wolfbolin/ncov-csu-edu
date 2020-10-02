@@ -33,7 +33,7 @@ def send_sms_message(user_name, user_phone, result):
         ]
     }
     params = {
-        "token": app.config["SMS"]["TOKEN"]
+        "token": app.config["BASE"]["sms_token"]
     }
     res = requests.post(url=url, json=data, params=params)
     app.logger.info("SMS Result:", res.text.strip())
