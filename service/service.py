@@ -156,7 +156,7 @@ def check_list(check_time=None):
     for user_info in user_list:
         cookies = json.loads(user_info["cookies"])
         status, data, run_err = Util.user_clock(cookies)
-        if user_info["sms"] == "YES":
+        if user_info["sms"] == "Yes":
             Util.send_sms_message(user_info["nickname"], user_info["phone"], str(data))
         Util.write_log(conn, user_info["username"], status, data, run_err)
     app.logger.info("Check point {} with {} task, Done".format(time_now, len(user_list)))
