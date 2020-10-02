@@ -36,7 +36,7 @@ def send_sms_message(user_name, user_phone, result):
         "token": app.config["BASE"]["sms_token"]
     }
     res = requests.post(url=url, json=data, params=params)
-    app.logger.info("SMS Result:", res.text.strip())
+    app.logger.info("SMS Result: {}".format(res.text.strip()))
 
 
 def write_log(conn, username, status, message, run_err):
