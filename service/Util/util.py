@@ -5,7 +5,9 @@ import requests
 from flask import current_app as app
 
 
-def str_time(pattern='%Y-%m-%d %H:%M:%S', timing=time.time()):
+def str_time(pattern='%Y-%m-%d %H:%M:%S', timing=None):
+    if timing is None:
+        timing = time.time()
     return time.strftime(pattern, time.localtime(timing))
 
 
@@ -31,10 +33,10 @@ def send_sms_message(user_name, user_phone, result):
         ]
     }
     params = {
-        "token": app.config["SMS"]["TOKEN"]
+        "token": app.config["BASE"]["sms_token"]
     }
     res = requests.post(url=url, json=data, params=params)
-    app.logger.info("SMS Result:", res.text.strip())
+    app.logger.info("SMS Result: {}".format(res.text.strip()))
 
 
 def write_log(conn, username, status, message, run_err):

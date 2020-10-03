@@ -61,9 +61,9 @@ export default {
             console.log("Contact: mailto@wolfbolin.com");
             // 确定后台服务地址
             if (window.location.host.indexOf("localhost") !== -1) {
-                this.$store.commit("setData", {key: "host", val: "http://127.0.0.1:12880"})
+                this.$store.commit("setData", {key: "host", val: "http://127.0.0.1:12880/api"})
             } else if (window.location.host.indexOf("127.0.0.1") !== -1) {
-                this.$store.commit("setData", {key: "host", val: "http://127.0.0.1:12880"})
+                this.$store.commit("setData", {key: "host", val: "http://127.0.0.1:12880/api"})
             } else {
                 this.$store.commit("setData", {key: "host", val: "https://covid19.csu-edu.cn/api"})
             }

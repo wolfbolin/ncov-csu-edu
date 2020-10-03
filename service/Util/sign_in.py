@@ -2,7 +2,6 @@
 import re
 import json
 import requests
-from requests import utils
 from flask import current_app as app
 
 
@@ -51,10 +50,7 @@ def user_login(username, password):
     return True, session, "success"
 
 
-def user_clock(cookies):
-    session = requests.Session()
-    cookies_jar = requests.utils.cookiejar_from_dict(cookies)
-    session.cookies = cookies_jar
+def user_clock(session):
     # 获取历史数据
     url = "https://wxxy.csu.edu.cn/ncov/wap/default/index"
     try:
