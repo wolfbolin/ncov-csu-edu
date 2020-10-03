@@ -119,7 +119,7 @@ def user_logout():
         pass
     else:
         return abort(400)
-    app.logger.info("User try to  logout: {}".format(user_info["username"]))
+    app.logger.info("User try to logout: {}".format(user_info["username"]))
 
     # 检查并删除任务
     conn = app.mysql_pool.connection()
@@ -129,11 +129,13 @@ def user_logout():
     conn.commit()
     rowcount = cursor.rowcount
     if rowcount >= 1:
+        Util.write_log(conn, user_info["username"], True, "用户退出成功", "success")
         return jsonify({
             "status": "success",
-            "message": "签到任务添加成功"
+            "message": "用户取消任务成功"
         })
     else:
+        Util.write_log(conn, user_info["username"], False, "用户退出失败", "User does not exist")
         return jsonify({
             "status": "error",
             "message": "用户不存在或信息错误"
