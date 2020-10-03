@@ -16,7 +16,7 @@ const routes = [
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/List.vue')
+    component: () => import(/* webpackChunkName: "list" */ '../views/List.vue')
   },
   {
     path: '/unbind',
@@ -24,7 +24,7 @@ const routes = [
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/Unbind.vue')
+    component: () => import(/* webpackChunkName: "unbind" */ '../views/Unbind.vue')
   },
   {
     path: '/about',
