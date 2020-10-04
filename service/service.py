@@ -59,6 +59,9 @@ def user_login():
             len(user_info["time"]) != 0:
         unix_time = Util.timestamp2unix("2020-01-01 " + user_info["time"] + ":00")
         user_info["time"] = Util.unix2timestamp(unix_time, pattern="%H:%M")
+        user_info["username"] = user_info["username"].strip()
+        user_info["nickname"] = user_info["nickname"].strip()
+        user_info["phone"] = user_info["phone"].strip()
     else:
         return abort(400)
     app.logger.info("User try to login: {}".format(user_info["username"]))
@@ -116,7 +119,8 @@ def user_logout():
     if set(user_info.keys()) != {"username", "phone"}:
         return abort(400)
     if 8 <= len(user_info["username"]) <= 14 and len(user_info["phone"]) == 11:
-        pass
+        user_info["username"] = user_info["username"].strip()
+        user_info["phone"] = user_info["phone"].strip()
     else:
         return abort(400)
     app.logger.info("User try to logout: {}".format(user_info["username"]))
