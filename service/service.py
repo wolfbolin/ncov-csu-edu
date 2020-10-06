@@ -71,27 +71,27 @@ def user_login():
     # 简单反Dos攻击
     cursor = conn.cursor()
     sql = "SELECT COUNT(*) FROM `log` WHERE `time` > DATE_SUB(NOW(),INTERVAL 1 HOUR) " \
-          "AND `username` = %s AND `message` = '用户登录成功'"
+          "AND `function` = 'user_login' AND `username` = %s"
     cursor.execute(query=sql, args=[user_info["username"]])
     log_num = int(cursor.fetchone()[0])
     if log_num > 2:
-        Util.write_log(conn, user_info["username"], False, "反复操作被拒绝",
+        Util.write_log(conn, 'user_login', user_info["username"], False, "反复操作被拒绝",
                        "The user operates {} times in an hour".format(log_num))
         return jsonify({
             "status": "error",
-            "message": "您在一小时内登录次数过多，已被暂停服务"
+            "message": "您在一小时内操作次数过多，已被暂停服务"
         })
 
     # 验证用户账号信息并获取session
     status, data, run_err = Util.user_login(user_info["username"], user_info["password"])
     if status is False:
-        Util.write_log(conn, user_info["username"], status, data, run_err)
+        Util.write_log(conn, 'user_login', user_info["username"], status, data, run_err)
         return jsonify({
             "status": "error",
             "message": str(data)
         })
     cookies = json.dumps(data.cookies.get_dict())
-    Util.write_log(conn, user_info["username"], status, "用户登录成功", run_err)
+    Util.write_log(conn, 'user_login', user_info["username"], status, "用户登录成功", run_err)
 
     # 登录成功写入session
     cursor = conn.cursor()
@@ -108,7 +108,7 @@ def user_login():
 
 
 @app.route('/api/user/list')
-def get_user_list():
+def user_list():
     conn = app.mysql_pool.connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     sql = "SELECT `username`, `nickname`, `phone`, `time` FROM `user`"
@@ -147,13 +147,13 @@ def user_logout():
     conn.commit()
     rowcount = cursor.rowcount
     if rowcount >= 1:
-        Util.write_log(conn, user_info["username"], True, "用户退出成功", "success")
+        Util.write_log(conn, 'user_logout', user_info["username"], True, "用户退出成功", "success")
         return jsonify({
             "status": "success",
             "message": "用户取消任务成功"
         })
     else:
-        Util.write_log(conn, user_info["username"], False, "用户退出失败", "User does not exist")
+        Util.write_log(conn, 'user_logout', user_info["username"], False, "用户退出失败", "User does not exist")
         return jsonify({
             "status": "error",
             "message": "用户不存在或信息错误"
@@ -174,8 +174,8 @@ def check_list(check_time=None):
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     sql = "SELECT * FROM `user` WHERE `time`=%s"
     cursor.execute(query=sql, args=[time_now])
-    user_list = cursor.fetchall()
-    for user_info in user_list:
+    user_task_list = cursor.fetchall()
+    for user_info in user_task_list:
         # 初始化连接
         session = requests.Session()
         cookies = json.loads(user_info["cookies"])
@@ -194,8 +194,8 @@ def check_list(check_time=None):
 
         if user_info["sms"] == "Yes":
             Util.send_sms_message(user_info["nickname"], user_info["phone"], str(data))
-        Util.write_log(conn, user_info["username"], status, data, run_err)
-    app.logger.info("Check point {} with {} task, Done".format(time_now, len(user_list)))
+        Util.write_log(conn, 'user_logout', user_info["username"], status, data, run_err)
+    app.logger.info("Check point {} with {} task, Done".format(time_now, len(user_task_list)))
 
     return jsonify({
         "status": "success",
