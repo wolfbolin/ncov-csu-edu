@@ -3,7 +3,7 @@
         <div class="inner">
             <img src="@/assets/logo.png" class="logo" alt="logo"/>
             <h1>CSU-COVID19-SIGN</h1>
-            <p>键入关键检验信息以取消自动签到服务</p>
+            <p>键入关键检验信息以取消自动签到任务</p>
             <el-form class="form" ref="form" label-position="left" label-width="60px"
                      v-loading="loading" :rules="rules" :model="formData">
                 <el-form-item label="账号" prop="username">
@@ -12,13 +12,13 @@
                 <el-form-item label="手机" prop="phone">
                     <el-input v-model="formData.phone" placeholder="用于发送结果" show-password></el-input>
                 </el-form-item>
-                <el-button type="success" @click="check_form" plain>删除任务</el-button>
+                <el-button type="warning" @click="check_form" plain>删除任务</el-button>
             </el-form>
             <div class="tips">
                 <h2>有啥问题</h2>
                 <p>认真的？<br/>
                     这么实在的工具为何放弃？<br/>
-                    信息填错重写登录即可覆盖现在的<br/>
+                    信息填错重写登录即可覆盖现有信息<br/>
                     删除功能做着玩的(能用)<br/>
                     你为啥要用<br/>
                 </p>

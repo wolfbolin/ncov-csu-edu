@@ -5,28 +5,32 @@ import store from './store';
 import router from './router';
 import VueAxios from 'vue-axios';
 import {
-  Form,
-  FormItem,
-  Input,
-  TimePicker,
-  Button,
-  Table,
-  TableColumn,
+    Form,
+    Input,
+    Table,
+    Button,
+    Loading,
+    FormItem,
+    Message,
+    TimePicker,
+    TableColumn,
 } from 'element-ui';
 
 Vue.use(Form);
-Vue.use(FormItem);
 Vue.use(Input);
-Vue.use(TimePicker);
-Vue.use(Button);
 Vue.use(Table);
+Vue.use(Button);
+Vue.use(Loading);
+Vue.use(FormItem);
+Vue.use(TimePicker);
 Vue.use(TableColumn);
 
 Vue.use(VueAxios, axios);
 Vue.config.productionTip = false;
+Vue.prototype.$message = Message;
 
 new Vue({
-  router,
-  store,
-  render: (h) => h(App),
+    router,
+    store,
+    render: (h) => h(App),
 }).$mount('#app');
