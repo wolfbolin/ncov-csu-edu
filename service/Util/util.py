@@ -42,6 +42,6 @@ def send_sms_message(user_name, user_phone, result):
 def write_log(conn, function, username, status, message, run_err):
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     sql = "INSERT `log`(`function`, `username`, `result`, `message`, `error`) " \
-          "VALUES (%s, %s, %s, %s)"
+          "VALUES (%s, %s, %s, %s, %s)"
     cursor.execute(query=sql, args=[function, username, status, message, run_err])
     conn.commit()
