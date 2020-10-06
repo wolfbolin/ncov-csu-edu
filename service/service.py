@@ -68,6 +68,20 @@ def user_login():
 
     # 查询并写入数据
     conn = app.mysql_pool.connection()
+    # 简单反Dos攻击
+    cursor = conn.cursor()
+    sql = "SELECT COUNT(*) FROM `log` WHERE `time` > DATE_SUB(NOW(),INTERVAL 1 HOUR) " \
+          "AND `username` = %s AND `message` = '用户登录成功'"
+    cursor.execute(query=sql, args=[user_info["username"]])
+    log_num = int(cursor.fetchone()[0])
+    if log_num > 2:
+        Util.write_log(conn, user_info["username"], False, "反复操作被拒绝",
+                       "The user operates {} times in an hour".format(log_num))
+        return jsonify({
+            "status": "error",
+            "message": "您在一小时内登录次数过多，已被暂停服务"
+        })
+
     # 验证用户账号信息并获取session
     status, data, run_err = Util.user_login(user_info["username"], user_info["password"])
     if status is False:
