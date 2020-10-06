@@ -7,4 +7,4 @@ if not os.path.exists('./log/'):
 
 bind = '0.0.0.0:80'
 loglevel = "info"
-workers = multiprocessing.cpu_count()
+workers = 4
