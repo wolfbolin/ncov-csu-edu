@@ -59,12 +59,29 @@ def user_login():
             len(user_info["time"]) != 0:
         unix_time = Util.timestamp2unix("2020-01-01 " + user_info["time"] + ":00")
         user_info["time"] = Util.unix2timestamp(unix_time, pattern="%H:%M")
+        user_info["username"] = user_info["username"].strip()
+        user_info["nickname"] = user_info["nickname"].strip()
+        user_info["phone"] = user_info["phone"].strip()
     else:
         return abort(400)
     app.logger.info("User try to login: {}".format(user_info["username"]))
 
     # 查询并写入数据
     conn = app.mysql_pool.connection()
+    # 简单反Dos攻击
+    cursor = conn.cursor()
+    sql = "SELECT COUNT(*) FROM `log` WHERE `time` > DATE_SUB(NOW(),INTERVAL 1 HOUR) " \
+          "AND `username` = %s AND `message` = '用户登录成功'"
+    cursor.execute(query=sql, args=[user_info["username"]])
+    log_num = int(cursor.fetchone()[0])
+    if log_num > 2:
+        Util.write_log(conn, user_info["username"], False, "反复操作被拒绝",
+                       "The user operates {} times in an hour".format(log_num))
+        return jsonify({
+            "status": "error",
+            "message": "您在一小时内登录次数过多，已被暂停服务"
+        })
+
     # 验证用户账号信息并获取session
     status, data, run_err = Util.user_login(user_info["username"], user_info["password"])
     if status is False:
@@ -116,10 +133,11 @@ def user_logout():
     if set(user_info.keys()) != {"username", "phone"}:
         return abort(400)
     if 8 <= len(user_info["username"]) <= 14 and len(user_info["phone"]) == 11:
-        pass
+        user_info["username"] = user_info["username"].strip()
+        user_info["phone"] = user_info["phone"].strip()
     else:
         return abort(400)
-    app.logger.info("User try to  logout: {}".format(user_info["username"]))
+    app.logger.info("User try to logout: {}".format(user_info["username"]))
 
     # 检查并删除任务
     conn = app.mysql_pool.connection()
@@ -129,11 +147,13 @@ def user_logout():
     conn.commit()
     rowcount = cursor.rowcount
     if rowcount >= 1:
+        Util.write_log(conn, user_info["username"], True, "用户退出成功", "success")
         return jsonify({
             "status": "success",
-            "message": "签到任务添加成功"
+            "message": "用户取消任务成功"
         })
     else:
+        Util.write_log(conn, user_info["username"], False, "用户退出失败", "User does not exist")
         return jsonify({
             "status": "error",
             "message": "用户不存在或信息错误"
