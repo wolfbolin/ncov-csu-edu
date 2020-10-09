@@ -194,7 +194,7 @@ def check_list(check_time=None):
 
         if user_info["sms"] == "Yes":
             Util.send_sms_message(user_info["nickname"], user_info["phone"], str(data))
-        Util.write_log(conn, 'user_logout', user_info["username"], status, data, run_err)
+        Util.write_log(conn, 'user_check', user_info["username"], status, data, run_err)
     app.logger.info("Check point {} with {} task, Done".format(time_now, len(user_task_list)))
 
     return jsonify({
