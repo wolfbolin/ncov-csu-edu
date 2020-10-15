@@ -40,6 +40,10 @@ pool_config = app.config.get('POOL')
 mysql_config = app.config.get('MYSQL')
 app.mysql_pool = PooledDB(creator=pymysql, **mysql_config, **pool_config)
 
+# 初始化异步线程与谅解
+app.mysql_conn = app.mysql_pool.connection()
+app.executor = ThreadPoolExecutor(max_workers=int(app_config["SIGNER"]["workers"]))
+
 
 @app.route('/')
 @app.route('/api/')
@@ -171,14 +175,16 @@ def check_list(check_time=None):
         time_now = Util.unix2timestamp(unix_time, pattern="%H:%M")
     app.logger.info("Check time point at {}".format(time_now))
     conn = app.mysql_pool.connection()
+    # 定时重置数据库连接
+    if Util.unix_time() % 300 == 0:
+        app.mysql_conn.close()
+        app.mysql_conn = conn
     # 查询当前时间需要打开的用户
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     sql = "SELECT * FROM `user` WHERE `time`=%s"
     cursor.execute(query=sql, args=[time_now])
     user_task_list = cursor.fetchall()
-    # 初始化异步线程与谅解
-    app.mysql_conn = app.mysql_pool.connection()
-    app.executor = ThreadPoolExecutor(max_workers=int(app_config["SIGNER"]["workers"]))
+    # 提交用户打卡任务到进程池
     for user_info in user_task_list:
         app.executor.submit(user_sign_in, app.mysql_conn, user_info, app.config["BASE"]["sms_token"])
     app.logger.info("Check point {} with {} task".format(time_now, len(user_task_list)))

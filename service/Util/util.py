@@ -4,6 +4,10 @@ import pymysql
 import requests
 
 
+def unix_time(unit=1):
+    return int(time.time() * unit)
+
+
 def str_time(pattern='%Y-%m-%d %H:%M:%S', timing=None):
     if timing is None:
         timing = time.time()
