@@ -29,6 +29,7 @@ CORS(app, supports_credentials=True,
 file_logger = logging.getLogger('file_log')
 file_logger.setLevel(logging.INFO)
 file_handler = logging.FileHandler(filename='{}/log/run.log'.format(base_path), encoding="utf-8")
+file_handler.setFormatter(logging.Formatter('%(asctime)s:<%(levelname)s> %(message)s'))
 app.logger.addHandler(file_handler)
 app.logger.setLevel(logging.INFO)
 
