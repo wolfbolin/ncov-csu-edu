@@ -2,7 +2,6 @@
 import time
 import pymysql
 import requests
-from flask import current_app as app
 
 
 def str_time(pattern='%Y-%m-%d %H:%M:%S', timing=None):
@@ -36,7 +35,7 @@ def send_sms_message(sms_token, user_name, user_phone, result):
         "token": sms_token
     }
     res = requests.post(url=url, json=data, params=params)
-    app.logger.info("SMS Result: {}".format(res.text.strip()))
+    print("Send SMS Result: {}".format(res.text.strip()))
 
 
 def write_log(conn, function, username, status, message, run_err):
