@@ -180,7 +180,7 @@ def check_list(check_time=None):
     app.mysql_conn = app.mysql_pool.connection()
     app.executor = ThreadPoolExecutor(max_workers=int(app_config["SIGNER"]["workers"]))
     for user_info in user_task_list:
-        app.executor.submit(user_sign_in, app.mysql_conn, user_info)
+        app.executor.submit(user_sign_in, app.mysql_conn, user_info, app.config["BASE"]["sms_token"])
     app.logger.info("Check point {} with {} task".format(time_now, len(user_task_list)))
 
     return jsonify({
@@ -189,7 +189,7 @@ def check_list(check_time=None):
     })
 
 
-def user_sign_in(conn, user_info):
+def user_sign_in(conn, user_info, sms_token):
     # 初始化连接
     session = requests.Session()
     cookies = json.loads(user_info["cookies"])
@@ -207,7 +207,7 @@ def user_sign_in(conn, user_info):
         cursor.execute(query=sql, args=[new_cookies, user_info["username"]])
 
     if user_info["sms"] == "Yes":
-        Util.send_sms_message(user_info["nickname"], user_info["phone"], str(data))
+        Util.send_sms_message(sms_token, user_info["nickname"], user_info["phone"], str(data))
     Util.write_log(conn, 'user_check', user_info["username"], status, data, run_err)
 
 

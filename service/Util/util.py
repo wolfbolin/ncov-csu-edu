@@ -20,7 +20,7 @@ def unix2timestamp(u_time, pattern='%Y-%m-%d %H:%M:%S'):
     return time.strftime(pattern, time.localtime(u_time))
 
 
-def send_sms_message(user_name, user_phone, result):
+def send_sms_message(sms_token, user_name, user_phone, result):
     url = "http://core.wolfbolin.com/message/sms/send/%s" % user_phone
     data = {
         "phone": user_phone,
@@ -33,7 +33,7 @@ def send_sms_message(user_name, user_phone, result):
         ]
     }
     params = {
-        "token": app.config["BASE"]["sms_token"]
+        "token": sms_token
     }
     res = requests.post(url=url, json=data, params=params)
     app.logger.info("SMS Result: {}".format(res.text.strip()))
