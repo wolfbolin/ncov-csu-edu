@@ -171,15 +171,16 @@ def check_list(check_time=None):
         time_now = Util.unix2timestamp(unix_time, pattern="%H:%M")
     app.logger.info("Check time point at {}".format(time_now))
     conn = app.mysql_pool.connection()
-    app.executor = ThreadPoolExecutor(max_workers=int(app_config["SIGNER"]["workers"]))
     # 查询当前时间需要打开的用户
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     sql = "SELECT * FROM `user` WHERE `time`=%s"
     cursor.execute(query=sql, args=[time_now])
     user_task_list = cursor.fetchall()
+    # 初始化异步线程与谅解
+    app.mysql_conn = app.mysql_pool.connection()
+    app.executor = ThreadPoolExecutor(max_workers=int(app_config["SIGNER"]["workers"]))
     for user_info in user_task_list:
-        conn = app.mysql_pool.connection()
-        app.executor.submit(user_sign_in, conn, user_info)
+        app.executor.submit(user_sign_in, app.mysql_conn, user_info)
     app.logger.info("Check point {} with {} task".format(time_now, len(user_task_list)))
 
     return jsonify({
