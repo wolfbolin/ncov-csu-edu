@@ -13,6 +13,7 @@ from requests import utils
 from flask_cors import CORS
 from Config import get_config
 from dbutils.pooled_db import PooledDB
+from concurrent.futures import ThreadPoolExecutor
 
 # 获取配置
 app_config = get_config()
@@ -170,37 +171,43 @@ def check_list(check_time=None):
         time_now = Util.unix2timestamp(unix_time, pattern="%H:%M")
     app.logger.info("Check time point at {}".format(time_now))
     conn = app.mysql_pool.connection()
+    app.executor = ThreadPoolExecutor(max_workers=int(app_config["SIGNER"]["workers"]))
     # 查询当前时间需要打开的用户
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     sql = "SELECT * FROM `user` WHERE `time`=%s"
     cursor.execute(query=sql, args=[time_now])
     user_task_list = cursor.fetchall()
     for user_info in user_task_list:
-        # 初始化连接
-        session = requests.Session()
-        cookies = json.loads(user_info["cookies"])
-        cookies_jar = requests.utils.cookiejar_from_dict(cookies)
-        session.cookies = cookies_jar
-        # 执行签到
-        status, data, run_err = Util.user_clock(session)
-        # 检查更新
-        session_cookies = session.cookies.get_dict()
-        if session_cookies != cookies and len(session_cookies.keys()) != 0:
-            app.logger.info("User {} cookies update".format(user_info["username"]))
-            new_cookies = json.dumps(session_cookies)
-            cursor = conn.cursor()
-            sql = "UPDATE `user` SET `cookies` = %s WHERE `username` = %s"
-            cursor.execute(query=sql, args=[new_cookies, user_info["username"]])
-
-        if user_info["sms"] == "Yes":
-            Util.send_sms_message(user_info["nickname"], user_info["phone"], str(data))
-        Util.write_log(conn, 'user_check', user_info["username"], status, data, run_err)
-    app.logger.info("Check point {} with {} task, Done".format(time_now, len(user_task_list)))
+        conn = app.mysql_pool.connection()
+        app.executor.submit(user_sign_in, conn, user_info)
+    app.logger.info("Check point {} with {} task".format(time_now, len(user_task_list)))
 
     return jsonify({
         "status": "success",
         "message": "Check time: {}".format(time_now)
     })
+
+
+def user_sign_in(conn, user_info):
+    # 初始化连接
+    session = requests.Session()
+    cookies = json.loads(user_info["cookies"])
+    cookies_jar = requests.utils.cookiejar_from_dict(cookies)
+    session.cookies = cookies_jar
+    # 执行签到
+    status, data, run_err = Util.user_clock(session)
+    # 检查更新
+    session_cookies = session.cookies.get_dict()
+    if session_cookies != cookies and len(session_cookies.keys()) != 0:
+        app.logger.info("User {} cookies update".format(user_info["username"]))
+        new_cookies = json.dumps(session_cookies)
+        cursor = conn.cursor()
+        sql = "UPDATE `user` SET `cookies` = %s WHERE `username` = %s"
+        cursor.execute(query=sql, args=[new_cookies, user_info["username"]])
+
+    if user_info["sms"] == "Yes":
+        Util.send_sms_message(user_info["nickname"], user_info["phone"], str(data))
+    Util.write_log(conn, 'user_check', user_info["username"], status, data, run_err)
 
 
 @app.errorhandler(400)
