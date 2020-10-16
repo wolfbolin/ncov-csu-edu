@@ -4,6 +4,9 @@
             <img src="@/assets/logo.png" class="logo" alt="logo"/>
             <h1>CSU-COVID19-SIGN</h1>
             <p>键入信息门户账号以及其他基本信息<br/>添加每日自动签到任务</p>
+            <div class="alert">
+                <el-alert title="服务反馈与通知群 1158608406" type="warning" center :closable="false"></el-alert>
+            </div>
             <el-form class="form" ref="form" label-position="left" label-width="60px"
                      v-loading="loading" :rules="rules" :model="formData">
                 <el-form-item label="账号" prop="username">
@@ -66,6 +69,15 @@
                     自动打卡脚本已经很久了<br/>
                     一直能稳定运行<br/>
                     用就完事了
+                </p>
+                <h2>以防万一</h2>
+                <p>由于使用量增加<br/>
+                    防止突如其来的服务中断<br/>
+                    给你本来懒惰的打卡生活增添困扰<br/>
+                    所以我建议你加入服务反馈群1158608406<br/>
+                    如果出现奇奇怪怪的问题导致服务中断<br/>
+                    会尽快通知各位自行打卡<br/>
+                    @全体成员
                 </p>
             </div>
         </div>
@@ -164,6 +176,11 @@ export default {
 
     .logo {
         margin: 128px 0 64px 0;
+    }
+
+    .alert {
+        width: 60%;
+        margin: 0 auto;
     }
 
     .form {

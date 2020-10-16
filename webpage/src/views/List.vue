@@ -4,6 +4,9 @@
             <img src="@/assets/logo.png" class="logo" alt="logo"/>
             <h1>CSU-COVID19-SIGN</h1>
             <p>下列展示了使用该服务的用户信息</p>
+            <div class="alert">
+                <el-alert title="服务反馈与通知群 1158608406" type="warning" center :closable="false"></el-alert>
+            </div>
             <el-table class="table" stripe style="width: 90%"
                       v-loading="loading" :data="tableData">
                 <el-table-column
@@ -95,6 +98,11 @@ export default {
 
     .logo {
         margin: 128px 0 64px 0;
+    }
+
+    .alert {
+        width: 60%;
+        margin: 0 auto;
     }
 
     .table {

@@ -4,6 +4,9 @@
             <img src="@/assets/logo.png" class="logo" alt="logo"/>
             <h1>CSU-COVID19-SIGN</h1>
             <p>键入关键检验信息以取消自动签到任务</p>
+            <div class="alert">
+                <el-alert title="服务反馈与通知群 1158608406" type="warning" center :closable="false"></el-alert>
+            </div>
             <el-form class="form" ref="form" label-position="left" label-width="60px"
                      v-loading="loading" :rules="rules" :model="formData">
                 <el-form-item label="账号" prop="username">
@@ -103,6 +106,11 @@ export default {
 
     .logo {
         margin: 128px 0 64px 0;
+    }
+
+    .alert {
+        width: 60%;
+        margin: 0 auto;
     }
 
     .form {
