@@ -122,12 +122,21 @@ html, body {
 
     .title {
         color: #3090e4;
-        margin: 16px;
+        margin: 14px;
         font-weight: 400;
         font-size: 28px;
         line-height: 32px;
         text-decoration: none;
     }
+
+    @media screen and (max-width:650px) {
+        .title {
+            margin: 14px 8px;
+            font-size: 18px;
+        }
+    }
+
+
 
     .menu {
         margin: 0 1em;
