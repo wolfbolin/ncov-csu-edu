@@ -19,15 +19,15 @@ def user_login(username, password):
     except requests.exceptions.ReadTimeout:
         run_err = "requests.exceptions.ReadTimeout:[%s]" % url
         app.logger.error(run_err)
-        return False, "连接CAS失败", run_err
+        return False, "连接CAS失败(信网中心无响应)", run_err
     except requests.exceptions.ConnectionError:
         run_err = "requests.exceptions.ConnectionError:[%s]" % url
         app.logger.error(run_err)
-        return False, "连接CAS失败", run_err
+        return False, "连接CAS失败(连接信网中心失败)", run_err
     regex = r'tokenId.*value="(?P<tokenId>\w+)".*account.*value="(?P<account>\w+)".*Thirdsys.*value="(?P<Thirdsys>\w+)"'
     re_result = re.search(regex, http_result.text)
     if re_result is None:
-        return False, "连接CAS失败", "Missing tokenid or other information"
+        return False, "连接CAS失败(疑似账号密码错误)", "Missing tokenid or other information"
 
     # sso认证
     url = "https://wxxy.csu.edu.cn/a_csu/api/sso/validate"
@@ -41,11 +41,11 @@ def user_login(username, password):
     except requests.exceptions.ReadTimeout:
         run_err = "requests.exceptions.ReadTimeout:[%s]" % url
         app.logger.error(run_err)
-        return False, "连接SSO失败", run_err
+        return False, "连接SSO失败(信网中心无响应)", run_err
     except requests.exceptions.ConnectionError:
         run_err = "requests.exceptions.ConnectionError:[%s]" % url
         app.logger.error(run_err)
-        return False, "连接SSO失败", run_err
+        return False, "连接SSO失败(信网中心无响应)", run_err
 
     return True, session, "success"
 
