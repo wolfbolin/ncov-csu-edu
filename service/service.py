@@ -130,7 +130,10 @@ def user_list():
     cursor.execute(query=sql)
     result = []
     for item in cursor.fetchall():
-        item["username"] = item["username"][:4] + "*" * (len(item["username"]) - 6) + item["username"][-2:]
+        if len(item["username"]) <= 6:
+            item["username"] = item["username"][:1] + "*" * (len(item["username"]) - 3) + item["username"][-2:]
+        else:
+            item["username"] = item["username"][:4] + "*" * (len(item["username"]) - 6) + item["username"][-2:]
         item["phone"] = item["phone"][:3] + "*" * 4 + item["phone"][-4:]
         result.append(item)
     return {
