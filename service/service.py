@@ -5,6 +5,7 @@ import Util
 import pymysql
 import logging
 import requests
+import sentry_sdk
 from flask import abort
 from flask import Flask
 from flask import jsonify
@@ -14,10 +15,18 @@ from flask_cors import CORS
 from Config import get_config
 from dbutils.pooled_db import PooledDB
 from concurrent.futures import ThreadPoolExecutor
+from sentry_sdk.integrations.flask import FlaskIntegration
 
 # 获取配置
 app_config = get_config()
 base_path = os.path.split(os.path.abspath(__file__))[0]
+
+# Sentry
+sentry_sdk.init(
+    dsn=app_config['SERVICE']['dsn'],
+    integrations=[FlaskIntegration()],
+    environment=app_config["RUN_ENV"]
+)
 
 # 初始化应用
 app = Flask(__name__)
@@ -43,7 +52,7 @@ app.mysql_pool = PooledDB(creator=pymysql, **mysql_config, **pool_config)
 
 # 初始化异步线程与谅解
 app.mysql_conn = app.mysql_pool.connection()
-app.executor = ThreadPoolExecutor(max_workers=int(app_config["SIGNER"]["workers"]))
+app.executor = ThreadPoolExecutor(max_workers=int(app_config["SERVICE"]["workers"]))
 
 
 @app.route('/')
