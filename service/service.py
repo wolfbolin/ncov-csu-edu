@@ -60,7 +60,7 @@ def user_login():
     user_info = json.loads(user_info)
     if set(user_info.keys()) != {"username", "password", "nickname", "phone", "time"}:
         return abort(400)
-    if 8 <= len(user_info["username"]) <= 14 and len(user_info["password"]) != 0 and \
+    if 6 <= len(user_info["username"]) <= 14 and len(user_info["password"]) != 0 and \
             4 <= len(user_info["nickname"]) <= 16 and len(user_info["phone"]) == 11 and \
             len(user_info["time"]) != 0:
         unix_time = Util.timestamp2unix("2020-01-01 " + user_info["time"] + ":00")
