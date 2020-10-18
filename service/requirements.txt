@@ -1,3 +1,4 @@
+blinker==1.4
 certifi==2020.6.20
 chardet==3.0.4
 click==7.1.2
@@ -10,6 +11,7 @@ Jinja2==2.11.2
 MarkupSafe==1.1.1
 PyMySQL==0.10.1
 requests==2.24.0
+sentry-sdk==0.19.0
 six==1.15.0
 urllib3==1.25.10
 Werkzeug==1.0.1
