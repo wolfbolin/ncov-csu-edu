@@ -6,6 +6,7 @@ import router from './router';
 import VueAxios from 'vue-axios';
 import {
     Form,
+    Alert,
     Input,
     Table,
     Button,
@@ -17,6 +18,7 @@ import {
 } from 'element-ui';
 
 Vue.use(Form);
+Vue.use(Alert);
 Vue.use(Input);
 Vue.use(Table);
 Vue.use(Button);

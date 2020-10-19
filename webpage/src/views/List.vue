@@ -3,7 +3,10 @@
         <div class="inner">
             <img src="@/assets/logo.png" class="logo" alt="logo"/>
             <h1>CSU-COVID19-SIGN</h1>
-            <p>下列展示了使用该服务的用户信息</p>
+            <p>现共有{{tableData.length}}位用户正在享用自动打卡服务</p>
+            <div class="alert">
+                <el-alert title="服务反馈与通知群 1158608406" type="warning" center :closable="false"></el-alert>
+            </div>
             <el-table class="table" stripe style="width: 90%"
                       v-loading="loading" :data="tableData">
                 <el-table-column
@@ -52,12 +55,7 @@ export default {
     data() {
         return {
             loading: true,
-            tableData: [{
-                username: "3901****21",
-                nickname: "WolfBolin",
-                phone: "155****8042",
-                time: "01:00"
-            }]
+            tableData: []
         }
     },
     methods: {
@@ -95,6 +93,11 @@ export default {
 
     .logo {
         margin: 128px 0 64px 0;
+    }
+
+    .alert {
+        width: 60%;
+        margin: 0 auto;
     }
 
     .table {

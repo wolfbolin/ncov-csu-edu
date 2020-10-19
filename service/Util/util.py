@@ -2,7 +2,10 @@
 import time
 import pymysql
 import requests
-from flask import current_app as app
+
+
+def unix_time(unit=1):
+    return int(time.time() * unit)
 
 
 def str_time(pattern='%Y-%m-%d %H:%M:%S', timing=None):
@@ -20,7 +23,7 @@ def unix2timestamp(u_time, pattern='%Y-%m-%d %H:%M:%S'):
     return time.strftime(pattern, time.localtime(u_time))
 
 
-def send_sms_message(user_name, user_phone, result):
+def send_sms_message(sms_token, user_name, user_phone, result):
     url = "http://core.wolfbolin.com/message/sms/send/%s" % user_phone
     data = {
         "phone": user_phone,
@@ -33,15 +36,15 @@ def send_sms_message(user_name, user_phone, result):
         ]
     }
     params = {
-        "token": app.config["BASE"]["sms_token"]
+        "token": sms_token
     }
     res = requests.post(url=url, json=data, params=params)
-    app.logger.info("SMS Result: {}".format(res.text.strip()))
+    print("Send SMS Result: {}".format(res.text.strip()))
 
 
-def write_log(conn, username, status, message, run_err):
+def write_log(conn, function, username, status, message, run_err):
     cursor = conn.cursor(pymysql.cursors.DictCursor)
-    sql = "INSERT `log`(`username`, `result`, `message`, `error`) " \
-          "VALUES (%s, %s, %s, %s)"
-    cursor.execute(query=sql, args=[username, status, message, run_err])
+    sql = "INSERT `log`(`function`, `username`, `result`, `message`, `error`) " \
+          "VALUES (%s, %s, %s, %s, %s)"
+    cursor.execute(query=sql, args=[function, username, status, message, run_err])
     conn.commit()

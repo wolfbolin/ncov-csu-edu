@@ -4,6 +4,9 @@
             <img src="@/assets/logo.png" class="logo" alt="logo"/>
             <h1>CSU-COVID19-SIGN</h1>
             <p>关于该服务的其他事情</p>
+            <div class="alert">
+                <el-alert title="服务反馈与通知群 1158608406" type="warning" center :closable="false"></el-alert>
+            </div>
             <div class="tips">
                 <h2>开发者</h2>
                 <p>WolfBolin<br/>
@@ -19,7 +22,7 @@
                 </p>
                 <h2>未完待续</h2>
                 <p>最后更新时间<br/>
-                    2020-10-06 18:55
+                    2020-10-16 23:30
                 </p>
             </div>
         </div>
@@ -32,6 +35,11 @@
 
     .logo {
         margin: 128px 0 64px 0;
+    }
+
+    .alert {
+        width: 60%;
+        margin: 0 auto;
     }
 
     .tips {
