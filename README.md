@@ -12,6 +12,10 @@
 
 使用该服务可减少使用者接入自动打卡的门槛，使更多人接触并使用自动打卡脚本
 
+在线服务地址：https://covid19.csu-edu.cn
+
+离线打卡项目：https://github.com/wolfbolin/Tools-for-CSU/tree/master/src/nCOV-sign-in
+
 
 
 ## 工作逻辑
