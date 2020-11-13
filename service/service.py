@@ -1,7 +1,7 @@
 # coding=utf-8
 import os
 import json
-import Util
+import Kit
 import pymysql
 import logging
 import requests
@@ -72,8 +72,8 @@ def user_login():
     if 6 <= len(user_info["username"]) <= 14 and len(user_info["password"]) != 0 and \
             4 <= len(user_info["nickname"]) <= 16 and len(user_info["phone"]) == 11 and \
             len(user_info["time"]) != 0:
-        unix_time = Util.timestamp2unix("2020-01-01 " + user_info["time"] + ":00")
-        user_info["time"] = Util.unix2timestamp(unix_time, pattern="%H:%M")
+        unix_time = Kit.timestamp2unix("2020-01-01 " + user_info["time"] + ":00")
+        user_info["time"] = Kit.unix2timestamp(unix_time, pattern="%H:%M")
         user_info["username"] = user_info["username"].strip()
         user_info["nickname"] = user_info["nickname"].strip()
         user_info["phone"] = user_info["phone"].strip()
@@ -90,23 +90,23 @@ def user_login():
     cursor.execute(query=sql, args=[user_info["username"]])
     log_num = int(cursor.fetchone()[0])
     if log_num > 2:
-        Util.write_log(conn, 'user_login', user_info["username"], False, "反复操作被拒绝",
-                       "The user operates {} times in an hour".format(log_num))
+        Kit.write_log(conn, 'user_login', user_info["username"], False, "反复操作被拒绝",
+                      "The user operates {} times in an hour".format(log_num))
         return jsonify({
             "status": "error",
             "message": "您在一小时内操作次数过多，已被暂停服务"
         })
 
     # 验证用户账号信息并获取session
-    status, data, run_err = Util.user_login(user_info["username"], user_info["password"])
+    status, data, run_err = Kit.user_login(user_info["username"], user_info["password"])
     if status is False:
-        Util.write_log(conn, 'user_login', user_info["username"], status, data, run_err)
+        Kit.write_log(conn, 'user_login', user_info["username"], status, data, run_err)
         return jsonify({
             "status": "error",
             "message": str(data)
         })
     cookies = json.dumps(data.cookies.get_dict())
-    Util.write_log(conn, 'user_login', user_info["username"], status, "用户登录成功", run_err)
+    Kit.write_log(conn, 'user_login', user_info["username"], status, "用户登录成功", run_err)
 
     # 登录成功写入session
     cursor = conn.cursor()
@@ -124,10 +124,18 @@ def user_login():
 
 @app.route('/api/user/list')
 def user_list():
+    # 读取分页信息
+    page_now = int(request.args.get("page_now", 1))
+    page_size = int(request.args.get("page_size", 50))
+
+    # 读取数据库数据
     conn = app.mysql_pool.connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
-    sql = "SELECT `username`, `nickname`, `phone`, `time` FROM `user`"
+    sql = "SELECT COUNT(*) as num FROM `user`"
     cursor.execute(query=sql)
+    item_num = cursor.fetchone()["num"]
+    sql = "SELECT `username`, `nickname`, `phone`, `time` FROM `user` LIMIT %s OFFSET %s"
+    cursor.execute(query=sql, args=[page_size, page_now - 1])
     result = []
     for item in cursor.fetchall():
         if len(item["username"]) <= 6:
@@ -139,7 +147,12 @@ def user_list():
     return {
         "status": "success",
         "message": "列表读取成功",
-        "data": result
+        "data": {
+            "user_list": result,
+            "item_num": item_num,
+            "page_now": page_now,
+            "page_size": page_size,
+        }
     }
 
 
@@ -165,13 +178,13 @@ def user_logout():
     conn.commit()
     rowcount = cursor.rowcount
     if rowcount >= 1:
-        Util.write_log(conn, 'user_logout', user_info["username"], True, "用户退出成功", "success")
+        Kit.write_log(conn, 'user_logout', user_info["username"], True, "用户退出成功", "success")
         return jsonify({
             "status": "success",
             "message": "用户取消任务成功"
         })
     else:
-        Util.write_log(conn, 'user_logout', user_info["username"], False, "用户退出失败", "User does not exist")
+        Kit.write_log(conn, 'user_logout', user_info["username"], False, "用户退出失败", "User does not exist")
         return jsonify({
             "status": "error",
             "message": "用户不存在或信息错误"
@@ -182,14 +195,14 @@ def user_logout():
 @app.route('/api/check/<string:check_time>')
 def check_list(check_time=None):
     if check_time is None:
-        time_now = Util.str_time("%H:%M")
+        time_now = Kit.str_time("%H:%M")
     else:
-        unix_time = Util.timestamp2unix("2020-01-01 " + check_time + ":00")
-        time_now = Util.unix2timestamp(unix_time, pattern="%H:%M")
+        unix_time = Kit.timestamp2unix("2020-01-01 " + check_time + ":00")
+        time_now = Kit.unix2timestamp(unix_time, pattern="%H:%M")
     app.logger.info("Check time point at {}".format(time_now))
     conn = app.mysql_pool.connection()
     # 定时重置数据库连接
-    if Util.unix_time() % 300 == 0:
+    if Kit.unix_time() % 300 == 0:
         app.mysql_conn.close()
         app.mysql_conn = conn
     # 查询当前时间需要打开的用户
@@ -215,7 +228,7 @@ def user_sign_in(conn, user_info, sms_token):
     cookies_jar = requests.utils.cookiejar_from_dict(cookies)
     session.cookies = cookies_jar
     # 执行签到
-    status, data, run_err = Util.user_clock(session)
+    status, data, run_err = Kit.user_clock(session)
     # 检查更新
     session_cookies = session.cookies.get_dict()
     if session_cookies != cookies and len(session_cookies.keys()) != 0:
@@ -226,8 +239,8 @@ def user_sign_in(conn, user_info, sms_token):
         cursor.execute(query=sql, args=[new_cookies, user_info["username"]])
 
     if user_info["sms"] == "Yes":
-        Util.send_sms_message(sms_token, user_info["nickname"], user_info["phone"], str(data))
-    Util.write_log(conn, 'user_check', user_info["username"], status, data, run_err)
+        Kit.send_sms_message(sms_token, user_info["nickname"], user_info["phone"], str(data))
+    Kit.write_log(conn, 'user_check', user_info["username"], status, data, run_err)
 
 
 @app.errorhandler(400)

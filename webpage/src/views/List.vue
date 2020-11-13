@@ -3,11 +3,11 @@
         <div class="inner">
             <img src="@/assets/logo.png" class="logo" alt="logo"/>
             <h1>CSU-COVID19-SIGN</h1>
-            <p>现共有{{tableData.length}}位用户正在享用自动打卡服务</p>
+            <p>现共有{{ item_num }}位用户正在享用自动打卡服务</p>
             <div class="alert">
                 <el-alert title="服务反馈与通知群 1158608406" type="warning" center :closable="false"></el-alert>
             </div>
-            <el-table class="table" stripe style="width: 90%"
+            <el-table class="table" stripe
                       v-loading="loading" :data="tableData">
                 <el-table-column
                     prop="username"
@@ -26,6 +26,14 @@
                     label="时间">
                 </el-table-column>
             </el-table>
+            <el-pagination
+                background
+                layout="prev, pager, next"
+                :total="item_num"
+                :page-size.sync="page_size"
+                 @current-change="pageChange"
+                :current-page.sync="page_now">
+            </el-pagination>
             <div class="tips">
                 <h2>如何获取结果？</h2>
                 <p>目前没办法<br/>
@@ -55,21 +63,34 @@ export default {
     data() {
         return {
             loading: true,
+            item_num: 0,
+            page_now: 1,
+            page_size: 25,
             tableData: []
         }
     },
     methods: {
-        get_user_list: function () {
+        pageChange: function () {
             this.loading = true;
             let that = this;
             let data_host = this.$store.state.host;
-            this.$http.get(data_host + `/user/list`)
+            this.$http.get(data_host + `/user/list`,
+                {
+                    params: {
+                        page_now: this.page_now,
+                        page_size: this.page_size
+                    }
+                }
+            )
                 .then(function (res) {
                     console.log(res)
                     if (res.data.status === 'success') {
                         that.loading = false;
-                        that.tableData = res.data.data
-                    }else{
+                        that.item_num = res.data.data["item_num"]
+                        that.page_now = res.data.data["page_now"]
+                        that.page_size = res.data.data["page_size"]
+                        that.tableData = res.data.data["user_list"]
+                    } else {
                         that.$message({
                             message: res.data.message,
                             type: 'error'
@@ -82,7 +103,7 @@ export default {
         }
     },
     mounted() {
-        this.get_user_list()
+        this.pageChange()
     }
 }
 </script>
@@ -101,7 +122,9 @@ export default {
     }
 
     .table {
+        width: 90%;
         display: inline-block;
+        margin-bottom: 16px;
     }
 
     .tips {
