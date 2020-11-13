@@ -13,6 +13,7 @@ import {
     Loading,
     FormItem,
     Message,
+    Pagination,
     TimePicker,
     TableColumn,
 } from 'element-ui';
@@ -24,6 +25,7 @@ Vue.use(Table);
 Vue.use(Button);
 Vue.use(Loading);
 Vue.use(FormItem);
+Vue.use(Pagination);
 Vue.use(TimePicker);
 Vue.use(TableColumn);
 
