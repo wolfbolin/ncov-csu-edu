@@ -31,7 +31,7 @@
                 layout="prev, pager, next"
                 :total="item_num"
                 :page-size.sync="page_size"
-                 @current-change="pageChange"
+                @current-change="pageChange"
                 :current-page.sync="page_now">
             </el-pagination>
             <div class="tips">
