@@ -146,7 +146,7 @@ def user_list():
     }
 
 
-@app.route('/api/user/count')
+@user_blue.route('/count')
 def user_count():
     conn = app.mysql_pool.connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
