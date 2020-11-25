@@ -1,9 +1,7 @@
-import 'echarts-gl';
 import Vue from 'vue';
 import axios from 'axios';
 import App from './App.vue';
 import store from './store';
-import echarts from 'echarts'
 import router from './router';
 import VueAxios from 'vue-axios';
 import {
@@ -32,7 +30,6 @@ Vue.use(TimePicker);
 Vue.use(TableColumn);
 
 Vue.use(VueAxios, axios);
-Vue.prototype.$echarts = echarts;
 Vue.config.productionTip = false;
 Vue.prototype.$message = Message;
 

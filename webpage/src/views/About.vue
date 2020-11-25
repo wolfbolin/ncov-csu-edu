@@ -32,6 +32,12 @@
 </template>
 
 <script>
+let echarts = require('echarts/lib/echarts');
+require('echarts/lib/chart/line');
+require('echarts/lib/component/title');
+require('echarts/lib/component/tooltip');
+require('echarts-gl');
+
 export default {
     name: 'List',
     data() {
@@ -52,7 +58,7 @@ export default {
             let userChartWidth = this.$refs.userChart.clientWidth
             let userChartDom = document.getElementById('userChart')
             userChartDom.style.height = userChartWidth * 0.6 + "px"
-            this.userChart = this.$echarts.init(userChartDom);
+            this.userChart = echarts.init(userChartDom);
             this.userChartOpt = {
                 title: {
                     text: '30日内用户总量曲线图',
@@ -100,7 +106,7 @@ export default {
             let signChartWidth = this.$refs.signChart.clientWidth
             let signChartDom = document.getElementById('signChart')
             signChartDom.style.height = signChartWidth * 0.8 + "px"
-            this.signChart = this.$echarts.init(signChartDom);
+            this.signChart = echarts.init(signChartDom);
             this.signChartOpt = {
                 title: {
                     text: '7日内自动打卡时刻图',
