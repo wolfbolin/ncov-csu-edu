@@ -77,7 +77,7 @@ def check_count():
     last_hour = Kit.unix2timestamp(last_hour, "%Y-%m-%d %H:00:00")
     print("Check log between {} and {}".format(last_hour, now_hour))
 
-    # 查询日志数据
+    # 查询历史数据
     conn = app.mysql_pool.connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     sql = "SELECT * FROM `log` WHERE `time` BETWEEN %s AND %s "

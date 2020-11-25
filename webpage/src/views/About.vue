@@ -51,7 +51,7 @@ export default {
         initChart: function () {
             let userChartWidth = this.$refs.userChart.clientWidth
             let userChartDom = document.getElementById('userChart')
-            userChartDom.style.height = userChartWidth * 0.4 + "px"
+            userChartDom.style.height = userChartWidth * 0.6 + "px"
             this.userChart = this.$echarts.init(userChartDom);
             this.userChartOpt = {
                 title: {
@@ -99,7 +99,7 @@ export default {
 
             let signChartWidth = this.$refs.signChart.clientWidth
             let signChartDom = document.getElementById('signChart')
-            signChartDom.style.height = signChartWidth * 0.6 + "px"
+            signChartDom.style.height = signChartWidth * 0.8 + "px"
             this.signChart = this.$echarts.init(signChartDom);
             this.signChartOpt = {
                 title: {
