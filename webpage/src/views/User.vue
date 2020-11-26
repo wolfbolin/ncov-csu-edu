@@ -3,7 +3,7 @@
         <div class="inner">
             <img src="@/assets/logo.png" class="logo" alt="logo"/>
             <h1>CSU-COVID19-SIGN</h1>
-            <p>现共有{{ item_num }}位用户正在享用自动打卡服务</p>
+            <!-- <p>现共有{{ item_num }}位用户正在享用自动打卡服务</p>-->
             <div class="alert">
                 <el-alert title="服务反馈与通知群 1158608406" type="warning" center :closable="false"></el-alert>
             </div>
@@ -165,7 +165,7 @@ export default {
                             type: 'success'
                         });
                         that.$router.push("/list");
-                    }else{
+                    } else {
                         that.$message({
                             message: res.data.message,
                             type: 'error'
