@@ -1,16 +1,11 @@
 # coding=utf-8
 import os
-import json
-import Kit
 import pymysql
 import logging
-import requests
 import sentry_sdk
-from flask import abort
 from flask import Flask
 from flask import jsonify
 from flask import request
-from requests import utils
 from flask_cors import CORS
 from Config import get_config
 from dbutils.pooled_db import PooledDB
@@ -55,9 +50,11 @@ app.executor = ThreadPoolExecutor(max_workers=int(app_config["SERVICE"]["workers
 # 初始化路由
 from User import user_blue
 from Task import task_blue
+from Deal import deal_blue
 
 app.register_blueprint(user_blue, url_prefix='/api/user')
 app.register_blueprint(task_blue, url_prefix='/api/task')
+app.register_blueprint(deal_blue, url_prefix='/api/deal')
 CORS(app, supports_credentials=True,
      resources={r"/*": {"origins": app_config["BASE"]["web_host"]}})
 

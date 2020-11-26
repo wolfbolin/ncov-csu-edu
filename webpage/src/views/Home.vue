@@ -3,7 +3,7 @@
         <div class="inner">
             <img src="@/assets/logo.png" class="logo" alt="logo"/>
             <h1>CSU-COVID19-SIGN</h1>
-            <p>键入信息门户账号以及其他基本信息<br/>添加每日自动签到任务</p>
+            <p>输入信息门户账号即可添加自动签到任务</p>
             <div class="alert">
                 <el-alert title="服务反馈与通知群 1158608406" type="warning" center :closable="false"></el-alert>
             </div>
@@ -19,7 +19,7 @@
                     <el-input v-model="formData.nickname" placeholder="起个帅气名字"></el-input>
                 </el-form-item>
                 <el-form-item label="手机" prop="phone">
-                    <el-input v-model="formData.phone" placeholder="用于发送结果" type="number"></el-input>
+                    <el-input v-model="formData.phone" placeholder="用于身份认证" type="number"></el-input>
                 </el-form-item>
                 <el-form-item label="时间" prop="time">
                     <el-time-picker v-model="formData.time" :picker-options="{selectableRange: '00:01:00 - 10:00:00'}"
@@ -30,17 +30,18 @@
             </el-form>
             <div class="tips">
                 <h2>这是什么？</h2>
-                <p>都十月份了<br/>
+                <p>都啥时候了<br/>
                     你还在手动打卡吗？<br/>
-                    为了给懒中懒得你一个放松的机会<br/>
+                    为了给懒中懒的你一个放松的机会<br/>
                     自动打卡脚本改写为在线的自动签到服务了<br/>
                     仅需要账号密码登录一次后<br/>
-                    即可为你每天自动打卡
+                    即可为你每天自动打卡<br/>
+                    再也不用惦记了<br/>
                 </p>
                 <h2>要怎么用？</h2>
                 <p>只要你打过卡<br/>
-                    每日程序会定时重打卡<br/>
-                    使用的是你前一日的打卡数据<br/>
+                    服务程序会定时重打卡<br/>
+                    使用的是上一次的打卡数据(包括位置)<br/>
                     如果要修改你的打卡信息<br/>
                     在任务设定的时间前<br/>
                     自己打卡就好<br/>
@@ -154,7 +155,7 @@ export default {
                             type: 'success'
                         });
                         that.$router.push("/list");
-                    }else{
+                    } else {
                         that.$message({
                             message: res.data.message,
                             type: 'error'

@@ -53,6 +53,25 @@
                     为啥要删？<br/>
                 </p>
             </div>
+            <div class="tips">
+                <h2>解除绑定</h2>
+                <p>认真的？<br/>
+                    这么实在的工具为何放弃？<br/>
+                    信息填错重写登录即可覆盖现有信息<br/>
+                    删除功能是做着玩的(能用)<br/>
+                    你为啥要删除<br/>
+                </p>
+            </div>
+            <el-form class="form" ref="form" label-position="left" label-width="60px"
+                     v-loading="loading" :rules="rules" :model="formData">
+                <el-form-item label="账号" prop="username">
+                    <el-input v-model="formData.username" placeholder="信息门户账户"></el-input>
+                </el-form-item>
+                <el-form-item label="手机" prop="phone">
+                    <el-input v-model="formData.phone" placeholder="用于身份认证" show-password></el-input>
+                </el-form-item>
+                <el-button type="warning" @click="check_form" plain>删除任务</el-button>
+            </el-form>
         </div>
     </div>
 </template>
@@ -66,7 +85,21 @@ export default {
             item_num: 0,
             page_now: 1,
             page_size: 25,
-            tableData: []
+            tableData: [],
+            formData: {
+                username: "",
+                phone: ""
+            },
+            rules: {
+                username: [
+                    {required: true, message: '请输入信息门户账户', trigger: 'blur'},
+                    {min: 8, max: 14, message: '长度在 8 到 14 个字符', trigger: 'blur'}
+                ],
+                phone: [
+                    {required: true, message: '请输入收信电话号码', trigger: 'blur'},
+                    {min: 11, max: 11, message: '长度应为 11 个数字', trigger: 'blur'}
+                ]
+            }
         }
     },
     methods: {
@@ -98,6 +131,49 @@ export default {
                     }
                 })
                 .catch(function (res) {
+                    console.log(res);
+                })
+        },
+        check_form: function () {
+            this.$refs["form"].validate((valid) => {
+                if (valid) {
+                    console.log("Check success, submit!");
+                    this.user_login();
+                } else {
+                    console.log('"Check error"');
+                    return false;
+                }
+            });
+        },
+        user_login: function () {
+            this.loading = true;
+            let that = this;
+            let data_host = this.$store.state.host;
+            let http_data = {
+                username: this.formData.username,
+                phone: this.formData.phone,
+            }
+            console.log(http_data)
+            this.$http.post(data_host + `/user/logout`, http_data)
+                .then(function (res) {
+                    console.log(res)
+                    that.loading = false;
+                    if (res.data.status === 'success') {
+                        that.loading = false;
+                        that.$message({
+                            message: res.data.message,
+                            type: 'success'
+                        });
+                        that.$router.push("/list");
+                    }else{
+                        that.$message({
+                            message: res.data.message,
+                            type: 'error'
+                        });
+                    }
+                })
+                .catch(function (res) {
+                    that.loading = false;
                     console.log(res);
                 })
         }

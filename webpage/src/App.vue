@@ -44,8 +44,8 @@ export default {
             logo_src: "",
             nav_list: [
                 {"id": "index", "href": "/", "label": "主页", "class": ""},
-                {"id": "list", "href": "/list", "label": "列表", "class": ""},
-                {"id": "unbind", "href": "/unbind", "label": "解绑", "class": ""},
+                {"id": "list", "href": "/user", "label": "用户", "class": ""},
+                {"id": "unbind", "href": "/deal", "label": "附加", "class": ""},
                 {"id": "about", "href": "/about", "label": "关于", "class": ""},
             ],
         }
