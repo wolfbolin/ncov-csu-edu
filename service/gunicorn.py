@@ -7,4 +7,4 @@ if not os.path.exists('./log/'):
 
 bind = '0.0.0.0:80'
 loglevel = "info"
-workers = 4
+workers = 8
