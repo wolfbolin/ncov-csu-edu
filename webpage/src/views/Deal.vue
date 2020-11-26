@@ -36,10 +36,11 @@
                                 <el-input type="textarea" v-model="order.attach" maxlength="128"
                                           show-word-limit></el-input>
                             </el-form-item>
-                            <el-button type="primary" @click="precreat_payment">提交</el-button>
-                            <el-button @click="query_payment"
-                                       v-if="order.order_status !== '未创建'">
+                            <el-button @click="query_payment" v-if="order.order_status !== '未创建'">
                                 刷新
+                            </el-button>
+                            <el-button type="primary" @click="precreat_payment" v-else>
+                                提交
                             </el-button>
                         </el-form>
                     </el-col>
@@ -206,6 +207,54 @@ export default {
         },
         query_payment: function () {
             console.log("Check deal order")
+            let that = this;
+            let data_host = this.$store.state.host;
+            let http_url = data_host + `/deal/order`
+            this.$http.get(http_url, {
+                params: {
+                    phone: this.order.phone,
+                    username: this.order.username,
+                    order_str: this.order.order_str,
+                }
+            })
+                .then(function (res) {
+                    if (res.data.status === "success") {
+                        console.log(res.data)
+                        switch (res.data.order_status) {
+                            case "NOT_EXIST":
+                                that.order.order_status = "未创建";
+                                break;
+                            case "CREATE":
+                                that.order.order_status = "已创建";
+                                break;
+                            case "WAITING":
+                                that.order.order_status = "待支付";
+                                break;
+                            case "SUCCESS":
+                                that.order.order_status = "已支付";
+                                break;
+                            case "FINISH":
+                                that.order.order_status = "已终止";
+                                break;
+                            case "CLOSE":
+                                that.order.order_status = "已关闭";
+                                break;
+                            default:
+                                that.order.order_status = "未知";
+                        }
+                        if (["已支付", "已终止", "已关闭"].indexOf(that.order.order_status) !== -1) {
+                            clearInterval(that.timer)
+                        }
+                    } else {
+                        that.$message({
+                            message: res.data.message,
+                            type: 'error'
+                        });
+                    }
+                })
+                .catch(function (res) {
+                    console.log(res)
+                })
         }
     },
     mounted() {
@@ -236,10 +285,13 @@ export default {
             margin-right: 10px;
         }
 
-        .el-button {
-            width: 60%;
-            margin-bottom: 36px;
+        .wb-alipay-form {
+            .el-button {
+                width: 60%;
+                margin-bottom: 36px;
+            }
         }
+
     }
 
     .tips {

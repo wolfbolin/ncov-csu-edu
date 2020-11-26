@@ -13,6 +13,7 @@ g_item_index = {
     "random_time": "随机时间",
     "sms_message": "短信通知",
 }
+g_query_key = {"username", "phone", "order_str"}
 g_order_key = {"username", "phone", "donation", "attach", "item_list"}
 
 
@@ -110,3 +111,58 @@ def deal_create():
         "status": "success",
         "data": order_info
     }
+
+
+@deal_blue.route('/order', methods=["GET"])
+def trade_query():
+    # 获取订单信息
+    deal_info = dict(request.args)
+    if deal_info is None or set(deal_info.keys()) != g_query_key:
+        return {
+            "status": "error",
+            "message": "订单数据不完整",
+        }
+
+    # 读取订单信息
+    conn = app.mysql_pool.connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    sql = "SELECT * FROM `order` WHERE `username`=%s AND `phone`=%s AND `order`=%s"
+    cursor.execute(sql, args=[deal_info["username"], deal_info["phone"], deal_info["order_str"]])
+    order_record = cursor.fetchone()
+    if order_record is None:
+        return jsonify({
+            "status": "error",
+            "message": "订单不存在，请查证",
+        })
+    if order_record["status"] in ("SUCCESS", "FINISH", "CLOSE"):
+        return jsonify({
+            "status": "success",
+            "order_status": order_record["order_status"]
+        })
+
+    # 查询订单状态
+    url = "http://core.wolfbolin.com/payment/alipay"  # Change for pro
+    params = {
+        "app": "csu_sign",
+        "order_str": deal_info["order_str"]
+    }
+    if app.config["RUN_ENV"] == "develop":
+        params["app"] = "test"
+
+    res = requests.get(url, params=params)
+    if res.status_code != 200:
+        return jsonify({
+            "status": "error",
+            "message": "订单状态查询失败",
+        })
+    res = json.loads(res.text)
+
+    # 更新数据库状态
+    sql = "UPDATE `order` SET `status`=%s WHERE `order`=%s"
+    cursor.execute(sql, args=[res["data"]["order_status"], deal_info["order_str"]])
+    conn.commit()
+
+    return jsonify({
+        "status": "success",
+        "order_status": res["data"]["order_status"]
+    })
