@@ -7,23 +7,29 @@
             <div class="alert">
                 <el-alert title="服务反馈与通知群 1158608406" type="warning" center :closable="false"></el-alert>
             </div>
+            <div class="alert">
+                <el-alert :title="closeInfo" type="error" center
+                          v-if="closeLogin" :closable="false"></el-alert>
+            </div>
             <el-form class="form" ref="form" label-position="left" label-width="60px"
                      v-loading="loading" :rules="rules" :model="formData">
                 <el-form-item label="账号" prop="username">
-                    <el-input v-model="formData.username" placeholder="信息门户账户"></el-input>
+                    <el-input v-model="formData.username" placeholder="信息门户账户" :disabled="closeLogin"></el-input>
                 </el-form-item>
                 <el-form-item label="密码" prop="password">
-                    <el-input v-model="formData.password" placeholder="不会存储密码" show-password></el-input>
+                    <el-input v-model="formData.password" placeholder="不会存储密码"
+                              show-password :disabled="closeLogin"></el-input>
                 </el-form-item>
                 <el-form-item label="昵称" prop="nickname">
-                    <el-input v-model="formData.nickname" placeholder="起个帅气名字"></el-input>
+                    <el-input v-model="formData.nickname" placeholder="起个帅气名字" :disabled="closeLogin"></el-input>
                 </el-form-item>
                 <el-form-item label="手机" prop="phone">
-                    <el-input v-model="formData.phone" placeholder="用于身份认证" type="number"></el-input>
+                    <el-input v-model="formData.phone" placeholder="用于身份认证" type="number"
+                              :disabled="closeLogin"></el-input>
                 </el-form-item>
                 <el-form-item label="时间" prop="time">
                     <el-time-picker v-model="formData.time" :picker-options="{selectableRange: '00:01:00 - 10:00:00'}"
-                                    format="HH:mm" value-format="HH:mm" placeholder="选择打卡时间">
+                                    format="HH:mm" value-format="HH:mm" placeholder="选择打卡时间" :disabled="closeLogin">
                     </el-time-picker>
                 </el-form-item>
                 <el-button type="success" @click="check_form" plain>提交任务</el-button>
@@ -91,6 +97,8 @@ export default {
     data() {
         return {
             loading: false,
+            closeInfo: "",
+            closeLogin: false,
             formData: {
                 username: "",
                 password: "",
@@ -121,6 +129,24 @@ export default {
         }
     },
     methods: {
+        check_open: function(){
+            this.loading = true;
+            let that = this;
+            let data_host = this.$store.state.host
+            this.$http.get(data_host + `/user/open`)
+                .then(function (res) {
+                    console.log(res)
+                    that.loading = false;
+                    if (res.data.status !== 'success') {
+                        that.closeLogin = true
+                        that.closeInfo = res.data.message
+                    }
+                })
+                .catch(function (res) {
+                    that.loading = false;
+                    console.log(res);
+                })
+        },
         check_form: function () {
             this.$refs["form"].validate((valid) => {
                 if (valid) {
@@ -168,6 +194,9 @@ export default {
                 })
         }
     },
+    mounted() {
+        this.check_open()
+    }
 }
 </script>
 
@@ -181,7 +210,7 @@ export default {
 
     .alert {
         width: 60%;
-        margin: 0 auto;
+        margin: 12px auto;
     }
 
     .form {

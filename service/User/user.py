@@ -9,9 +9,9 @@ from User import user_blue
 from flask import current_app as app
 
 
-@user_blue.route('/login', methods=["POST"])
-def user_login():
-    # 临时关闭服务
+@user_blue.route('/open', methods=["GET"])
+def open_login():
+    # 分时关闭服务
     time_now = int(Kit.str_time("%H"))
     if time_now == 0:
         return jsonify({
@@ -19,6 +19,23 @@ def user_login():
             "message": "流量过载，请凌晨一点后再试"
         })
 
+    # 服务关闭标记
+    conn = app.mysql_pool.connection()
+    flag = Kit.get_key_val(conn, "shutdown_login")
+    if flag != "open":
+        return jsonify({
+            "status": "error",
+            "message": "登录服务临时关闭"
+        })
+
+    return jsonify({
+        "status": "success",
+        "message": "开放登录"
+    })
+
+
+@user_blue.route('/login', methods=["POST"])
+def user_login():
     # 检查请求数据
     user_info = request.get_data(as_text=True)
     user_info = json.loads(user_info)
