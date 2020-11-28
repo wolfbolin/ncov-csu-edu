@@ -3,37 +3,20 @@
         <div class="inner">
             <img src="@/assets/logo.png" class="logo" alt="logo"/>
             <h1>CSU-COVID19-SIGN</h1>
-            <!-- <p>现共有{{ item_num }}位用户正在享用自动打卡服务</p>-->
+            <p></p>
             <div class="alert">
                 <el-alert title="服务反馈与通知群 1158608406" type="warning" center :closable="false"></el-alert>
             </div>
-            <el-table class="table" stripe
-                      v-loading="loading" :data="tableData">
-                <el-table-column
-                    prop="username"
-                    label="账户">
-                </el-table-column>
-                <el-table-column
-                    prop="nickname"
-                    label="昵称">
-                </el-table-column>
-                <el-table-column
-                    prop="phone"
-                    label="电话">
-                </el-table-column>
-                <el-table-column
-                    prop="time"
-                    label="时间">
-                </el-table-column>
-            </el-table>
-            <el-pagination
-                background
-                layout="prev, pager, next"
-                :total="item_num"
-                :page-size.sync="page_size"
-                @current-change="pageChange"
-                :current-page.sync="page_now">
-            </el-pagination>
+            <el-form class="form" ref="form" label-position="left" label-width="60px"
+                     v-loading="loading" :rules="rules" :model="formData">
+                <el-form-item label="账号" prop="username">
+                    <el-input v-model="formData.username" placeholder="信息门户账户"></el-input>
+                </el-form-item>
+                <el-form-item label="手机" prop="phone">
+                    <el-input v-model="formData.phone" placeholder="用于身份认证" show-password></el-input>
+                </el-form-item>
+                <el-button type="warning" @click="check_form" plain>删除任务</el-button>
+            </el-form>
             <div class="tips">
                 <h2>如何获取结果？</h2>
                 <p>目前没办法<br/>
@@ -62,16 +45,6 @@
                     你为啥要删除<br/>
                 </p>
             </div>
-            <el-form class="form" ref="form" label-position="left" label-width="60px"
-                     v-loading="loading" :rules="rules" :model="formData">
-                <el-form-item label="账号" prop="username">
-                    <el-input v-model="formData.username" placeholder="信息门户账户"></el-input>
-                </el-form-item>
-                <el-form-item label="手机" prop="phone">
-                    <el-input v-model="formData.phone" placeholder="用于身份认证" show-password></el-input>
-                </el-form-item>
-                <el-button type="warning" @click="check_form" plain>删除任务</el-button>
-            </el-form>
         </div>
     </div>
 </template>
@@ -81,11 +54,6 @@ export default {
     name: 'List',
     data() {
         return {
-            loading: true,
-            item_num: 0,
-            page_now: 1,
-            page_size: 25,
-            tableData: [],
             formData: {
                 username: "",
                 phone: ""
@@ -103,49 +71,18 @@ export default {
         }
     },
     methods: {
-        pageChange: function () {
-            this.loading = true;
-            let that = this;
-            let data_host = this.$store.state.host;
-            this.$http.get(data_host + `/user/list`,
-                {
-                    params: {
-                        page_now: this.page_now,
-                        page_size: this.page_size
-                    }
-                }
-            )
-                .then(function (res) {
-                    console.log(res)
-                    if (res.data.status === 'success') {
-                        that.loading = false;
-                        that.item_num = res.data.data["item_num"]
-                        that.page_now = res.data.data["page_now"]
-                        that.page_size = res.data.data["page_size"]
-                        that.tableData = res.data.data["user_list"]
-                    } else {
-                        that.$message({
-                            message: res.data.message,
-                            type: 'error'
-                        });
-                    }
-                })
-                .catch(function (res) {
-                    console.log(res);
-                })
-        },
         check_form: function () {
             this.$refs["form"].validate((valid) => {
                 if (valid) {
                     console.log("Check success, submit!");
-                    this.user_login();
+                    this.user_logout();
                 } else {
                     console.log('"Check error"');
                     return false;
                 }
             });
         },
-        user_login: function () {
+        user_logout: function () {
             this.loading = true;
             let that = this;
             let data_host = this.$store.state.host;
@@ -177,9 +114,6 @@ export default {
                     console.log(res);
                 })
         }
-    },
-    mounted() {
-        this.pageChange()
     }
 }
 </script>
@@ -197,10 +131,11 @@ export default {
         margin: 0 auto;
     }
 
-    .table {
+    .form {
         width: 90%;
+        margin-top: 36px;
         display: inline-block;
-        margin-bottom: 16px;
+        text-align: center;
     }
 
     .tips {

@@ -139,7 +139,7 @@ def user_list():
         "message": "列表读取成功",
         "data": {
             "user_list": result,
-            "item_num": int((item_num / 20)),
+            "item_num": item_num,
             "page_now": page_now,
             "page_size": page_size,
         }
