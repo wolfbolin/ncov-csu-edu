@@ -52,7 +52,7 @@ def user_sign_in(conn, user_info, sms_token):
     # 检查更新
     session_cookies = session.cookies.get_dict()
     if session_cookies != cookies and len(session_cookies.keys()) != 0:
-        app.logger.info("User {} cookies update".format(user_info["username"]))
+        Kit.print_blue("User {} cookies update".format(user_info["username"]))
         new_cookies = json.dumps(session_cookies)
         cursor = conn.cursor()
         sql = "UPDATE `user` SET `cookies` = %s WHERE `username` = %s"
