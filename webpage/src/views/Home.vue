@@ -32,7 +32,7 @@
                                     format="HH:mm" value-format="HH:mm" placeholder="选择打卡时间" :disabled="closeLogin">
                     </el-time-picker>
                 </el-form-item>
-                <el-button type="success" @click="check_form" plain>提交任务</el-button>
+                <el-button type="success" @click="check_form" plain :disabled="closeLogin">提交任务</el-button>
             </el-form>
             <div class="tips">
                 <h2>这是什么？</h2>

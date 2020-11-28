@@ -15,7 +15,7 @@
                             <el-input v-model="formData.username" placeholder="信息门户账户"></el-input>
                         </el-form-item>
                         <el-form-item label="手机" prop="phone">
-                            <el-input v-model="formData.phone" placeholder="用于身份认证" show-password></el-input>
+                            <el-input v-model="formData.phone" placeholder="用于身份认证"></el-input>
                         </el-form-item>
                         <el-button type="success" @click="check_form('get_task')" plain>查询任务</el-button>
                         <el-button type="danger" @click="check_form('del_task')" plain>删除任务</el-button>
@@ -147,7 +147,7 @@ export default {
                             message: res.data.message,
                             type: 'success'
                         });
-                        that.$router.push("/list");
+                        that.$router.push("/user");
                     } else {
                         that.$message({
                             message: res.data.message,
