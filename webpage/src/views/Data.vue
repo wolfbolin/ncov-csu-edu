@@ -80,8 +80,7 @@ export default {
                         page_now: this.page_now,
                         page_size: this.page_size
                     }
-                }
-            )
+                })
                 .then(function (res) {
                     console.log(res)
                     if (res.data.status === 'success') {

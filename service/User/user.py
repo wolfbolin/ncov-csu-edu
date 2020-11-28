@@ -129,6 +129,34 @@ def user_logout():
         })
 
 
+@user_blue.route('/task', methods=["GET"])
+def user_task():
+    # 检查请求数据
+    username = request.args.get("username", "").strip()
+    phone = request.args.get("phone", "").strip()
+
+    # 检查并删除任务
+    conn = app.mysql_pool.connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    sql = "SELECT `nickname`, `time`, `sms` FROM `user` WHERE `username`=%s AND `phone`=%s"
+    cursor.execute(sql, args=[username, phone])
+    res = cursor.fetchone()
+    if res is None:
+        return jsonify({
+            "status": "error",
+            "message": "用户不存在或信息错误"
+        })
+
+    return jsonify({
+        "status": "success",
+        "data": {
+            "nickname": res["nickname"],
+            "taskTime": res["time"],
+            "smsOpt": res["sms"],
+        }
+    })
+
+
 @user_blue.route('/list')
 def user_list():
     # 读取分页信息
