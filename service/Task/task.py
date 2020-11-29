@@ -1,6 +1,7 @@
 # coding=utf-8
-import json
 import Kit
+import json
+import random
 import pymysql
 import requests
 from flask import abort
@@ -9,6 +10,61 @@ from flask import request
 from Task import task_blue
 from requests import utils
 from flask import current_app as app
+
+
+@task_blue.route('/balance')
+def balance_task():
+    # 本地数据校验
+    # client_ip = request.headers.get("X-Real-IP", "0.0.0.0")
+    # if client_ip != "127.0.0.1":
+    #     return abort(400, "Reject IP:{}".format(client_ip))
+
+    # 重新分配时间
+    conn = app.mysql_pool.connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    sql = "UPDATE `user` SET `time` = rand_time() WHERE `rand` != 'Yes'"
+    cursor.execute(sql)
+    conn.commit()
+
+    return "Affected rows: {}".format(cursor.rowcount)
+
+
+@task_blue.route('/assign')
+def assign_task():
+    # 本地数据校验
+    # client_ip = request.headers.get("X-Real-IP", "0.0.0.0")
+    # if client_ip != "127.0.0.1":
+    #     return abort(400, "Reject IP:{}".format(client_ip))
+
+    app.logger.info("正在分配当日打卡任务")
+
+    # 锁定数据表
+    conn = app.mysql_pool.connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    sql = "LOCK TABLES `user` READ, `task` WRITE"
+    cursor.execute(sql)
+    app.logger.info("锁定数据表完成")
+
+    try:
+        # 写入定时用户
+        sql = "REPLACE INTO `task` SELECT `username`,`time` as `task_time`, " \
+              "'00:00' as `sign_time`, 'waiting' as `status`, CURDATE() as `date` FROM `user`;"
+        cursor.execute(sql)
+        app.logger.info("基础用户写入完成")
+
+        # 写入随机时间
+        sql = "UPDATE `task` SET `task_time` = CONCAT(LEFT(`task_time`,2), ':', LPAD(FLOOR(1+rand()*59),2,0)) " \
+              "WHERE `username` IN (SELECT `username` FROM `user` WHERE `rand`='Yes') AND `date` = CURDATE()"
+        cursor.execute(sql)
+        app.logger.info("随机时间写入完成")
+        conn.commit()
+    finally:
+        # 释放数据表
+        sql = "UNLOCK TABLES"
+        cursor.execute(sql)
+        app.logger.info("释放数据表完成")
+
+    return "All Done"
 
 
 @task_blue.route('/sign')

@@ -188,11 +188,13 @@ export default {
             }
 
             .key {
+                min-height: 38px;
                 border-radius: 4px;
                 background-color: rgba(145, 190, 240, 0.3);
             }
 
             .val {
+                min-height: 38px;
                 background-color: rgba(145, 190, 240, 0.1);
             }
         }
