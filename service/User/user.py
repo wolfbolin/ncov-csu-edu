@@ -36,6 +36,14 @@ def open_login():
 
 @user_blue.route('/login', methods=["POST"])
 def user_login():
+    # 分时关闭服务
+    time_now = int(Kit.str_time("%H"))
+    if time_now == 0:
+        return jsonify({
+            "status": "error",
+            "message": "流量过载，请凌晨一点后再试"
+        })
+
     # 检查请求数据
     user_info = request.get_data(as_text=True)
     user_info = json.loads(user_info)

@@ -79,14 +79,9 @@ def check_list(check_time=None):
         unix_time = Kit.timestamp2unix("2020-01-01 " + check_time + ":00")
         time_now = Kit.unix2timestamp(unix_time, pattern="%H:%M")
     app.logger.info("Check time point at {}".format(time_now))
-    conn = app.mysql_pool.connection()
-    # 定时重置数据库连接
-    if Kit.unix_time() % 300 == 0:
-        app.mysql_conn.close()
-        app.mysql_conn = conn
     # 查询当前时间需要打开的用户
+    conn = app.mysql_pool.connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
-    sql = "SELECT * FROM `user` WHERE `time`=%s"
     sql = """
     SELECT
         `task`.`username` AS `username`,
@@ -106,7 +101,7 @@ def check_list(check_time=None):
     user_task_list = cursor.fetchall()
     # 提交用户打卡任务到进程池
     for user_info in user_task_list:
-        app.executor.submit(user_sign_in, app.mysql_conn, user_info, app.config["BASE"]["sms_token"])
+        app.executor.submit(user_sign_in, app.config, user_info, app.config["BASE"]["sms_token"])
     app.logger.info("Check point {} with {} task".format(time_now, len(user_task_list)))
 
     return jsonify({
@@ -115,31 +110,37 @@ def check_list(check_time=None):
     })
 
 
-def user_sign_in(conn, user_info, sms_token):
-    cursor = conn.cursor()
-    # 初始化连接
-    session = requests.Session()
-    cookies = json.loads(user_info["cookies"])
-    cookies_jar = requests.utils.cookiejar_from_dict(cookies)
-    session.cookies = cookies_jar
-    # 执行签到
-    status, data, run_err = Kit.user_clock(session)
-    # 检查更新
-    session_cookies = session.cookies.get_dict()
-    if session_cookies != cookies and len(session_cookies.keys()) != 0:
-        Kit.print_blue("User {} cookies update".format(user_info["username"]))
-        new_cookies = json.dumps(session_cookies)
-        sql = "UPDATE `user` SET `cookies` = %s WHERE `username` = %s"
-        cursor.execute(query=sql, args=[new_cookies, user_info["username"]])
+def user_sign_in(config, user_info, sms_token):
+    # 连接数据库
+    try:
+        conn = pymysql.connect(**config['MYSQL'])
+        cursor = conn.cursor()
+        # 初始化连接
+        session = requests.Session()
+        cookies = json.loads(user_info["cookies"])
+        cookies_jar = requests.utils.cookiejar_from_dict(cookies)
+        session.cookies = cookies_jar
+        # 执行签到
+        status, data, run_err = Kit.user_clock(session)
+        # 检查更新
+        session_cookies = session.cookies.get_dict()
+        if session_cookies != cookies and len(session_cookies.keys()) != 0:
+            Kit.print_blue("User {} cookies update".format(user_info["username"]))
+            new_cookies = json.dumps(session_cookies)
+            sql = "UPDATE `user` SET `cookies` = %s WHERE `username` = %s"
+            cursor.execute(query=sql, args=[new_cookies, user_info["username"]])
+            conn.commit()
 
-    if user_info["sms"] == "Yes":
-        Kit.send_sms_message(sms_token, user_info["nickname"], user_info["phone"], str(data))
+        if user_info["sms"] == "Yes":
+            Kit.send_sms_message(sms_token, user_info["nickname"], user_info["phone"], str(data))
 
-    # 任务完成
-    Kit.write_log(conn, 'user_check', user_info["username"], status, data, run_err)
-    sql = "UPDATE `task` SET `status`=%s, `sign_time`=%s WHERE `username`=%s AND `date` = CURDATE()"
-    cursor.execute(sql, args=["success" if status else "error", Kit.str_time("%H:%M:%S"), user_info["username"]])
-    conn.commit()
+        # 任务完成
+        Kit.write_log(conn, 'user_check', user_info["username"], status, data, run_err)
+        sql = "UPDATE `task` SET `status`=%s, `sign_time`=%s WHERE `username`=%s AND `date` = CURDATE()"
+        cursor.execute(sql, args=["success", "00:01:02", user_info["username"]])
+        conn.commit()
+    except BaseException as e:
+        Kit.print_red(e)
 
 
 @task_blue.route('/count')

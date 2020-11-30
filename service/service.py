@@ -43,8 +43,7 @@ pool_config = app.config.get('POOL')
 mysql_config = app.config.get('MYSQL')
 app.mysql_pool = PooledDB(creator=pymysql, **mysql_config, **pool_config)
 
-# 初始化异步线程与谅解
-app.mysql_conn = app.mysql_pool.connection()
+# 初始化异步线程
 app.executor = ThreadPoolExecutor(max_workers=int(app_config["SERVICE"]["workers"]))
 
 # 初始化路由
