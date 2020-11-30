@@ -102,7 +102,7 @@ def check_list(check_time=None):
         `task`.`task_time` = %s 
         AND `task`.`date` = CURDATE()
     """
-    cursor.execute(query=sql, args=[time_now])
+    cursor.execute(query=sql, args=[time_now + ':00'])
     user_task_list = cursor.fetchall()
     # 提交用户打卡任务到进程池
     for user_info in user_task_list:
