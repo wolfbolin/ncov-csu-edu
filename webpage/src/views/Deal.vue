@@ -76,7 +76,7 @@ export default {
             } else {
                 const reg = /^1[3|4|5|7|8][0-9]\d{8}$/
                 if (reg.test(value)) {
-                    callback();
+                    return callback();
                 } else {
                     return callback(new Error('请输入登录手机号'));
                 }

@@ -76,7 +76,7 @@
                               :disabled="closeLogin"></el-input>
                 </el-form-item>
                 <el-form-item label="须知" prop="readme" style="text-align: left">
-                    <el-checkbox>我已认真阅读并同意服务使用条款</el-checkbox>
+                    <el-checkbox v-model="formData.readme">我已认真阅读并同意服务使用条款</el-checkbox>
                 </el-form-item>
                 <el-button type="success" @click="check_form" plain :disabled="closeLogin">提交任务</el-button>
             </el-form>
@@ -126,6 +126,13 @@
 export default {
     name: 'Home',
     data() {
+        let checkReadme = (rule, value, callback) => {
+            if (value) {
+                return callback();
+            } else {
+                return callback("建立羁绊的必要前提");
+            }
+        };
         return {
             loading: false,
             closeInfo: "",
@@ -134,6 +141,7 @@ export default {
                 username: "",
                 password: "",
                 nickname: "",
+                readme: "",
                 phone: ""
             },
             rules: {
@@ -153,7 +161,7 @@ export default {
                     {min: 11, max: 11, message: '长度应为 11 个数字', trigger: 'blur'}
                 ],
                 readme: [
-                    {required: true, message: '建立羁绊的必要前提', trigger: 'change'}
+                    {required: true, validator: checkReadme, trigger: 'change'}
                 ]
             }
         }
