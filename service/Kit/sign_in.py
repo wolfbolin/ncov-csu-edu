@@ -55,7 +55,7 @@ def user_clock(session):
     # 获取历史数据
     url = "https://wxxy.csu.edu.cn/ncov/wap/default/index"
     try:
-        http_result = session.post(url)
+        http_result = session.get(url)
     except requests.exceptions.ReadTimeout:
         run_err = "requests.exceptions.ReadTimeout:[%s]" % url
         Kit.print_red(run_err)

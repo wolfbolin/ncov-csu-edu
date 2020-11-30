@@ -137,7 +137,7 @@ def trade_query():
     if order_record["status"] in ("SUCCESS", "FINISH", "CLOSE"):
         return jsonify({
             "status": "success",
-            "order_status": order_record["order_status"]
+            "order_status": order_record["status"]
         })
 
     # 查询订单状态
