@@ -50,7 +50,7 @@ def assign_task():
         sql = "REPLACE INTO `task` SELECT `username`,`time` as `task_time`, " \
               "'00:00' as `sign_time`, 'waiting' as `status`, CURDATE() as `date` FROM `user`;"
         cursor.execute(sql)
-        app.logger.info("基础用户写入完成")
+        app.logger.info("用户任务写入完成")
 
         # 写入随机时间
         sql = "UPDATE `task` SET `task_time` = CONCAT(LEFT(`task_time`,2), ':', LPAD(FLOOR(1+rand()*59),2,0)) " \
