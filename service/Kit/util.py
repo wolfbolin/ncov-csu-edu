@@ -1,5 +1,6 @@
 # coding=utf-8
 import time
+import random
 import pymysql
 import requests
 
@@ -62,6 +63,12 @@ def timestamp2unix(time_string, pattern='%Y-%m-%d %H:%M:%S'):
 
 def unix2timestamp(u_time, pattern='%Y-%m-%d %H:%M:%S'):
     return time.strftime(pattern, time.localtime(u_time))
+
+
+def rand_time():
+    rand_hour = random.randint(0, 7)
+    rand_min = random.randint(1, 59)
+    return "{}:{}".format(rand_hour, rand_min)
 
 
 def send_sms_message(sms_token, user_name, user_phone, result):

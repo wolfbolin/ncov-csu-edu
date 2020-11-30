@@ -27,11 +27,6 @@
                     <el-input v-model="formData.phone" placeholder="用于身份认证" type="number"
                               :disabled="closeLogin"></el-input>
                 </el-form-item>
-                <el-form-item label="时间" prop="time">
-                    <el-time-picker v-model="formData.time" :picker-options="{selectableRange: '00:01:00 - 10:00:00'}"
-                                    format="HH:mm" value-format="HH:mm" placeholder="选择打卡时间" :disabled="closeLogin">
-                    </el-time-picker>
-                </el-form-item>
                 <el-button type="success" @click="check_form" plain :disabled="closeLogin">提交任务</el-button>
             </el-form>
             <div class="tips">
@@ -103,8 +98,7 @@ export default {
                 username: "",
                 password: "",
                 nickname: "",
-                phone: "",
-                time: ""
+                phone: ""
             },
             rules: {
                 username: [
@@ -121,10 +115,7 @@ export default {
                 phone: [
                     {required: true, message: '请输入收信电话号码', trigger: 'blur'},
                     {min: 11, max: 11, message: '长度应为 11 个数字', trigger: 'blur'}
-                ],
-                time: [
-                    {required: true, message: '请选择打卡时间', trigger: 'change'}
-                ],
+                ]
             }
         }
     },
@@ -166,8 +157,7 @@ export default {
                 username: this.formData.username,
                 password: this.formData.password,
                 nickname: this.formData.nickname,
-                phone: this.formData.phone,
-                time: this.formData.time,
+                phone: this.formData.phone
             }
             console.log(http_data)
             this.$http.post(data_host + `/user/login`, http_data)

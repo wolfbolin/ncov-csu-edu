@@ -39,13 +39,10 @@ def user_login():
     # 检查请求数据
     user_info = request.get_data(as_text=True)
     user_info = json.loads(user_info)
-    if set(user_info.keys()) != {"username", "password", "nickname", "phone", "time"}:
+    if set(user_info.keys()) != {"username", "password", "nickname", "phone"}:
         return abort(400)
     if 6 <= len(user_info["username"]) <= 14 and len(user_info["password"]) != 0 and \
-            4 <= len(user_info["nickname"]) <= 16 and len(user_info["phone"]) == 11 and \
-            len(user_info["time"]) != 0:
-        unix_time = Kit.timestamp2unix("2020-01-01 " + user_info["time"] + ":00")
-        user_info["time"] = Kit.unix2timestamp(unix_time, pattern="%H:%M")
+            4 <= len(user_info["nickname"]) <= 16 and len(user_info["phone"]) == 11:
         user_info["username"] = user_info["username"].strip()
         user_info["nickname"] = user_info["nickname"].strip()
         user_info["phone"] = user_info["phone"].strip()
@@ -85,7 +82,7 @@ def user_login():
     sql = "REPLACE `user`(`cookies`, `username`, `nickname`, `phone`, `time`) " \
           "VALUES (%s, %s, %s, %s, %s)"
     cursor.execute(query=sql, args=[cookies, user_info["username"], user_info["nickname"],
-                                    user_info["phone"], user_info["time"]])
+                                    user_info["phone"], Kit.rand_time()])
     conn.commit()
 
     return jsonify({
