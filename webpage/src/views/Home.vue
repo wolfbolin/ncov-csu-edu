@@ -76,7 +76,7 @@
                               :disabled="closeLogin"></el-input>
                 </el-form-item>
                 <el-form-item label="须知" prop="readme" style="text-align: left">
-                    <el-checkbox v-model="formData.readme">我已认真阅读并同意服务使用条款</el-checkbox>
+                    <el-checkbox v-model="formData.readme" :disabled="closeLogin">我已认真阅读并同意服务使用条款</el-checkbox>
                 </el-form-item>
                 <el-button type="success" @click="check_form" plain :disabled="closeLogin">提交任务</el-button>
             </el-form>
