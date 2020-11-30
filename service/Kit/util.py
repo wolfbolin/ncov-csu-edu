@@ -1,7 +1,49 @@
 # coding=utf-8
 import time
+import random
 import pymysql
 import requests
+
+
+# Print tools
+def _print(message, code=None, tag=None, end=None):
+    if tag is None:
+        message = '[{}] {}'.format(tag, message)
+    if code is not None:
+        message = '\033[0;{}m{}\033[0m'.format(code, message)
+    print(message, end=end)
+
+
+def print_red(message, tag="ERROR", end=None):
+    _print(message, 31, tag, end)  # 红色
+
+
+def print_green(message, tag="DONE", end='\n'):
+    _print(message, 32, tag, end)  # 绿色
+
+
+def print_yellow(message, tag="WARNING", end='\n'):
+    _print(message, 33, tag, end)  # 黄色
+
+
+def print_blue(message, tag="BEG", end='\n'):
+    _print(message, 34, tag, end)  # 深蓝色
+
+
+def print_purple(message, tag="MID", end='\n'):
+    _print(message, 35, tag, end)  # 紫色
+
+
+def print_azure(message, tag="END", end='\n'):
+    _print(message, 36, tag, end)  # 浅蓝色
+
+
+def print_white(message, tag="INFO", end='\n'):
+    _print(message, 37, tag, end)  # 白色
+
+
+def print_none(message, tag="DEBUG", end='\n'):
+    _print(message, None, tag, end)  # 默认
 
 
 def unix_time(unit=1):
@@ -21,6 +63,12 @@ def timestamp2unix(time_string, pattern='%Y-%m-%d %H:%M:%S'):
 
 def unix2timestamp(u_time, pattern='%Y-%m-%d %H:%M:%S'):
     return time.strftime(pattern, time.localtime(u_time))
+
+
+def rand_time():
+    rand_hour = random.randint(0, 7)
+    rand_min = random.randint(1, 59)
+    return "{}:{}".format(rand_hour, rand_min)
 
 
 def send_sms_message(sms_token, user_name, user_phone, result):

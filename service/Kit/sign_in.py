@@ -1,5 +1,6 @@
 # coding=utf-8
 import re
+import Kit
 import json
 import requests
 from flask import current_app as app
@@ -57,11 +58,11 @@ def user_clock(session):
         http_result = session.post(url)
     except requests.exceptions.ReadTimeout:
         run_err = "requests.exceptions.ReadTimeout:[%s]" % url
-        app.logger.error(run_err)
+        Kit.print_red(run_err)
         return False, "自动登录失败", run_err
     except requests.exceptions.ConnectionError:
         run_err = "requests.exceptions.ConnectionError:[%s]" % url
-        app.logger.error(run_err)
+        Kit.print_red(run_err)
         return False, "自动登录失败", run_err
     regex = r'oldInfo: (.*),'
     re_result = re.search(regex, http_result.text)
@@ -94,11 +95,11 @@ def user_clock(session):
         http_result = session.post(url, data=sign_data)
     except requests.exceptions.ReadTimeout:
         run_err = "requests.exceptions.ReadTimeout:[%s]" % url
-        app.logger.error(run_err)
+        Kit.print_red(run_err)
         return False, "自动签到失败", run_err
     except requests.exceptions.ConnectionError:
         run_err = "requests.exceptions.ConnectionError:[%s]" % url
-        app.logger.error(run_err)
+        Kit.print_red(run_err)
         return False, "自动签到失败", run_err
 
     sign_res = json.loads(http_result.text)
