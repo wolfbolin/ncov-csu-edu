@@ -15,9 +15,9 @@ from flask import current_app as app
 @task_blue.route('/balance')
 def balance_task():
     # 本地数据校验
-    # client_ip = request.headers.get("X-Real-IP", "0.0.0.0")
-    # if client_ip != "127.0.0.1":
-    #     return abort(400, "Reject IP:{}".format(client_ip))
+    client_ip = request.headers.get("X-Real-IP", "0.0.0.0")
+    if client_ip != "127.0.0.1":
+        return abort(400, "Reject IP:{}".format(client_ip))
 
     # 重新分配时间
     conn = app.mysql_pool.connection()
@@ -32,9 +32,9 @@ def balance_task():
 @task_blue.route('/assign')
 def assign_task():
     # 本地数据校验
-    # client_ip = request.headers.get("X-Real-IP", "0.0.0.0")
-    # if client_ip != "127.0.0.1":
-    #     return abort(400, "Reject IP:{}".format(client_ip))
+    client_ip = request.headers.get("X-Real-IP", "0.0.0.0")
+    if client_ip != "127.0.0.1":
+        return abort(400, "Reject IP:{}".format(client_ip))
 
     app.logger.info("正在分配当日打卡任务")
 
