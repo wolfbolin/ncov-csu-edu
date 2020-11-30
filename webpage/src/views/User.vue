@@ -7,8 +7,8 @@
             <div class="alert">
                 <el-alert title="服务反馈与通知群 1158608406" type="warning" center :closable="false"></el-alert>
             </div>
-            <el-row type="flex" :gutter="20">
-                <el-col :span="16">
+            <el-row>
+                <el-col :lg="16" :sm="16" :xs="24">
                     <el-form class="form" ref="form" label-position="left" label-width="60px"
                              v-loading="loading" :rules="rules" :model="formData">
                         <el-form-item label="账号" prop="username">
@@ -21,7 +21,7 @@
                         <el-button type="danger" @click="check_form('del_task')" plain>删除任务</el-button>
                     </el-form>
                 </el-col>
-                <el-col :span="8" class="info">
+                <el-col :lg="8" :sm="8" :xs="24" class="info">
                     <el-row class="item">
                         <el-col :span="12" class="key">
                             <p>用户昵称</p>
@@ -36,6 +36,14 @@
                         </el-col>
                         <el-col :span="12" class="val">
                             <p>{{ taskInfo.taskTime }}</p>
+                        </el-col>
+                    </el-row>
+                    <el-row class="item">
+                        <el-col :span="12" class="key">
+                            <p>随机时间</p>
+                        </el-col>
+                        <el-col :span="12" class="val">
+                            <p>{{ taskInfo.randOpt }}</p>
                         </el-col>
                     </el-row>
                     <el-row class="item">
@@ -84,6 +92,7 @@ export default {
             taskInfo: {
                 nickname: "",
                 taskTime: "",
+                randOpt: "",
                 smsOpt: ""
             },
             rules: {
@@ -177,8 +186,9 @@ export default {
         margin: 0 auto;
     }
 
+
     .info {
-        margin-top: 36px;
+        padding: 36px 16px;
 
         .item {
             margin-bottom: 12px;

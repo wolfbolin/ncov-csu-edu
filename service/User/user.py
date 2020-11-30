@@ -135,7 +135,7 @@ def user_task():
     # 检查并删除任务
     conn = app.mysql_pool.connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
-    sql = "SELECT `nickname`, `time`, `sms` FROM `user` WHERE `username`=%s AND `phone`=%s"
+    sql = "SELECT `nickname`, `time`, `rand`, `sms` FROM `user` WHERE `username`=%s AND `phone`=%s"
     cursor.execute(sql, args=[username, phone])
     res = cursor.fetchone()
     if res is None:
@@ -149,6 +149,7 @@ def user_task():
         "data": {
             "nickname": res["nickname"],
             "taskTime": res["time"],
+            "randOpt": res["rand"],
             "smsOpt": res["sms"],
         }
     })
