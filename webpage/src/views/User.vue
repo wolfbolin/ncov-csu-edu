@@ -7,6 +7,22 @@
             <div class="alert">
                 <el-alert title="服务反馈与通知群 1158608406" type="warning" center :closable="false"></el-alert>
             </div>
+            <div class="readme">
+                <h2>常见问答</h2>
+                <el-row :gutter="36">
+                    <el-col :sm="12" :xs="24">
+                        <h3>关于时间</h3>
+                        <p>新用户签到打卡任务将于次日起生效。老用户退出服务将删除当日任务。</p>
+                        <p>新登录用户的签到打卡时间将根据负载自动指派，不支持用户手动修改。</p>
+                    </el-col>
+                    <el-col :sm="12" :xs="24">
+                        <h3>一些问题</h3>
+                        <p>暂不支持当天打卡任务状态查询(会支持的)</p>
+                        <p>暂不支持打卡结果短信推送服务(会支持的)</p>
+                        <p>暂不支持随机打卡任务时间能力(会支持的)</p>
+                    </el-col>
+                </el-row>
+            </div>
             <el-row>
                 <el-col :lg="16" :sm="16" :xs="24">
                     <el-form class="form" ref="form" label-position="left" label-width="60px"
@@ -57,22 +73,14 @@
                 </el-col>
             </el-row>
             <div class="tips">
-                <h2>如何获取结果？</h2>
-                <p>目前没办法<br/>
-                    VIP用户可凭借短信了解<br/>
-                    普通用户的打卡查询的代码还没写<br/>
-                    你有需要可以自己来补充<br/>
-                    我累了我好困<br/>
-                    我好困<br/>
-                    好困<br/>
-                    困
-                </p>
-                <h2>解除绑定</h2>
-                <p>认真的？<br/>
-                    这么实在的工具为何放弃？<br/>
-                    信息填错重写登录即可覆盖现有信息<br/>
-                    删除功能是做着玩的(能用)<br/>
-                    你为啥要删除<br/>
+                <h2>有多少用户？</h2>
+                <p>懂的都懂<br/>
+                    不懂的我也不解释<br/>
+                    这里水很深，利益牵扯太大<br/>
+                    网上大部分内容都已经删除干净了<br/>
+                    懂的人都是自己悟的<br/>
+                    别不懂装懂<br/>
+                    懂了吗<br/>
                 </p>
             </div>
         </div>
@@ -208,7 +216,28 @@ export default {
                 background-color: rgba(145, 190, 240, 0.1);
             }
         }
+    }
 
+    .readme {
+        width: 80%;
+        margin: 0 auto;
+
+        h2 {
+            display: inline-block;
+            padding: 4px;
+            border-bottom: #91BEF0 3px solid;
+        }
+
+        h3 {
+            display: inline-block;
+            padding: 3px;
+            border-bottom: #91BEF0 3px solid;
+        }
+
+        p {
+            text-align: left;
+            text-indent: 2em;
+        }
     }
 
     .form {

@@ -46,7 +46,7 @@ export default {
                 {"id": "index", "href": "/", "label": "主页", "class": ""},
                 {"id": "list", "href": "/user", "label": "用户", "class": ""},
                 {"id": "unbind", "href": "/deal", "label": "附加", "class": ""},
-                {"id": "about", "href": "/about", "label": "关于", "class": ""},
+                // {"id": "about", "href": "/about", "label": "关于", "class": ""},
             ],
         }
     },
