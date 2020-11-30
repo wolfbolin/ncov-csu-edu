@@ -64,7 +64,10 @@ def assign_task():
         cursor.execute(sql)
         app.logger.info("释放数据表完成")
 
-    return "All Done"
+    return jsonify({
+        "status": "success",
+        "message": "Assign finish"
+    })
 
 
 @task_blue.route('/sign')
@@ -84,6 +87,21 @@ def check_list(check_time=None):
     # 查询当前时间需要打开的用户
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     sql = "SELECT * FROM `user` WHERE `time`=%s"
+    sql = """
+    SELECT
+        `task`.`username` AS `username`,
+        `task`.`task_time` AS `task_time`,
+        `user`.`nickname` AS `nickname`,
+        `user`.`cookies` AS `cookies`,
+        `user`.`phone` AS `phone`,
+        `user`.`sms` AS `sms`
+    FROM
+        `task`
+        INNER JOIN `user` ON `task`.`username` = `user`.`username`
+    WHERE
+        `task`.`task_time` = %s 
+        AND `task`.`date` = CURDATE()
+    """
     cursor.execute(query=sql, args=[time_now])
     user_task_list = cursor.fetchall()
     # 提交用户打卡任务到进程池
@@ -98,6 +116,7 @@ def check_list(check_time=None):
 
 
 def user_sign_in(conn, user_info, sms_token):
+    cursor = conn.cursor()
     # 初始化连接
     session = requests.Session()
     cookies = json.loads(user_info["cookies"])
@@ -110,13 +129,17 @@ def user_sign_in(conn, user_info, sms_token):
     if session_cookies != cookies and len(session_cookies.keys()) != 0:
         Kit.print_blue("User {} cookies update".format(user_info["username"]))
         new_cookies = json.dumps(session_cookies)
-        cursor = conn.cursor()
         sql = "UPDATE `user` SET `cookies` = %s WHERE `username` = %s"
         cursor.execute(query=sql, args=[new_cookies, user_info["username"]])
 
     if user_info["sms"] == "Yes":
         Kit.send_sms_message(sms_token, user_info["nickname"], user_info["phone"], str(data))
+
+    # 任务完成
     Kit.write_log(conn, 'user_check', user_info["username"], status, data, run_err)
+    sql = "UPDATE `task` SET `status`=%s, `sign_time`=%s WHERE `username`=%s AND `date` = CURDATE()"
+    cursor.execute(sql, args=["success" if status else "error", Kit.str_time("%H:%M:%S"), user_info["username"]])
+    conn.commit()
 
 
 @task_blue.route('/count')
