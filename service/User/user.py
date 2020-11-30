@@ -245,5 +245,5 @@ def user_count():
     return jsonify({
         "status": "success",
         "user_data": [user_data_key[::-1], user_data_val[::-1]],
-        "sign_data": [sorted(list(sign_range_list)), list(sign_date_list), sign_matrix]
+        "sign_data": [sorted(list(sign_range_list)), sorted(list(sign_date_list)), sign_matrix]
     })
