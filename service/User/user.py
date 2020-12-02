@@ -87,8 +87,9 @@ def user_login():
 
     # 登录成功写入session
     cursor = conn.cursor()
-    sql = "REPLACE `user`(`cookies`, `username`, `nickname`, `phone`, `time`) " \
-          "VALUES (%s, %s, %s, %s, %s)"
+    sql = "INSERT `user`(`cookies`, `username`, `nickname`, `phone`, `time`) " \
+          "VALUES (%s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE " \
+          "`cookies`=VALUES(`cookies`),`nickname`=VALUES(`nickname`),`phone`=VALUES(`phone`),`online`='Yes'"
     cursor.execute(query=sql, args=[cookies, user_info["username"], user_info["nickname"],
                                     user_info["phone"], Kit.rand_time()])
     conn.commit()
@@ -116,7 +117,7 @@ def user_logout():
     # 检查并删除任务
     conn = app.mysql_pool.connection()
     cursor = conn.cursor()
-    sql = "DELETE FROM `user` WHERE `username`=%s AND `phone`=%s"
+    sql = "UPDATE `user` SET `online`='No',`cookies`='' WHERE `username`=%s AND `phone`=%s"
     cursor.execute(query=sql, args=[user_info["username"], user_info["phone"]])
     conn.commit()
     rowcount = cursor.rowcount

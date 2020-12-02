@@ -47,14 +47,16 @@ def assign_task():
 
     try:
         # 写入定时用户
-        sql = "REPLACE INTO `task` SELECT `username`,`time` as `task_time`, " \
-              "'00:00' as `sign_time`, 'waiting' as `status`, CURDATE() as `date` FROM `user`;"
+        sql = "REPLACE INTO `task` SELECT `username`,`time` as `task_time`, '00:00' as `sign_time`, " \
+              "'waiting' as `status`, CURDATE() as `date` FROM `user` WHERE `online`='Yes';"
         cursor.execute(sql)
         app.logger.info("用户任务写入完成")
 
         # 写入随机时间
         sql = "UPDATE `task` SET `task_time` = CONCAT(LEFT(`task_time`,2), ':', LPAD(FLOOR(1+rand()*59),2,0)) " \
-              "WHERE `username` IN (SELECT `username` FROM `user` WHERE `rand`='Yes') AND `date` = CURDATE()"
+              "WHERE `username` IN (" \
+              "SELECT `username` FROM `user` WHERE `online`='Yes' AND `rand`='Yes'" \
+              ") AND `date` = CURDATE()"
         cursor.execute(sql)
         app.logger.info("随机时间写入完成")
         conn.commit()
@@ -88,6 +90,7 @@ def check_list(check_time=None):
         `task`.`task_time` AS `task_time`,
         `user`.`nickname` AS `nickname`,
         `user`.`cookies` AS `cookies`,
+        `user`.`online` AS `online`,
         `user`.`phone` AS `phone`,
         `user`.`sms` AS `sms`
     FROM
@@ -101,6 +104,11 @@ def check_list(check_time=None):
     user_task_list = cursor.fetchall()
     # 提交用户打卡任务到进程池
     for user_info in user_task_list:
+        if user_info["online"] != "Yes":
+            sql = "UPDATE `task` SET `status`=%s, `sign_time`=%s WHERE `username`=%s AND `date` = CURDATE()"
+            cursor.execute(sql, args=["logout", Kit.str_time("%H:%M:%S"), user_info["username"]])
+            conn.commit()
+            continue
         app.executor.submit(user_sign_in, app.config, user_info, app.config["BASE"]["sms_token"])
     app.logger.info("Check point {} with {} task".format(time_now, len(user_task_list)))
 
@@ -113,6 +121,7 @@ def check_list(check_time=None):
 def user_sign_in(config, user_info, sms_token):
     # 连接数据库
     try:
+        # 连接数据库
         conn = pymysql.connect(**config['MYSQL'])
         cursor = conn.cursor()
         # 初始化连接

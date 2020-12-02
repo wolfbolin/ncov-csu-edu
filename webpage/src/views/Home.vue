@@ -210,7 +210,7 @@ export default {
                             message: res.data.message,
                             type: 'success'
                         });
-                        that.$router.push("/list");
+                        that.$router.push("/user");
                     } else {
                         that.$message({
                             message: res.data.message,
