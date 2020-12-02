@@ -254,3 +254,17 @@ def user_count():
         "user_data": [user_data_key[::-1], user_data_val[::-1]],
         "sign_data": [sorted(list(sign_range_list)), sorted(list(sign_date_list)), sign_matrix]
     })
+
+
+@user_blue.route('/donor')
+def donor_user():
+    conn = app.mysql_pool.connection()
+    cursor = conn.cursor()
+    sql = "SELECT `nickname` FROM `user` WHERE `donor`='Yes' LIMIT 100"
+    cursor.execute(sql)
+    donor_list = cursor.fetchall()
+    donor_list = [it[0] for it in donor_list]
+    return {
+        "status": "success",
+        "data": donor_list
+    }

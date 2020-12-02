@@ -59,6 +59,14 @@
                     </el-col>
                 </el-row>
             </div>
+            <div class="readme">
+                <h2>荣誉贡献者</h2>
+                <div>
+                    <template v-for="donor in donor_list">
+                        <el-tag :key="donor">{{ donor }}</el-tag>
+                    </template>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -121,7 +129,8 @@ export default {
                 attach: [
                     {min: 0, max: 128, message: "太长了，太长了", trigger: "blur"},
                 ]
-            }
+            },
+            donor_list: []
         }
     },
     methods: {
@@ -151,6 +160,21 @@ export default {
                     console.log(res.data)
                     if (res.data.status === "success") {
                         that.menu = res.data.data
+                    }
+                })
+                .catch(function (res) {
+                    console.log(res)
+                })
+        },
+        fetch_donor: function () {
+            let that = this;
+            let data_host = this.$store.state.host;
+            let http_url = data_host + `/user/donor`
+            this.$http.get(http_url)
+                .then(function (res) {
+                    console.log(res.data)
+                    if (res.data.status === "success") {
+                        that.donor_list = res.data.data
                     }
                 })
                 .catch(function (res) {
@@ -259,23 +283,13 @@ export default {
     },
     mounted() {
         this.fetch_volume()
+        this.fetch_donor()
     }
 }
 </script>
 
 <style lang="scss" scoped>
 .wb-unbind {
-    text-align: center;
-
-    .logo {
-        margin: 128px 0 64px 0;
-    }
-
-    .alert {
-        width: 60%;
-        margin: 0 auto;
-    }
-
     .wb-order {
         width: 70%;
         margin-top: 32px;
@@ -291,22 +305,14 @@ export default {
                 margin-bottom: 36px;
             }
         }
-
     }
 
-    .tips {
-        margin-top: 36px;
-
-        h2 {
-            display: inline-block;
-            padding: 4px;
-            border-bottom: #91BEF0 3px solid;
-        }
-
-        p {
-            font-size: 16px;
-            line-height: 32px;
-        }
+    .el-tag {
+        height: 48px;
+        padding: 0 20px;
+        line-height: 48px;
+        font-size: 16px;
+        margin: 10px;
     }
 }
 </style>

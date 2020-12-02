@@ -232,17 +232,6 @@ export default {
 
 <style lang="scss" scoped>
 .wb-home {
-    text-align: center;
-
-    .logo {
-        margin: 128px 0 64px 0;
-    }
-
-    .alert {
-        width: 60%;
-        margin: 12px auto;
-    }
-
     .form {
         width: 90%;
         margin-top: 36px;
@@ -252,44 +241,6 @@ export default {
 
     .el-date-editor.el-input {
         width: 100%;
-    }
-
-
-    .readme {
-        width: 80%;
-        margin: 0 auto;
-
-        h2 {
-            display: inline-block;
-            padding: 4px;
-            border-bottom: #91BEF0 3px solid;
-        }
-
-        h3 {
-            display: inline-block;
-            padding: 3px;
-            border-bottom: #91BEF0 3px solid;
-        }
-
-        p {
-            text-align: left;
-            text-indent: 2em;
-        }
-    }
-
-    .tips {
-        margin-top: 36px;
-
-        h2 {
-            display: inline-block;
-            padding: 4px;
-            border-bottom: #91BEF0 3px solid;
-        }
-
-        p {
-            font-size: 16px;
-            line-height: 32px;
-        }
     }
 }
 

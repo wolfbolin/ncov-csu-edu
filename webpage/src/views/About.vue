@@ -42,17 +42,6 @@ export default {
 
 <style lang="scss" scoped>
 .wb-about {
-    text-align: center;
-
-    .logo {
-        margin: 128px 0 64px 0;
-    }
-
-    .alert {
-        width: 60%;
-        margin: 0 auto;
-    }
-
     .userChart {
         width: 100%;
         margin-top: 16px;
@@ -61,21 +50,6 @@ export default {
     .signChart {
         width: 100%;
         margin-top: 16px;
-    }
-
-    .tips {
-        margin-top: 36px;
-
-        h2 {
-            display: inline-block;
-            padding: 4px;
-            border-bottom: #91BEF0 3px solid;
-        }
-
-        p {
-            font-size: 16px;
-            line-height: 32px;
-        }
     }
 }
 </style>

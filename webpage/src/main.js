@@ -7,6 +7,7 @@ import VueAxios from 'vue-axios';
 import {
     Col,
     Row,
+    Tag,
     Form,
     Alert,
     Input,
@@ -25,6 +26,7 @@ import {
 
 Vue.use(Col);
 Vue.use(Row);
+Vue.use(Tag);
 Vue.use(Form);
 Vue.use(Alert);
 Vue.use(Input);
