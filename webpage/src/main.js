@@ -15,6 +15,8 @@ import {
     Table,
     Button,
     Slider,
+    Select,
+    Option,
     TabPane,
     Loading,
     FormItem,
@@ -36,6 +38,8 @@ Vue.use(Input);
 Vue.use(Table);
 Vue.use(Button);
 Vue.use(Slider);
+Vue.use(Select);
+Vue.use(Option);
 Vue.use(TabPane);
 Vue.use(Loading);
 Vue.use(FormItem);

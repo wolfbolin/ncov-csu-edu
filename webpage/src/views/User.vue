@@ -17,9 +17,9 @@
                     </el-col>
                     <el-col :sm="12" :xs="24">
                         <h3>一些问题</h3>
-                        <p>暂不支持当天打卡任务状态查询(会支持的)</p>
-                        <p>暂不支持打卡结果短信推送服务(会支持的)</p>
-                        <p>暂不支持随机打卡任务时间能力(会支持的)</p>
+                        <p>暂不支持当天打卡任务状态查询(会支持的)。</p>
+                        <p>短信通知服务和随机打卡时间服务现已上线。</p>
+                        <p>普通用户退出后再登录，打卡时间不会变化。</p>
                     </el-col>
                 </el-row>
             </div>
@@ -33,6 +33,15 @@
                         <el-form-item label="手机" prop="phone">
                             <el-input v-model="formData.phone" placeholder="用于身份认证"></el-input>
                         </el-form-item>
+                        <el-form-item label="时间" prop="time" style="text-align: left">
+                            <el-select v-model="formData.time" placeholder="打卡时段"
+                                       :disabled="taskInfo.randOpt !== 'Yes'">
+                                <el-option v-for="item in taskTimeGroup" :key="item.value"
+                                    :label="item.label" :value="item.value">
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+                        <el-button type="primary" @click="check_form('mod_task')" plain>修改任务</el-button>
                         <el-button type="success" @click="check_form('get_task')" plain>查询任务</el-button>
                         <el-button type="danger" @click="check_form('del_task')" plain>删除任务</el-button>
                     </el-form>
@@ -95,8 +104,21 @@ export default {
             loading: false,
             formData: {
                 username: "",
-                phone: ""
+                phone: "",
+                time: ""
             },
+            taskTimeGroup: [
+                {value: "00", label: "00:00-00:59"},
+                {value: "01", label: "01:00-01:59"},
+                {value: "02", label: "02:00-02:59"},
+                {value: "03", label: "03:00-03:59"},
+                {value: "04", label: "04:00-04:59"},
+                {value: "05", label: "05:00-05:59"},
+                {value: "06", label: "06:00-06:59"},
+                {value: "07", label: "07:00-07:59"},
+                {value: "08", label: "08:00-08:59"},
+                {value: "09", label: "09:00-09:59"},
+            ],
             taskInfo: {
                 nickname: "",
                 taskTime: "",
@@ -124,6 +146,8 @@ export default {
                         this.user_task();
                     } else if (task === "del_task") {
                         this.user_logout();
+                    } else if (task === "mod_task") {
+                        this.user_modify();
                     }
                 }
             });
@@ -143,6 +167,7 @@ export default {
                     that.loading = false
                     if (res.data.status === "success") {
                         that.taskInfo = res.data.data
+                        that.formData.time = that.taskInfo["taskTime"].split(":")[0]
                     }
                 })
         },
@@ -165,6 +190,35 @@ export default {
                             type: 'success'
                         });
                         that.$router.push("/user");
+                    } else {
+                        that.$message({
+                            message: res.data.message,
+                            type: 'error'
+                        });
+                    }
+                })
+                .catch(function (res) {
+                    that.loading = false;
+                    console.log(res);
+                })
+        },
+        user_modify: function () {
+            this.loading = true;
+            let that = this;
+            let data_host = this.$store.state.host;
+            let http_data = {
+                username: this.formData.username,
+                phone: this.formData.phone,
+                time: this.formData.time
+            }
+            this.$http.put(data_host + `/user/task`, http_data)
+                .then(function (res) {
+                    that.loading = false
+                    if (res.data.status === "success") {
+                        that.$message({
+                            message: res.data.message,
+                            type: 'success'
+                        });
                     } else {
                         that.$message({
                             message: res.data.message,
