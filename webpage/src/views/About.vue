@@ -8,18 +8,18 @@
                 <el-alert title="服务反馈与通知群 1158608406" type="warning" center :closable="false"></el-alert>
             </div>
             <div class="tips">
-<!--                <h2>开发者</h2>-->
-<!--                <p>WolfBolin<br/>-->
-<!--                    可以选择以下方式联系我<br/>-->
-<!--                    我的主页：<a href="https://wolfbolin.com" target="_blank">https://wolfbolin.com</a><br/>-->
-<!--                    我的博客：<a href="https://blog.wolfbolin.com" target="_blank">https://blog.wolfbolin.com</a><br/>-->
-<!--                    我的E-Mail：<a href="mailto:mailto@wolfbolin.com" target="_blank">mailto@wolfbolin.com</a><br/>-->
-<!--                    我的Github：<a href="https://github.com/wolfbolin" target="_blank">WolfBolin Github</a><br/>-->
-<!--                    我的BiliBili：<a href="https://space.bilibili.com/72835041" target="_blank">WolfBolin BiliBili</a>-->
-<!--                </p>-->
-<!--                <h2>项目贡献者</h2>-->
-<!--                <p><a href="https://github.com/kongmoumou" target="_blank">kongmoumou Github</a><br/>-->
-<!--                </p>-->
+                <h2>开发者</h2>
+                <p>WolfBolin<br/>
+                    可以选择以下方式联系我<br/>
+                    我的主页：<a href="https://wolfbolin.com" target="_blank">https://wolfbolin.com</a><br/>
+                    我的博客：<a href="https://blog.wolfbolin.com" target="_blank">https://blog.wolfbolin.com</a><br/>
+                    我的E-Mail：<a href="mailto:mailto@wolfbolin.com" target="_blank">mailto@wolfbolin.com</a><br/>
+                    我的Github：<a href="https://github.com/wolfbolin" target="_blank">WolfBolin Github</a><br/>
+                    我的BiliBili：<a href="https://space.bilibili.com/72835041" target="_blank">WolfBolin BiliBili</a>
+                </p>
+                <h2>项目贡献者</h2>
+                <p><a href="https://github.com/kongmoumou" target="_blank">kongmoumou Github</a><br/>
+                </p>
                 <h2>未完待续</h2>
                 <p>最后更新时间<br/>
                     2020-11-11
@@ -42,17 +42,6 @@ export default {
 
 <style lang="scss" scoped>
 .wb-about {
-    text-align: center;
-
-    .logo {
-        margin: 128px 0 64px 0;
-    }
-
-    .alert {
-        width: 60%;
-        margin: 0 auto;
-    }
-
     .userChart {
         width: 100%;
         margin-top: 16px;
@@ -61,21 +50,6 @@ export default {
     .signChart {
         width: 100%;
         margin-top: 16px;
-    }
-
-    .tips {
-        margin-top: 36px;
-
-        h2 {
-            display: inline-block;
-            padding: 4px;
-            border-bottom: #91BEF0 3px solid;
-        }
-
-        p {
-            font-size: 16px;
-            line-height: 32px;
-        }
     }
 }
 </style>

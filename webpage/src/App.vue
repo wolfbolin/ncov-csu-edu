@@ -46,7 +46,7 @@ export default {
                 {"id": "index", "href": "/", "label": "主页", "class": ""},
                 {"id": "list", "href": "/user", "label": "用户", "class": ""},
                 {"id": "unbind", "href": "/deal", "label": "附加", "class": ""},
-                {"id": "about", "href": "/about", "label": "关于", "class": ""},
+                // {"id": "about", "href": "/about", "label": "关于", "class": ""},
             ],
         }
     },
@@ -65,7 +65,10 @@ export default {
             } else if (window.location.host.indexOf("127.0.0.1") !== -1) {
                 this.$store.commit("setData", {key: "host", val: "http://127.0.0.1:12880/api"})
             } else if (window.location.host.indexOf("192.168") !== -1) {
-                this.$store.commit("setData", {key: "host", val: `http://${window.location.host.split(":")[0]}:12880/api`})
+                this.$store.commit("setData", {
+                    key: "host",
+                    val: `http://${window.location.host.split(":")[0]}:12880/api`
+                })
             } else {
                 this.$store.commit("setData", {key: "host", val: "https://covid19.csu-edu.cn/api"})
             }
@@ -131,13 +134,12 @@ html, body {
         text-decoration: none;
     }
 
-    @media screen and (max-width:650px) {
+    @media screen and (max-width: 650px) {
         .title {
             margin: 14px 8px;
             font-size: 18px;
         }
     }
-
 
 
     .menu {
@@ -195,11 +197,58 @@ html, body {
 
 .wb-view {
     padding-top: 60px;
+    text-align: center;
+
+    .logo {
+        margin: 128px 0 64px 0;
+    }
+
+    .alert {
+        width: 90%;
+        margin: 16px auto;
+    }
+
+    .readme {
+        width: 90%;
+        margin: 0 auto;
+
+        h2 {
+            display: inline-block;
+            padding: 4px;
+            border-bottom: #91BEF0 3px solid;
+        }
+
+        h3 {
+            display: inline-block;
+            padding: 3px;
+            border-bottom: #91BEF0 3px solid;
+        }
+
+        p {
+            text-align: left;
+            text-indent: 2em;
+        }
+    }
+
+    .tips {
+        margin-top: 36px;
+
+        h2 {
+            display: inline-block;
+            padding: 4px;
+            border-bottom: #91BEF0 3px solid;
+        }
+
+        p {
+            font-size: 16px;
+            line-height: 32px;
+        }
+    }
 }
 
 .wb-footer {
     margin-top: 72px;
-    
+
     .copyright {
         margin: 0;
         color: #505050;

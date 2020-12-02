@@ -7,10 +7,6 @@
             <div class="alert">
                 <el-alert title="服务反馈与通知群 1158608406" type="warning" center :closable="false"></el-alert>
             </div>
-            <div class="alert">
-                <el-alert :title="closeInfo" type="error" center
-                          v-if="closeLogin" :closable="false"></el-alert>
-            </div>
             <div class="readme">
                 <h2>使用条款</h2>
                 <el-row :gutter="36">
@@ -59,6 +55,10 @@
                     </el-col>
                 </el-row>
             </div>
+            <div class="alert">
+                <el-alert :title="closeInfo" type="error" center
+                          v-if="closeLogin" :closable="false"></el-alert>
+            </div>
             <el-form class="form" ref="form" label-position="left" label-width="60px"
                      v-loading="loading" :rules="rules" :model="formData">
                 <el-form-item label="账号" prop="username">
@@ -82,13 +82,13 @@
             </el-form>
             <div class="tips">
                 <h2>这是什么？</h2>
-                <p>都啥时候了<br/>
-                    你还在手动打卡吗？<br/>
-                    为了给懒中懒的你一个放松的机会<br/>
-                    自动打卡脚本改写为在线的自动签到服务了<br/>
-                    仅需要账号密码登录一次后<br/>
-                    即可为你每天自动打卡<br/>
-                    再也不用惦记了<br/>
+                <p>懂的都懂<br/>
+                    不懂的我也不解释<br/>
+                    这里水很深，利益牵扯太大<br/>
+                    网上大部分内容都已经删除干净了<br/>
+                    懂的人都是自己悟的<br/>
+                    别不懂装懂<br/>
+                    懂了吗<br/>
                 </p>
                 <h2>这安全吗？</h2>
                 <p>不存储你的密码<br/>
@@ -101,20 +101,13 @@
                     接受安全反馈<br/>
                     <a href="https://github.com/wolfbolin/CSU-COVID19-SIGN" target="_blank">Github</a><br/>
                 </p>
-                <h2>会宕机吗？</h2>
-                <p>理论上会<br/>
-                    但是还没发生过<br/>
-                    自动打卡脚本已经很久了<br/>
-                    一直能稳定运行<br/>
-                    用就完事了
-                </p>
                 <h2>以防万一</h2>
-                <p>由于使用量增加<br/>
+                <p>由于用户量增加<br/>
                     防止突如其来的服务中断<br/>
                     给你本来懒惰的打卡生活增添困扰<br/>
                     所以我建议你加入服务反馈群1158608406<br/>
-                    如果出现奇奇怪怪的问题导致服务中断<br/>
-                    会尽快通知各位自行打卡<br/>
+                    如果出现业务内容的调整与变化<br/>
+                    会尽快通知各位自行调整<br/>
                     @全体成员
                 </p>
             </div>
@@ -217,7 +210,7 @@ export default {
                             message: res.data.message,
                             type: 'success'
                         });
-                        that.$router.push("/list");
+                        that.$router.push("/user");
                     } else {
                         that.$message({
                             message: res.data.message,
@@ -239,17 +232,6 @@ export default {
 
 <style lang="scss" scoped>
 .wb-home {
-    text-align: center;
-
-    .logo {
-        margin: 128px 0 64px 0;
-    }
-
-    .alert {
-        width: 60%;
-        margin: 12px auto;
-    }
-
     .form {
         width: 90%;
         margin-top: 36px;
@@ -259,44 +241,6 @@ export default {
 
     .el-date-editor.el-input {
         width: 100%;
-    }
-
-
-    .readme {
-        width: 80%;
-        margin: 36px auto auto;
-
-        h2 {
-            display: inline-block;
-            padding: 4px;
-            border-bottom: #91BEF0 3px solid;
-        }
-
-        h3 {
-            display: inline-block;
-            padding: 3px;
-            border-bottom: #91BEF0 3px solid;
-        }
-
-        p {
-            text-align: left;
-            text-indent: 2em;
-        }
-    }
-
-    .tips {
-        margin-top: 36px;
-
-        h2 {
-            display: inline-block;
-            padding: 4px;
-            border-bottom: #91BEF0 3px solid;
-        }
-
-        p {
-            font-size: 16px;
-            line-height: 32px;
-        }
     }
 }
 

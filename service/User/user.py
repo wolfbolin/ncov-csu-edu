@@ -87,8 +87,9 @@ def user_login():
 
     # 登录成功写入session
     cursor = conn.cursor()
-    sql = "REPLACE `user`(`cookies`, `username`, `nickname`, `phone`, `time`) " \
-          "VALUES (%s, %s, %s, %s, %s)"
+    sql = "INSERT `user`(`cookies`, `username`, `nickname`, `phone`, `time`) " \
+          "VALUES (%s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE " \
+          "`cookies`=VALUES(`cookies`),`nickname`=VALUES(`nickname`),`phone`=VALUES(`phone`),`online`='Yes'"
     cursor.execute(query=sql, args=[cookies, user_info["username"], user_info["nickname"],
                                     user_info["phone"], Kit.rand_time()])
     conn.commit()
@@ -116,7 +117,7 @@ def user_logout():
     # 检查并删除任务
     conn = app.mysql_pool.connection()
     cursor = conn.cursor()
-    sql = "DELETE FROM `user` WHERE `username`=%s AND `phone`=%s"
+    sql = "UPDATE `user` SET `online`='No',`cookies`='' WHERE `username`=%s AND `phone`=%s"
     cursor.execute(query=sql, args=[user_info["username"], user_info["phone"]])
     conn.commit()
     rowcount = cursor.rowcount
@@ -135,12 +136,12 @@ def user_logout():
 
 
 @user_blue.route('/task', methods=["GET"])
-def user_task():
+def get_task_info():
     # 检查请求数据
     username = request.args.get("username", "").strip()
     phone = request.args.get("phone", "").strip()
 
-    # 检查并删除任务
+    # 检查并获取任务
     conn = app.mysql_pool.connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     sql = "SELECT `nickname`, `time`, `rand`, `sms` FROM `user` WHERE `username`=%s AND `phone`=%s"
@@ -160,6 +161,40 @@ def user_task():
             "randOpt": res["rand"],
             "smsOpt": res["sms"],
         }
+    })
+
+
+@user_blue.route('/task', methods=["PUT"])
+def update_task_info():
+    # 检查请求数据
+    user_info = request.get_data(as_text=True)
+    user_info = json.loads(user_info)
+    if set(user_info.keys()) != {"username", "phone", "time"}:
+        return abort(400)
+
+    task_time = int(user_info["time"])
+    if task_time > 9 or task_time < 0:
+        return jsonify({
+            "status": "error",
+            "message": "时间范围溢出"
+        })
+    task_time = "{:02d}:00".format(task_time)
+
+    # 检查并更新任务
+    conn = app.mysql_pool.connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    sql = "UPDATE `user` SET `time`=%s WHERE `username`=%s AND `phone`=%s AND `rand`='Yes'"
+    cursor.execute(sql, args=[task_time, user_info["username"], user_info["phone"]])
+    if cursor.rowcount == 0:
+        return jsonify({
+            "status": "error",
+            "message": "用户信息错误或没有变化"
+        })
+    conn.commit()
+
+    return jsonify({
+        "status": "success",
+        "message": "任务信息更新成功"
     })
 
 
@@ -252,4 +287,18 @@ def user_count():
         "status": "success",
         "user_data": [user_data_key[::-1], user_data_val[::-1]],
         "sign_data": [sorted(list(sign_range_list)), sorted(list(sign_date_list)), sign_matrix]
+    })
+
+
+@user_blue.route('/donor')
+def donor_user():
+    conn = app.mysql_pool.connection()
+    cursor = conn.cursor()
+    sql = "SELECT `nickname` FROM `user` WHERE `donor`='Yes'"
+    cursor.execute(sql)
+    donor_list = cursor.fetchall()
+    donor_list = [it[0] for it in donor_list]
+    return jsonify({
+        "status": "success",
+        "data": donor_list
     })
