@@ -260,11 +260,11 @@ def user_count():
 def donor_user():
     conn = app.mysql_pool.connection()
     cursor = conn.cursor()
-    sql = "SELECT `nickname` FROM `user` WHERE `donor`='Yes' LIMIT 100"
+    sql = "SELECT `nickname` FROM `user` WHERE `donor`='Yes'"
     cursor.execute(sql)
     donor_list = cursor.fetchall()
     donor_list = [it[0] for it in donor_list]
-    return {
+    return jsonify({
         "status": "success",
         "data": donor_list
-    }
+    })

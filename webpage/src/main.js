@@ -8,12 +8,14 @@ import {
     Col,
     Row,
     Tag,
+    Tabs,
     Form,
     Alert,
     Input,
     Table,
     Button,
     Slider,
+    TabPane,
     Loading,
     FormItem,
     Message,
@@ -27,12 +29,14 @@ import {
 Vue.use(Col);
 Vue.use(Row);
 Vue.use(Tag);
+Vue.use(Tabs);
 Vue.use(Form);
 Vue.use(Alert);
 Vue.use(Input);
 Vue.use(Table);
 Vue.use(Button);
 Vue.use(Slider);
+Vue.use(TabPane);
 Vue.use(Loading);
 Vue.use(FormItem);
 Vue.use(Checkbox);

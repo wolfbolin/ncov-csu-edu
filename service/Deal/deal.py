@@ -77,10 +77,10 @@ def deal_create():
         })
 
     # 创建用户订单
-    url = "http://core.wolfbolin.com/payment/alipay"
+    url = "https://core.wolfbolin.com/payment/alipay"
     data = {
         "app": "csu_sign",
-        "subject": "健康打卡服务费",
+        "subject": "友情赞助",
         "volume": str(volume)
     }
     if app.config["RUN_ENV"] == "develop":
@@ -140,11 +140,85 @@ def trade_query():
             "order_status": order_record["status"]
         })
 
+    order_data = check_order(deal_info["order_str"])
+
+    # 更新数据库状态
+    sql = "UPDATE `order` SET `status`=%s WHERE `order`=%s"
+    cursor.execute(sql, args=[order_data["order_status"], deal_info["order_str"]])
+    conn.commit()
+
+    return jsonify({
+        "status": "success",
+        "order_status": order_data["order_status"]
+    })
+
+
+@deal_blue.route('/order/check')
+def check_user_order():
+    # 获取请求信息
+    user_info = dict(request.args)
+    if user_info is None or set(user_info.keys()) != {"username", "phone"}:
+        return {
+            "status": "error",
+            "message": "请求不完整",
+        }
+
+    # 获取订单信息
+    conn = app.mysql_pool.connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    sql = "SELECT * FROM `order` WHERE `username`=%s AND `phone`=%s"
+    cursor.execute(sql, args=[user_info["username"], user_info["phone"]])
+    order_list = cursor.fetchall()
+
+    # 逐项检查订单
+    for order in order_list:
+        if order["status"] == "CREATE":
+            order_data = check_order(order["order"])
+            order["status"] = order_data["order_status"]
+
+            # 更新本地缓存
+            sql = "UPDATE `order` SET `status`=%s WHERE `order`=%s"
+            cursor.execute(sql, args=[order_data["order_status"], order["order"]])
+            conn.commit()
+
+        if order["status"] == "SUCCESS":
+            # 调整用户功能
+            item_list = json.loads(order["item_list"])
+            for item in item_list:
+                if item == "donation":
+                    sql = "UPDATE `user` SET `donor`='Yes' WHERE `username`=%s"
+                    cursor.execute(sql, args=[order["username"]])
+                if item == "message":
+                    sql = "UPDATE `user` SET `sms`='Yes' WHERE `username`=%s"
+                    cursor.execute(sql, args=[order["username"]])
+                if item == "random":
+                    sql = "UPDATE `user` SET `rand`='Yes' WHERE `username`=%s"
+                    cursor.execute(sql, args=[order["username"]])
+                conn.commit()
+
+    info_list = []
+    for order in order_list:
+        info_list.append({
+            "id": order["order"],
+            "item": json.loads(order["item_list"]),
+            "status": order["status"],
+            "time": Kit.unix2timestamp(Kit.datetime2unix(order["updated_time"])),
+            "created": Kit.datetime2unix(order["created_time"]),
+            "updated": Kit.datetime2unix(order["updated_time"]),
+        })
+
+    return jsonify({
+        "status": "success",
+        "data": info_list
+    })
+
+
+def check_order(order_str):
     # 查询订单状态
-    url = "http://core.wolfbolin.com/payment/alipay"  # Change for pro
+    url = "https://core.wolfbolin.com/payment/alipay"  # Change for pro
     params = {
         "app": "csu_sign",
-        "order_str": deal_info["order_str"]
+        "order_str": order_str
     }
     if app.config["RUN_ENV"] == "develop":
         params["app"] = "test"
@@ -156,13 +230,4 @@ def trade_query():
             "message": "订单状态查询失败",
         })
     res = json.loads(res.text)
-
-    # 更新数据库状态
-    sql = "UPDATE `order` SET `status`=%s WHERE `order`=%s"
-    cursor.execute(sql, args=[res["data"]["order_status"], deal_info["order_str"]])
-    conn.commit()
-
-    return jsonify({
-        "status": "success",
-        "order_status": res["data"]["order_status"]
-    })
+    return res["data"]

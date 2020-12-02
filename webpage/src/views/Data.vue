@@ -8,23 +8,11 @@
                 <el-alert title="服务反馈与通知群 1158608406" type="warning" center :closable="false"></el-alert>
             </div>
             <el-table class="table" stripe
-                      v-loading="loading" :data="tableData">
-                <el-table-column
-                    prop="username"
-                    label="账户">
-                </el-table-column>
-                <el-table-column
-                    prop="nickname"
-                    label="昵称">
-                </el-table-column>
-                <el-table-column
-                    prop="phone"
-                    label="电话">
-                </el-table-column>
-                <el-table-column
-                    prop="time"
-                    label="时间">
-                </el-table-column>
+                      v-loading="loading" :data="dataTable">
+                <el-table-column prop="username" label="账户"></el-table-column>
+                <el-table-column prop="nickname" label="昵称"></el-table-column>
+                <el-table-column prop="phone" label="电话"></el-table-column>
+                <el-table-column prop="time" label="时间"></el-table-column>
             </el-table>
             <el-pagination
                 background
@@ -57,7 +45,7 @@ export default {
             item_num: 0,
             page_now: 1,
             page_size: 25,
-            tableData: [],
+            dataTable: [],
             userChart: null,
             userChartOpt: {},
             userChartKey: [],
@@ -88,7 +76,7 @@ export default {
                         that.item_num = res.data.data["item_num"]
                         that.page_now = res.data.data["page_now"]
                         that.page_size = res.data.data["page_size"]
-                        that.tableData = res.data.data["user_list"]
+                        that.dataTable = res.data.data["user_list"]
                     } else {
                         that.$message({
                             message: res.data.message,

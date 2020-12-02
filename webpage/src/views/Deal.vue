@@ -7,12 +7,17 @@
             <div class="alert">
                 <el-alert title="服务反馈与通知群 1158608406" type="warning" center :closable="false"></el-alert>
             </div>
-            <div class="wb-order">
+            <div class="panel">
+                <el-tabs v-model="activeTab" type="card">
+                    <el-tab-pane label="创建" name="create"></el-tab-pane>
+                    <el-tab-pane label="查询" name="select"></el-tab-pane>
+                </el-tabs>
+            </div>
+            <div class="order" v-if="activeTab === 'create'">
                 <el-row :gutter="20" class="wb-alipay">
                     <el-col :xs="24" :sm="16">
-                        <el-form :model="order" :rules="payRule" ref="payForm"
-                                 label-width="80px" label-position="right"
-                                 class="wb-alipay-form">
+                        <el-form :model="order" :rules="payRule" ref="payForm" label-width="80px"
+                                 label-position="right" class="wb-alipay-form">
                             <el-form-item label="选择功能" style="text-align: left" prop="itemList">
                                 <el-checkbox-group v-model="order.itemList" size="small" @change="choose_change">
                                     <template v-for="item in menu">
@@ -59,8 +64,34 @@
                     </el-col>
                 </el-row>
             </div>
+            <div class="order" v-if="activeTab === 'select'">
+                <el-form :model="order" :rules="payRule" ref="payForm" label-width="80px"
+                         label-position="right" class="wb-alipay-form">
+                    <el-form-item label="用户学号" prop="username">
+                        <el-input type="text" v-model="order.username"></el-input>
+                    </el-form-item>
+                    <el-form-item label="手机号码" prop="phone">
+                        <el-input type="text" v-model="order.phone"></el-input>
+                    </el-form-item>
+                    <el-button type="primary" @click="check_payment">
+                        查询
+                    </el-button>
+                </el-form>
+                <el-table class="table" v-loading="loading" :data="dataTable">
+                    <el-table-column prop="id" label="订单"></el-table-column>
+                    <el-table-column prop="item" label="服务">
+                        <template slot-scope="scope">
+                            <template v-for="item in scope.row.item">
+                                <el-tag :key="item">{{ item }}</el-tag>
+                            </template>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="status" label="状态"></el-table-column>
+                    <el-table-column prop="time" label="时间"></el-table-column>
+                </el-table>
+            </div>
             <div class="readme">
-                <h2>荣誉贡献者</h2>
+                <h2>友情赞助</h2>
                 <div>
                     <template v-for="donor in donor_list">
                         <el-tag :key="donor">{{ donor }}</el-tag>
@@ -92,7 +123,9 @@ export default {
         };
         return {
             timer: null,
+            loading: false,
             itemList: [],
+            activeTab: "create",
             qrcode_image: "",
             order: {
                 itemList: [],
@@ -130,6 +163,7 @@ export default {
                     {min: 0, max: 128, message: "太长了，太长了", trigger: "blur"},
                 ]
             },
+            dataTable: [],
             donor_list: []
         }
     },
@@ -279,6 +313,35 @@ export default {
                 .catch(function (res) {
                     console.log(res)
                 })
+        },
+        check_payment: function () {
+            console.log("Check deal order")
+            let that = this
+            this.loading = true
+            let data_host = this.$store.state.host
+            let http_url = data_host + `/deal/order/check`
+            this.$http.get(http_url, {
+                params: {
+                    phone: this.order.phone,
+                    username: this.order.username
+                }
+            })
+                .then(function (res) {
+                    that.loading = false
+                    if (res.data.status === "success") {
+                        console.log(res.data)
+                        that.dataTable = res.data.data
+                    } else {
+                        that.$message({
+                            message: res.data.message,
+                            type: 'error'
+                        });
+                    }
+                })
+                .catch(function (res) {
+                    that.loading = false
+                    console.log(res)
+                })
         }
     },
     mounted() {
@@ -290,8 +353,13 @@ export default {
 
 <style lang="scss" scoped>
 .wb-unbind {
-    .wb-order {
-        width: 70%;
+    .panel {
+        width: 90%;
+        margin: 16px auto auto;
+    }
+
+    .order {
+        width: 90%;
         margin-top: 32px;
         display: inline-block;
 
@@ -307,12 +375,14 @@ export default {
         }
     }
 
-    .el-tag {
-        height: 48px;
-        padding: 0 20px;
-        line-height: 48px;
-        font-size: 16px;
-        margin: 10px;
+    .readme {
+        .el-tag {
+            height: 48px;
+            padding: 0 20px;
+            line-height: 48px;
+            font-size: 16px;
+            margin: 10px;
+        }
     }
 }
 </style>
