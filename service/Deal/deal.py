@@ -147,6 +147,22 @@ def trade_query():
     cursor.execute(sql, args=[order_data["order_status"], deal_info["order_str"]])
     conn.commit()
 
+    # 调整用户功能
+    if order_data["order_status"] == "SUCCESS":
+        # 调整用户功能
+        item_list = json.loads(order_record["item_list"])
+        for item in item_list:
+            if item == "donation":
+                sql = "UPDATE `user` SET `donor`='Yes' WHERE `username`=%s"
+                cursor.execute(sql, args=[order_record["username"]])
+            if item == "message":
+                sql = "UPDATE `user` SET `sms`='Yes' WHERE `username`=%s"
+                cursor.execute(sql, args=[order_record["username"]])
+            if item == "random":
+                sql = "UPDATE `user` SET `rand`='Yes' WHERE `username`=%s"
+                cursor.execute(sql, args=[order_record["username"]])
+            conn.commit()
+
     return jsonify({
         "status": "success",
         "order_status": order_data["order_status"]
@@ -225,9 +241,8 @@ def check_order(order_str):
 
     res = requests.get(url, params=params)
     if res.status_code != 200:
-        return jsonify({
-            "status": "error",
-            "message": "订单状态查询失败",
-        })
+        return {
+            "order_status": "Unknown",
+        }
     res = json.loads(res.text)
     return res["data"]
