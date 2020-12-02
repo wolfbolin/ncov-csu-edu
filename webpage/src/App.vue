@@ -204,8 +204,8 @@ html, body {
     }
 
     .alert {
-        width: 60%;
-        margin: 0 auto;
+        width: 90%;
+        margin: 16px auto;
     }
 
     .readme {

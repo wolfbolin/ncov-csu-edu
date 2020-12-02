@@ -7,10 +7,6 @@
             <div class="alert">
                 <el-alert title="服务反馈与通知群 1158608406" type="warning" center :closable="false"></el-alert>
             </div>
-            <div class="alert">
-                <el-alert :title="closeInfo" type="error" center
-                          v-if="closeLogin" :closable="false"></el-alert>
-            </div>
             <div class="readme">
                 <h2>使用条款</h2>
                 <el-row :gutter="36">
@@ -58,6 +54,10 @@
                         </p>
                     </el-col>
                 </el-row>
+            </div>
+            <div class="alert">
+                <el-alert :title="closeInfo" type="error" center
+                          v-if="closeLogin" :closable="false"></el-alert>
             </div>
             <el-form class="form" ref="form" label-position="left" label-width="60px"
                      v-loading="loading" :rules="rules" :model="formData">

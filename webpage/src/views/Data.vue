@@ -251,17 +251,6 @@ export default {
 
 <style lang="scss" scoped>
 .wb-data {
-    text-align: center;
-
-    .logo {
-        margin: 128px 0 64px 0;
-    }
-
-    .alert {
-        width: 60%;
-        margin: 0 auto;
-    }
-
     .table {
         width: 90%;
         display: inline-block;
@@ -270,21 +259,6 @@ export default {
 
     .chart {
         margin-top: 36px;
-    }
-
-    .tips {
-        margin-top: 36px;
-
-        h2 {
-            display: inline-block;
-            padding: 4px;
-            border-bottom: #91BEF0 3px solid;
-        }
-
-        p {
-            font-size: 16px;
-            line-height: 32px;
-        }
     }
 }
 </style>

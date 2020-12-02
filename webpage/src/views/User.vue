@@ -9,7 +9,7 @@
             </div>
             <div class="readme">
                 <h2>常见问答</h2>
-                <el-row :gutter="36">
+                <el-row :gutter="16 ">
                     <el-col :sm="12" :xs="24">
                         <h3>关于时间</h3>
                         <p>新用户签到打卡任务将于次日起生效。老用户退出服务将删除当日任务。</p>

@@ -10,8 +10,8 @@ from flask import current_app as app
 
 g_item_index = {
     "donation": "友情捐助",
-    "random_time": "随机时间",
-    "sms_message": "短信通知",
+    "message": "短信通知",
+    "random": "随机时间",
 }
 g_query_key = {"username", "phone", "order_str"}
 g_order_key = {"username", "phone", "donation", "attach", "item_list"}
@@ -214,9 +214,11 @@ def check_user_order():
 
     info_list = []
     for order in order_list:
+        item_list = json.loads(order["item_list"])
+        item_list = [g_item_index[it] for it in item_list]
         info_list.append({
             "id": order["order"],
-            "item": json.loads(order["item_list"]),
+            "item": item_list,
             "status": order["status"],
             "time": Kit.unix2timestamp(Kit.datetime2unix(order["updated_time"])),
             "created": Kit.datetime2unix(order["created_time"]),
