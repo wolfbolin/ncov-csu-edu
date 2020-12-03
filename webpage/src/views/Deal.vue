@@ -243,6 +243,8 @@ export default {
             }
             if (this.order.itemList.indexOf('友情捐助') !== -1) {
                 this.order.volume = volume + this.order.donation
+            }else{
+                this.order.volume = volume
             }
         },
         fetch_volume: function () {
