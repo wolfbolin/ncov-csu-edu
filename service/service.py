@@ -44,7 +44,7 @@ mysql_config = app.config.get('MYSQL')
 app.mysql_pool = PooledDB(creator=pymysql, **mysql_config, **pool_config)
 
 # 初始化异步线程
-app.executor = ThreadPoolExecutor(max_workers=int(app_config["SERVICE"]["workers"]))
+app.executor = ThreadPoolExecutor(max_workers=int(app_config["SERVICE"]["signer"]))
 
 # 初始化路由
 from User import user_blue
