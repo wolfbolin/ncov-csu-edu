@@ -169,18 +169,6 @@ export default {
     components: {vueQr},
     name: "Unbind",
     data() {
-        let checkPhone = (rule, value, callback) => {
-            if (!value) {
-                return callback(new Error('请输入登录手机号'));
-            } else {
-                const reg = /^1[3|4|5|7|8][0-9]\d{8}$/
-                if (reg.test(value)) {
-                    return callback();
-                } else {
-                    return callback(new Error('请输入登录手机号'));
-                }
-            }
-        };
         return {
             timer: null,
             loading: false,
@@ -213,7 +201,7 @@ export default {
                 ],
                 phone: [
                     {required: true, message: "请输入登录手机号", trigger: "blur"},
-                    {validator: checkPhone, trigger: "blur"}
+                    {min: 11, max: 11, message: '长度应为 11 个数字', trigger: 'blur'}
                 ],
                 username: [
                     {required: true, message: "请输入登录用户学号", trigger: "blur"},
