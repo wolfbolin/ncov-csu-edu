@@ -117,7 +117,7 @@ def user_logout():
     # 检查并删除任务
     conn = app.mysql_pool.connection()
     cursor = conn.cursor()
-    sql = "UPDATE `user` SET `online`='No',`cookies`='' WHERE `username`=%s AND `phone`=%s"
+    sql = "UPDATE `user` SET `online`='No',`cookies`='' WHERE `username`=%s AND `phone`=%s AND `online`='Yes'"
     cursor.execute(query=sql, args=[user_info["username"], user_info["phone"]])
     conn.commit()
     rowcount = cursor.rowcount
@@ -144,7 +144,7 @@ def get_task_info():
     # 检查并获取任务
     conn = app.mysql_pool.connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
-    sql = "SELECT `nickname`, `time`, `rand`, `sms` FROM `user` WHERE `username`=%s AND `phone`=%s"
+    sql = "SELECT `nickname`, `time`, `rand`, `sms` FROM `user` WHERE `username`=%s AND `phone`=%s AND `online`='Yes'"
     cursor.execute(sql, args=[username, phone])
     res = cursor.fetchone()
     if res is None:
@@ -183,7 +183,7 @@ def update_task_info():
     # 检查并更新任务
     conn = app.mysql_pool.connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
-    sql = "UPDATE `user` SET `time`=%s WHERE `username`=%s AND `phone`=%s AND `rand`='Yes'"
+    sql = "UPDATE `user` SET `time`=%s WHERE `username`=%s AND `phone`=%s AND `online`='Yes' AND `rand`='Yes'"
     cursor.execute(sql, args=[task_time, user_info["username"], user_info["phone"]])
     if cursor.rowcount == 0:
         return jsonify({

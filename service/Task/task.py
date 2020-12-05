@@ -172,7 +172,7 @@ def check_count():
     sql = "SELECT * FROM `log` WHERE `time` BETWEEN %s AND %s "
     cursor.execute(query=sql, args=[last_hour, now_hour])
     log_data = cursor.fetchall()
-    sql = "SELECT COUNT(*) as user_num FROM `user`"
+    sql = "SELECT COUNT(*) as user_num FROM `user` WHERE `online`='Yes'"
     cursor.execute(query=sql)
     user_num = int(cursor.fetchone()["user_num"])
 

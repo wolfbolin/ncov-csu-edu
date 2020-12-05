@@ -68,7 +68,7 @@ def deal_create():
             volume += int(app.config["MENU"][item])
 
     # 检查交易用户
-    sql = "SELECT * FROM `user` WHERE `username`=%s AND `phone`=%s"
+    sql = "SELECT * FROM `user` WHERE `username`=%s AND `phone`=%s AND `online`='Yes'"
     cursor.execute(sql, args=[deal_info["username"], deal_info["phone"]])
     user_info = cursor.fetchone()
     if user_info is None:
