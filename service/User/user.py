@@ -207,10 +207,10 @@ def user_list():
     # 读取数据库数据
     conn = app.mysql_pool.connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
-    sql = "SELECT COUNT(*) as num FROM `user`"
+    sql = "SELECT COUNT(*) as num FROM `user` WHERE `online`='Yes'"
     cursor.execute(query=sql)
     item_num = cursor.fetchone()["num"]
-    sql = "SELECT `username`, `nickname`, `phone`, `time` FROM `user` LIMIT %s OFFSET %s"
+    sql = "SELECT `username`, `nickname`, `phone`, `time` FROM `user` WHERE `online`='Yes' LIMIT %s OFFSET %s"
     cursor.execute(query=sql, args=[page_size, page_now - 1])
     result = []
     for item in cursor.fetchall():
