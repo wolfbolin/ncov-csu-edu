@@ -76,7 +76,7 @@ def user_clock(config, user_info, sms_token):
             conn.commit()
 
         if user_info["sms"] == "Yes":
-            Kit.send_sms_message(sms_token, user_info["nickname"], user_info["phone"], str(data))
+            Kit.send_sms_message(sms_token, user_info["nickname"], user_info["phone"], (status, data, run_err))
 
         # 任务完成
         Kit.write_log(conn, 'user_check', user_info["username"], status, data, run_err)
