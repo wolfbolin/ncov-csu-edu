@@ -109,47 +109,13 @@ def check_list(check_time=None):
             cursor.execute(sql, args=["logout", Kit.str_time("%H:%M:%S"), user_info["username"]])
             conn.commit()
             continue
-        app.executor.submit(user_sign_in, app.config, user_info, app.config["BASE"]["sms_token"])
+        app.executor.submit(Kit.user_clock, app.config, user_info, app.config["BASE"]["sms_token"])
     app.logger.info("Check point {} with {} task".format(time_now, len(user_task_list)))
 
     return jsonify({
         "status": "success",
         "message": "Check time: {}".format(time_now)
     })
-
-
-def user_sign_in(config, user_info, sms_token):
-    # 连接数据库
-    try:
-        # 连接数据库
-        conn = pymysql.connect(**config['MYSQL'])
-        cursor = conn.cursor()
-        # 初始化连接
-        session = requests.Session()
-        cookies = json.loads(user_info["cookies"])
-        cookies_jar = requests.utils.cookiejar_from_dict(cookies)
-        session.cookies = cookies_jar
-        # 执行签到
-        status, data, run_err = Kit.user_clock(session)
-        # 检查更新
-        session_cookies = session.cookies.get_dict()
-        if session_cookies != cookies and len(session_cookies.keys()) != 0:
-            Kit.print_blue("User {} cookies update".format(user_info["username"]))
-            new_cookies = json.dumps(session_cookies)
-            sql = "UPDATE `user` SET `cookies` = %s WHERE `username` = %s"
-            cursor.execute(query=sql, args=[new_cookies, user_info["username"]])
-            conn.commit()
-
-        if user_info["sms"] == "Yes":
-            Kit.send_sms_message(sms_token, user_info["nickname"], user_info["phone"], str(data))
-
-        # 任务完成
-        Kit.write_log(conn, 'user_check', user_info["username"], status, data, run_err)
-        sql = "UPDATE `task` SET `status`=%s, `sign_time`=%s WHERE `username`=%s AND `date` = CURDATE()"
-        cursor.execute(sql, args=["success" if status else "error", Kit.str_time("%H:%M:%S"), user_info["username"]])
-        conn.commit()
-    except BaseException as e:
-        Kit.print_red(e)
 
 
 @task_blue.route('/count')
