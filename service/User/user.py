@@ -117,7 +117,7 @@ def user_logout():
     # 检查并删除任务
     conn = app.mysql_pool.connection()
     cursor = conn.cursor()
-    sql = "UPDATE `user` SET `online`='No',`cookies`='' WHERE `username`=%s AND `phone`=%s"
+    sql = "UPDATE `user` SET `online`='No',`cookies`='' WHERE `username`=%s AND `phone`=%s AND `online`='Yes'"
     cursor.execute(query=sql, args=[user_info["username"], user_info["phone"]])
     conn.commit()
     rowcount = cursor.rowcount
@@ -144,7 +144,7 @@ def get_task_info():
     # 检查并获取任务
     conn = app.mysql_pool.connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
-    sql = "SELECT `nickname`, `time`, `rand`, `sms` FROM `user` WHERE `username`=%s AND `phone`=%s"
+    sql = "SELECT `nickname`, `time`, `rand`, `sms` FROM `user` WHERE `username`=%s AND `phone`=%s AND `online`='Yes'"
     cursor.execute(sql, args=[username, phone])
     res = cursor.fetchone()
     if res is None:
@@ -183,7 +183,7 @@ def update_task_info():
     # 检查并更新任务
     conn = app.mysql_pool.connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
-    sql = "UPDATE `user` SET `time`=%s WHERE `username`=%s AND `phone`=%s AND `rand`='Yes'"
+    sql = "UPDATE `user` SET `time`=%s WHERE `username`=%s AND `phone`=%s AND `online`='Yes' AND `rand`='Yes'"
     cursor.execute(sql, args=[task_time, user_info["username"], user_info["phone"]])
     if cursor.rowcount == 0:
         return jsonify({
@@ -207,10 +207,10 @@ def user_list():
     # 读取数据库数据
     conn = app.mysql_pool.connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
-    sql = "SELECT COUNT(*) as num FROM `user`"
+    sql = "SELECT COUNT(*) as num FROM `user` WHERE `online`='Yes'"
     cursor.execute(query=sql)
     item_num = cursor.fetchone()["num"]
-    sql = "SELECT `username`, `nickname`, `phone`, `time` FROM `user` LIMIT %s OFFSET %s"
+    sql = "SELECT `username`, `nickname`, `phone`, `time` FROM `user` WHERE `online`='Yes' LIMIT %s OFFSET %s"
     cursor.execute(query=sql, args=[page_size, page_now - 1])
     result = []
     for item in cursor.fetchall():

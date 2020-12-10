@@ -12,7 +12,7 @@
                 <el-row :gutter="16 ">
                     <el-col :sm="12" :xs="24">
                         <h3>关于时间</h3>
-                        <p>新用户签到打卡任务将于次日起生效。老用户退出服务将删除当日任务。</p>
+                        <p>新用户签到打卡任务将于次日起生效。老用户退出服务将移除包括当日在内的打卡任务。</p>
                         <p>新登录用户的签到打卡时间将根据负载自动指派，不支持用户手动修改。</p>
                     </el-col>
                     <el-col :sm="12" :xs="24">
@@ -41,7 +41,8 @@
                                 </el-option>
                             </el-select>
                         </el-form-item>
-                        <el-button type="primary" @click="check_form('mod_task')" plain>修改任务</el-button>
+                        <el-button type="primary" @click="check_form('mod_task')"
+                                   plain v-if="taskInfo.randOpt === 'Yes'">修改任务</el-button>
                         <el-button type="success" @click="check_form('get_task')" plain>查询任务</el-button>
                         <el-button type="danger" @click="check_form('del_task')" plain>删除任务</el-button>
                     </el-form>

@@ -3,6 +3,7 @@ import Kit
 import json
 import pymysql
 import requests
+from flask import abort
 from flask import jsonify
 from flask import request
 from Deal import deal_blue
@@ -67,7 +68,7 @@ def deal_create():
             volume += int(app.config["MENU"][item])
 
     # 检查交易用户
-    sql = "SELECT * FROM `user` WHERE `username`=%s AND `phone`=%s"
+    sql = "SELECT * FROM `user` WHERE `username`=%s AND `phone`=%s AND `online`='Yes'"
     cursor.execute(sql, args=[deal_info["username"], deal_info["phone"]])
     user_info = cursor.fetchone()
     if user_info is None:
@@ -186,9 +187,56 @@ def check_user_order():
     cursor.execute(sql, args=[user_info["username"], user_info["phone"]])
     order_list = cursor.fetchall()
 
+    # 检查用户订单
+    check_order_list(conn, order_list)
+
+    info_list = []
+    for order in order_list:
+        item_list = json.loads(order["item_list"])
+        item_list = [g_item_index[it] for it in item_list]
+        info_list.append({
+            "id": order["order"],
+            "item": item_list,
+            "status": order["status"],
+            "time": Kit.unix2timestamp(Kit.datetime2unix(order["updated_time"])),
+            "created": Kit.datetime2unix(order["created_time"]),
+            "updated": Kit.datetime2unix(order["updated_time"]),
+        })
+
+    return jsonify({
+        "status": "success",
+        "data": info_list
+    })
+
+
+@deal_blue.route('/order/review')
+def check_current_order():
+    # 本地数据校验
+    client_ip = request.headers.get("X-Real-IP", "0.0.0.0")
+    if client_ip != "127.0.0.1":
+        return abort(400, "Reject IP:{}".format(client_ip))
+
+    # 获取订单信息
+    conn = app.mysql_pool.connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    sql = "SELECT * FROM `order` WHERE `updated_time` > SUBDATE(now(), interval 30 minute)"
+    cursor.execute(sql)
+    order_list = cursor.fetchall()
+
+    # 检查用户订单
+    check_order_list(conn, order_list)
+
+    return jsonify({
+        "status": "success",
+        "message": "Check {} orders".format(len(order_list))
+    })
+
+
+def check_order_list(conn, order_list):
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
     # 逐项检查订单
     for order in order_list:
-        if order["status"] == "CREATE":
+        if order["status"] not in ("CLOSE", "SUCCESS", "FINISH"):
             order_data = check_order(order["order"])
             order["status"] = order_data["order_status"]
 
@@ -211,24 +259,6 @@ def check_user_order():
                     sql = "UPDATE `user` SET `rand`='Yes' WHERE `username`=%s"
                     cursor.execute(sql, args=[order["username"]])
                 conn.commit()
-
-    info_list = []
-    for order in order_list:
-        item_list = json.loads(order["item_list"])
-        item_list = [g_item_index[it] for it in item_list]
-        info_list.append({
-            "id": order["order"],
-            "item": item_list,
-            "status": order["status"],
-            "time": Kit.unix2timestamp(Kit.datetime2unix(order["updated_time"])),
-            "created": Kit.datetime2unix(order["created_time"]),
-            "updated": Kit.datetime2unix(order["updated_time"]),
-        })
-
-    return jsonify({
-        "status": "success",
-        "data": info_list
-    })
 
 
 def check_order(order_str):
