@@ -212,7 +212,8 @@ def user_sign():
     sql = "SELECT * FROM `user` WHERE `username`=%s AND `phone`=%s AND `online`='Yes'"
     cursor.execute(sql, args=[user_info["username"], user_info["phone"]])
     user_info = cursor.fetchone()
-    app.executor.submit(Kit.user_clock, app.config, user_info, app.config["BASE"]["sms_token"])
+    risk_area = Kit.get_risk_area(conn)
+    app.executor.submit(Kit.user_clock, app.config, user_info, risk_area)
 
     return jsonify({
         "status": "success",

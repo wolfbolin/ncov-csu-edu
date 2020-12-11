@@ -78,16 +78,16 @@ def rand_time():
 
 def send_sms_message(sms_token, user_name, user_phone, result):
     # 位置信息
-    if result[0]:
+    if result[0] or str(result[1]).startswith("自动终止"):
         location = json.loads(result[2])
-        location = location["city"]
+        location = "{}-{}".format(location["province"], location["city"])
     else:
         location = "暂无"
 
     url = "https://core.wolfbolin.com/message/sms/send/%s" % user_phone
     data = {
         "phone": user_phone,
-        "template": 804354,
+        "template": 805977,
         "params": [
             user_name,
             str_time("%H:%M"),

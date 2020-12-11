@@ -53,7 +53,7 @@ def user_login(username, password):
     return True, session, "success"
 
 
-def user_clock(config, user_info, sms_token):
+def user_clock(config, user_info, risk_area):
     # 连接数据库
     try:
         # 连接数据库
@@ -65,7 +65,7 @@ def user_clock(config, user_info, sms_token):
         cookies_jar = requests.utils.cookiejar_from_dict(cookies)
         session.cookies = cookies_jar
         # 执行签到
-        status, data, run_err = user_sign_in(session)
+        status, data, run_err = user_sign_in(session, risk_area)
         # 检查更新
         session_cookies = session.cookies.get_dict()
         if session_cookies != cookies and len(session_cookies.keys()) != 0:
@@ -76,7 +76,8 @@ def user_clock(config, user_info, sms_token):
             conn.commit()
 
         if user_info["sms"] == "Yes":
-            Kit.send_sms_message(sms_token, user_info["nickname"], user_info["phone"], (status, data, run_err))
+            Kit.send_sms_message(config["BASE"]["sms_token"], user_info["nickname"],
+                                 user_info["phone"], (status, data, run_err))
 
         # 任务完成
         Kit.write_log(conn, 'user_check', user_info["username"], status, data, run_err)
@@ -87,7 +88,7 @@ def user_clock(config, user_info, sms_token):
         Kit.print_red(e)
 
 
-def user_sign_in(session):
+def user_sign_in(session, risk_area):
     # 获取历史数据
     url = "https://wxxy.csu.edu.cn/ncov/wap/default/index"
     try:
@@ -141,6 +142,12 @@ def user_sign_in(session):
         "district": api_data["addressComponent"]["district"],
         "township": api_data["addressComponent"]["township"]
     }
+
+    # 检查打卡位置
+    risk_data = risk_area.get(location["province"], {})
+    risk_data = risk_data.get(location["city"], None)
+    if risk_data is not None:
+        return False, "自动终止({})".format(risk_data), json.dumps(location, ensure_ascii=False)
 
     # 重发数据完成签到
     url = "https://wxxy.csu.edu.cn/ncov/wap/default/save"

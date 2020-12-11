@@ -109,7 +109,8 @@ def check_list(check_time=None):
             cursor.execute(sql, args=["logout", Kit.str_time("%H:%M:%S"), user_info["username"]])
             conn.commit()
             continue
-        app.executor.submit(Kit.user_clock, app.config, user_info, app.config["BASE"]["sms_token"])
+        risk_area = Kit.get_risk_area(conn)
+        app.executor.submit(Kit.user_clock, app.config, user_info, risk_area)
     app.logger.info("Check point {} with {} task".format(time_now, len(user_task_list)))
 
     return jsonify({
