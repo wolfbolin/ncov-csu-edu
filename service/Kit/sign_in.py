@@ -139,6 +139,7 @@ def user_sign_in(session):
         "province": api_data["addressComponent"]["province"],
         "city": api_data["addressComponent"]["city"],
         "district": api_data["addressComponent"]["district"],
+        "township": api_data["addressComponent"]["township"]
     }
 
     # 重发数据完成签到

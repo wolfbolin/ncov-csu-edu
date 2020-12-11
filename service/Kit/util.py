@@ -80,17 +80,16 @@ def send_sms_message(sms_token, user_name, user_phone, result):
     # 位置信息
     if result[0]:
         location = json.loads(result[2])
-        location = "{}-{}".format(location["province"], location["city"])
+        location = location["city"]
     else:
         location = "暂无"
 
     url = "https://core.wolfbolin.com/message/sms/send/%s" % user_phone
     data = {
         "phone": user_phone,
-        "template": 803972,
+        "template": 804354,
         "params": [
             user_name,
-            "COVID19",
             str_time("%H:%M"),
             str(result[1]),
             location
