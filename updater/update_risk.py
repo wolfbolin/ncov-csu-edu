@@ -93,7 +93,7 @@ def get_region_info(browser, conn, cache_data):
                 province_item.click()
                 time.sleep(16 / update_rate)
                 break
-            except selenium.common.exceptions:
+            except selenium.common.exceptions.WebDriverException:
                 print("[WARN]", "Open province [{}] error, retrying".format(province))
                 time.sleep(16 / update_rate)
         print("[INFO]", "Open path:", province)
@@ -115,7 +115,7 @@ def get_region_info(browser, conn, cache_data):
                     city_item.click()
                     time.sleep(16 / update_rate)
                     break
-                except selenium.common.exceptions:
+                except selenium.common.exceptions.WebDriverException:
                     print("[WARN]", "Open city [{}] error, retrying".format(city))
                     time.sleep(16 / update_rate)
             print("[INFO]", "Open path:", province, city)
@@ -140,7 +140,7 @@ def get_region_info(browser, conn, cache_data):
                         block_item.click()
                         time.sleep(16 / update_rate)
                         break
-                    except selenium.common.exceptions:
+                    except selenium.common.exceptions.WebDriverException:
                         print("[WARN]", "Open block [{}] error, retrying".format(block))
                         time.sleep(16 / update_rate)
                 print("[INFO]", "Open path:", province, city, block)
@@ -148,7 +148,7 @@ def get_region_info(browser, conn, cache_data):
                 # 获取风险等级
                 try:
                     block_risk = browser.find_element_by_class_name("level-result").text
-                except selenium.common.exceptions.NoSuchElementException:
+                except selenium.common.exceptions.WebDriverException:
                     block_risk = "Unknown"
                     level_dom = browser.find_element_by_class_name("risk-table")
                     level_dom = level_dom.find_element_by_tag_name("tbody")
