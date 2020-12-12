@@ -7,7 +7,6 @@ import time
 import Config
 import pymysql
 import selenium
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common import exceptions as web_exceptions
 from selenium.webdriver.support.wait import WebDriverWait
@@ -25,7 +24,10 @@ risk_name = dict(zip(risk_rank.values(), risk_rank.keys()))
 
 def main():
     cache_path = "./cache"
-    Kit.env_check(cache_path)
+    os.makedirs(cache_path, exist_ok=True)
+    if Kit.env_check(cache_path) is False:
+        print("[ERR]", "Chrome driver run environment not found")
+        exit(1)
 
     # MySQL Connect
     config = Config.get_config()
@@ -64,10 +66,7 @@ def main():
 
 def open_website(driver_path):
     print("[INFO]", "Opening website")
-    driver_path = os.path.abspath(driver_path) + "/chromedriver.exe"
-    option = webdriver.ChromeOptions()
-    option.add_argument('headless') # 后台运行
-    browser = webdriver.Chrome(driver_path, options=option)
+    browser = Kit.run_browser(driver_path)
     browser.implicitly_wait(10)
     browser.get("http://bmfw.www.gov.cn/yqfxdjcx/index.html")
 
@@ -183,5 +182,3 @@ def risk_cmp(risk1, risk2):
 
 if __name__ == '__main__':
     main()
-
-
