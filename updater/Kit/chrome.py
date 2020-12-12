@@ -37,8 +37,18 @@ def env_check(cache_path):
         print("[INFO]", "Please install chrome browser")
         return False
 
-    if not version_re.findall(chrome_version)[0].startswith(driver_version):
+    if driver_version == "0":
+        # Download driver
+        print("[INFO]", "Download chrome driver")
         return download_driver(chrome_version, cache_path)
+
+    if version_re.findall(chrome_version)[0] != version_re.findall(driver_version)[0]:
+        # Update driver
+        print("[INFO]", "Update chrome driver")
+        return download_driver(chrome_version, cache_path)
+
+    print("[INFO]", "Chrome driver check pass")
+    return True  # Check success
 
 
 def get_chrome_version():
@@ -49,10 +59,10 @@ def get_chrome_version():
             key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Google\Chrome\BLBeacon")
             version, _ = winreg.QueryValueEx(key, "version")
 
-            print("[INFO]", "Current Chrome Version: {}".format(version))  # 这步打印会在命令行窗口显示
+            print("[INFO]", "Current chrome Version: {}".format(version))  # 这步打印会在命令行窗口显示
             return version
         except WindowsError as e:
-            print("[INFO]", "Check Chrome failed:{}".format(e))
+            print("[INFO]", "Check chrome failed:{}".format(e))
             return "0"
     else:
         try:
@@ -60,10 +70,10 @@ def get_chrome_version():
             out, err = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
             out = out.decode("utf-8")
             version = out.split(" ")[2]  # 拆分回显字符串，获取版本号
-            print("[INFO]", "Current Chrome Version:{}".format(version))
+            print("[INFO]", "Current chrome Version:{}".format(version))
             return version
         except WindowsError as e:
-            print("[INFO]", "Check Chrome failed:{}".format(e))
+            print("[INFO]", "Check chrome failed:{}".format(e))
             return "0"
 
 
@@ -76,22 +86,22 @@ def get_driver_version(driver_path):
             out, err = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
             out = out.decode("utf-8")
             version = out.split(" ")[1]  # 拆分回显字符串，获取版本号
-            print("[INFO]", "Current chrome driver Version:{}".format(version))
+            print("[INFO]", "Current driver Version:{}".format(version))
             return version
         except IndexError as e:
-            print("[INFO]", "Check chrome driver failed:{}".format(e))
+            print("[INFO]", "Check driver failed:{}".format(e))
             return "0"
     else:
         try:
             # 执行cmd命令并接收命令回显
-            cmd = r"chromedriver --version".format(driver_path)
+            cmd = r"{}/chromedriver --version".format(driver_path)
             out, err = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
             out = out.decode("utf-8")
             version = out.split(" ")[1]  # 拆分回显字符串，获取版本号
-            print("[INFO]", "Current chrome driver Version:{}".format(version))
+            print("[INFO]", "Current driver Version:{}".format(version))
             return version
         except IndexError as e:
-            print("[INFO]", "Check chrome driver failed:{}".format(e))
+            print("[INFO]", "Check driver failed:{}".format(e))
             return "0"
 
 
