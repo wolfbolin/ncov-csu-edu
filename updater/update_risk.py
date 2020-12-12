@@ -96,7 +96,7 @@ def get_region_info(browser, conn, cache_data):
             except selenium.common.exceptions:
                 print("[WARN]", "Open province [{}] error, retrying".format(province))
                 time.sleep(16 / update_rate)
-        print("[INFO]", "Open province:", province)
+        print("[INFO]", "Open path:", province)
         region_data[province] = dict()
 
         # 遍历城市列表
@@ -118,7 +118,7 @@ def get_region_info(browser, conn, cache_data):
                 except selenium.common.exceptions:
                     print("[WARN]", "Open city [{}] error, retrying".format(city))
                     time.sleep(16 / update_rate)
-            print("[INFO]", "Open city:", city)
+            print("[INFO]", "Open path:", province, city)
             region_data[province][city] = dict()
 
             # 遍历街道列表
@@ -143,7 +143,7 @@ def get_region_info(browser, conn, cache_data):
                     except selenium.common.exceptions:
                         print("[WARN]", "Open block [{}] error, retrying".format(block))
                         time.sleep(16 / update_rate)
-                print("[INFO]", "Open block:", block)
+                print("[INFO]", "Open path:", province, city, block)
 
                 # 获取风险等级
                 try:
