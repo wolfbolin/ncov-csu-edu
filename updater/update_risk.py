@@ -20,6 +20,7 @@ risk_rank = {
     "高风险地区": 3,
 }
 risk_name = dict(zip(risk_rank.values(), risk_rank.keys()))
+update_rate = 8
 
 
 def main():
@@ -95,7 +96,7 @@ def get_region_info(browser, conn, cache_data):
 
         try:
             province_item.click()
-            time.sleep(1.5)
+            time.sleep(16 / update_rate)
         except selenium.common.exceptions.ElementNotInteractableException:
             time.sleep(1)
             province_item.click()
@@ -115,7 +116,7 @@ def get_region_info(browser, conn, cache_data):
 
             try:
                 city_item.click()
-                time.sleep(1.5)
+                time.sleep(16 / update_rate)
             except selenium.common.exceptions.ElementNotInteractableException:
                 time.sleep(1)
                 city_item.click()
@@ -138,7 +139,7 @@ def get_region_info(browser, conn, cache_data):
 
                 try:
                     block_item.click()
-                    time.sleep(1.5)
+                    time.sleep(16 / update_rate)
                 except selenium.common.exceptions.ElementNotInteractableException:
                     time.sleep(1)
                     block_item.click()
