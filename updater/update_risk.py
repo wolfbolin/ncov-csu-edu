@@ -20,7 +20,7 @@ risk_rank = {
     "高风险地区": 3,
 }
 risk_name = dict(zip(risk_rank.values(), risk_rank.keys()))
-update_rate = 8
+update_rate = 16
 
 
 def main():
@@ -51,13 +51,7 @@ def main():
 
     # Get data
     browser = open_website(cache_path)
-    try:
-        region_data = get_region_info(browser, conn, cache_data)
-    except BaseException as e:
-        print("[ERR]", e)
-        region_data = ""
-    finally:
-        browser.close()
+    region_data = get_region_info(browser, conn, cache_data)
 
     # File
     if region_data != "":
@@ -94,12 +88,14 @@ def get_region_info(browser, conn, cache_data):
         if province in ["香港", "澳门", "台湾"]:
             continue
 
-        try:
-            province_item.click()
-            time.sleep(16 / update_rate)
-        except selenium.common.exceptions.ElementNotInteractableException:
-            time.sleep(1)
-            province_item.click()
+        for _ in range(3):
+            try:
+                province_item.click()
+                time.sleep(16 / update_rate)
+                break
+            except selenium.common.exceptions:
+                print("[WARN]", "Open province [{}] error, retrying".format(province))
+                time.sleep(16 / update_rate)
         print("[INFO]", "Open province:", province)
         region_data[province] = dict()
 
@@ -114,12 +110,14 @@ def get_region_info(browser, conn, cache_data):
             if city in ["东沙群岛"]:
                 continue
 
-            try:
-                city_item.click()
-                time.sleep(16 / update_rate)
-            except selenium.common.exceptions.ElementNotInteractableException:
-                time.sleep(1)
-                city_item.click()
+            for _ in range(3):
+                try:
+                    city_item.click()
+                    time.sleep(16 / update_rate)
+                    break
+                except selenium.common.exceptions:
+                    print("[WARN]", "Open city [{}] error, retrying".format(city))
+                    time.sleep(16 / update_rate)
             print("[INFO]", "Open city:", city)
             region_data[province][city] = dict()
 
@@ -137,12 +135,14 @@ def get_region_info(browser, conn, cache_data):
                     region_data[province][city][block] = cache
                     continue
 
-                try:
-                    block_item.click()
-                    time.sleep(16 / update_rate)
-                except selenium.common.exceptions.ElementNotInteractableException:
-                    time.sleep(1)
-                    block_item.click()
+                for _ in range(3):
+                    try:
+                        block_item.click()
+                        time.sleep(16 / update_rate)
+                        break
+                    except selenium.common.exceptions:
+                        print("[WARN]", "Open block [{}] error, retrying".format(block))
+                        time.sleep(16 / update_rate)
                 print("[INFO]", "Open block:", block)
 
                 # 获取风险等级
