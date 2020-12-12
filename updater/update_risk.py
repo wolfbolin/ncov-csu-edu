@@ -61,7 +61,7 @@ def main():
 
     # File
     if region_data != "":
-        with open("risk_data.json", "w", encoding="utf-8") as file:
+        with open("{}/risk_data.json".format(cache_path), "w", encoding="utf-8") as file:
             file.write(json.dumps(region_data, ensure_ascii=False))
 
 
