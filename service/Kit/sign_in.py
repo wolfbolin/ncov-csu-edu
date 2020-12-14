@@ -126,9 +126,9 @@ def user_sign_in(session, risk_area):
     api_data = json.loads(api_string)
     sign_data["geo_api_info"] = str(api_string)
     sign_data["address"] = api_data["formattedAddress"]
-    sign_data["area"] = api_data["addressComponent"]["province"] \
-                        + api_data["addressComponent"]["city"] \
-                        + api_data["addressComponent"]["district"]
+    sign_data["area"] = "{} {} {}".format(api_data["addressComponent"]["province"],
+                                          api_data["addressComponent"]["city"],
+                                          api_data["addressComponent"]["district"])
     sign_data["province"] = api_data["addressComponent"]["province"]
     sign_data["city"] = api_data["addressComponent"]["city"]
     if sign_data["province"] in ('北京市', '上海市', '重庆市', '天津市'):
