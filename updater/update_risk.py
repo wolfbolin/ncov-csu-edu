@@ -28,7 +28,7 @@ def main():
     os.makedirs(cache_path, exist_ok=True)
     if Kit.env_check(cache_path) is False:
         print("[ERR]", "Chrome driver run environment not found")
-        exit(1)
+        return exit(1)
 
     # MySQL Connect
     config = Config.get_config()
@@ -81,21 +81,25 @@ def get_region_info(browser, conn, cache_data):
     province_dom = browser.find_element_by_class_name("province")
     province_num = len(province_dom.find_elements_by_tag_name("li"))
     for province_index in range(province_num):
-        province_list = province_dom.find_elements_by_tag_name("li")
-        province_item = province_list[province_index]
-        province = province_item.text
-
-        if province in ["香港", "澳门", "台湾"]:
-            continue
-
-        for _ in range(3):
+        province = ""
+        for k in range(5):
             try:
+                province_list = province_dom.find_elements_by_tag_name("li")
+                province_item = province_list[province_index]
+                province = province_item.text
                 province_item.click()
                 time.sleep(16 / update_rate)
                 break
             except selenium.common.exceptions.WebDriverException:
+                province_dom = browser.find_element_by_class_name("province")
                 print("[WARN]", "Open province [{}] error, retrying".format(province))
                 time.sleep(16 / update_rate)
+            if k < 4:
+                continue
+            raise ConnectionError("Run time error")
+
+        if province in ["香港", "澳门", "台湾"]:
+            continue
         print("[INFO]", "Open path:", province)
         region_data[province] = dict()
 
@@ -103,21 +107,25 @@ def get_region_info(browser, conn, cache_data):
         city_dom = browser.find_element_by_class_name("city")
         city_num = len(city_dom.find_elements_by_tag_name("li"))
         for city_index in range(city_num):
-            city_list = city_dom.find_elements_by_tag_name("li")
-            city_item = city_list[city_index]
-            city = city_item.text
-
-            if city in ["东沙群岛"]:
-                continue
-
-            for _ in range(3):
+            city = ""
+            for k in range(5):
                 try:
+                    city_list = city_dom.find_elements_by_tag_name("li")
+                    city_item = city_list[city_index]
+                    city = city_item.text
                     city_item.click()
                     time.sleep(16 / update_rate)
                     break
                 except selenium.common.exceptions.WebDriverException:
                     print("[WARN]", "Open city [{}] error, retrying".format(city))
+                    city_dom = browser.find_element_by_class_name("city")
                     time.sleep(16 / update_rate)
+                if k < 4:
+                    continue
+                raise ConnectionError("Run time error")
+
+            if city in ["东沙群岛"]:
+                continue
             print("[INFO]", "Open path:", province, city)
             region_data[province][city] = dict()
 
@@ -135,14 +143,21 @@ def get_region_info(browser, conn, cache_data):
                     region_data[province][city][block] = cache
                     continue
 
-                for _ in range(3):
+                for k in range(5):
                     try:
                         block_item.click()
                         time.sleep(16 / update_rate)
                         break
                     except selenium.common.exceptions.WebDriverException:
+                        block_dom = browser.find_element_by_class_name("block")
+                        block_list = block_dom.find_elements_by_tag_name("li")
+                        block_item = block_list[block_index]
+                        block = re.sub(r"（.*?）", "", block_item.text)
                         print("[WARN]", "Open block [{}] error, retrying".format(block))
                         time.sleep(16 / update_rate)
+                    if k < 4:
+                        continue
+                    raise ConnectionError("Run time error")
                 print("[INFO]", "Open path:", province, city, block)
 
                 # 获取风险等级
