@@ -107,7 +107,7 @@ def user_logout():
     user_info = json.loads(user_info)
     if set(user_info.keys()) != {"username", "phone"}:
         return abort(400)
-    if 8 <= len(user_info["username"]) <= 14 and len(user_info["phone"]) == 11:
+    if 6 <= len(user_info["username"]) <= 14 and len(user_info["phone"]) == 11:
         user_info["username"] = user_info["username"].strip()
         user_info["phone"] = user_info["phone"].strip()
     else:

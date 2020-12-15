@@ -129,7 +129,7 @@ export default {
             rules: {
                 username: [
                     {required: true, message: '请输入信息门户账户', trigger: 'blur'},
-                    {min: 8, max: 14, message: '长度在 8 到 14 个字符', trigger: 'blur'}
+                    {min: 6, max: 14, message: '长度在 6 到 14 个字符', trigger: 'blur'}
                 ],
                 phone: [
                     {required: true, message: '请输入收信电话号码', trigger: 'blur'},
