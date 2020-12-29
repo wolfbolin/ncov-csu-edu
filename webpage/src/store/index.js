@@ -5,9 +5,8 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
     state: {
-        state: {
-            host: "",
-        }
+        host: "",
+        group: "839482549"
     },
     mutations: {
         setData(state, param) {

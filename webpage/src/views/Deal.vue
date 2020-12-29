@@ -5,7 +5,11 @@
             <h1>CSU-COVID19-SIGN</h1>
             <p>让我们一起建立更加深刻的契约吧</p>
             <div class="alert">
-                <el-alert title="服务反馈与通知群 1158608406" type="warning" center :closable="false"></el-alert>
+                <el-alert type="warning" center :closable="false">
+                    <template slot="title">
+                        服务反馈与通知群 {{this.$store.state.group}}
+                    </template>
+                </el-alert>
             </div>
             <div class="readme">
                 <h2>功能说明</h2>

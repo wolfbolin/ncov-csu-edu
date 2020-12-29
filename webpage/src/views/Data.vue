@@ -5,7 +5,11 @@
             <h1>CSU-COVID19-SIGN</h1>
             <p>现共有{{ item_num }}位用户正在享用自动打卡服务</p>
             <div class="alert">
-                <el-alert title="服务反馈与通知群 1158608406" type="warning" center :closable="false"></el-alert>
+                <el-alert type="warning" center :closable="false">
+                    <template slot="title">
+                        服务反馈与通知群 {{this.$store.state.group}}
+                    </template>
+                </el-alert>
             </div>
             <el-table class="table" stripe
                       v-loading="loading" :data="dataTable">
