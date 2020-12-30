@@ -47,8 +47,8 @@
                         </el-form-item>
                         <el-button type="primary" @click="check_form('mod_task')"
                                    plain v-if="taskInfo.randOpt === 'Yes'">修改任务</el-button>
-                        <el-button type="success" @click="check_form('get_task')" plain>查询任务</el-button>
-                        <el-button type="danger" @click="check_form('del_task')" plain>删除任务</el-button>
+                        <el-button type="success" @click="check_form('get_task')" plain>查询状态</el-button>
+                        <el-button type="danger" @click="check_form('del_task')" plain>解除绑定</el-button>
                     </el-form>
                 </el-col>
                 <el-col :lg="8" :sm="8" :xs="24" class="info">

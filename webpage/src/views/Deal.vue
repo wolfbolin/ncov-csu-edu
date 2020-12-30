@@ -89,18 +89,20 @@
                                 <el-slider v-model="order.donation" :min="1" :max="200"
                                            @change="choose_change" style="padding: 0 12px"></el-slider>
                             </el-form-item>
-                            <el-form-item label="用户学号" prop="username">
-                                <el-input type="text" v-model="order.username"></el-input>
+                            <el-form-item label="用户账号" prop="username">
+                                <el-input type="text" v-model="order.username"
+                                          placeholder="绑定用户账号"></el-input>
                             </el-form-item>
                             <el-form-item label="手机号码" prop="phone">
-                                <el-input type="text" v-model="order.phone"></el-input>
+                                <el-input type="text" v-model="order.phone"
+                                          placeholder="账号关联手机"></el-input>
                             </el-form-item>
                             <el-form-item label="支付留言" prop="attach">
                                 <el-input type="textarea" v-model="order.attach" maxlength="128"
-                                          show-word-limit></el-input>
+                                          placeholder="请勿在此描述您的业务需求" show-word-limit></el-input>
                             </el-form-item>
                             <div class="alert">
-                                <el-alert title="请在支付完成后确认支付结果" type="info" center :closable="false"></el-alert>
+                                <el-alert title="请认真阅读使用说明后选用服务" type="info" center :closable="false"></el-alert>
                             </div>
                             <el-button @click="query_payment" v-if="order.order_status !== '未创建'">
                                 刷新
