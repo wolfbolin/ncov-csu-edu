@@ -7,7 +7,7 @@
             <div class="alert">
                 <el-alert type="warning" center :closable="false">
                     <template slot="title">
-                        服务反馈与通知群 {{this.$store.state.group}}
+                        服务反馈与通知群 {{ this.$store.state.group }}
                     </template>
                 </el-alert>
             </div>
@@ -35,7 +35,7 @@
                         <p>
                             <span>除捐助服务外，其他选项的费用由系统标定，有效期为一个月。</span>
                             <span>若在此期间发生服务变更，可向作者申请全额退还相关费用。</span>
-                            <span>重复充值不能延迟有效期(还没写好代码)，请不要那么做。</span>
+                            <span>重复充值可以自动延长有效期，到期前不会收到提示。</span>
                         </p>
                     </el-col>
                 </el-row>
@@ -114,16 +114,15 @@
                     </el-col>
                     <el-col :xs="24" :sm="8" class="wb-alipay-qrcode">
                         <p>交易金额：{{ order.volume }}元(RMB)</p>
-                        <img v-if="order.order_status === '未创建'"
-                             src="@/assets/QR_Code.png" alt="qrcode"/>
-                        <img v-else-if="order.order_status === '已支付'"
-                             src="@/assets/done.png" alt="qrcode"/>
-                        <div class="alert" v-if="order.order_status === '未创建'">
-                            <el-alert title="请使用支付宝" type="info" center :closable="false"></el-alert>
+                        <div>
+                            <img v-if="order.order_status === '未创建'" src="@/assets/QR_Code.png" alt="qrcode"/>
+                            <img v-else-if="order.order_status === '已支付'" src="@/assets/done.png" alt="qrcode"/>
+                            <vue-qr v-else margin="0" :text="order.order_link"></vue-qr>
                         </div>
-                        <div v-else>
-                            <vue-qr :text="order.order_link"></vue-qr>
-                            <el-button type="primary" @click="open_app" plain>在支付宝中打开</el-button>
+                        <div class="alert">
+                            <el-alert title="请使用支付宝" type="info" center :closable="false"
+                                      v-if="order.order_status === '未创建'"></el-alert>
+                            <el-button v-else type="primary" @click="open_app" plain>在支付宝中打开</el-button>
                         </div>
                         <p>状态：{{ order.order_status }}</p>
                         <p>订单号：{{ order.order_str }}</p>
@@ -237,7 +236,7 @@ export default {
             }
             if (this.order.itemList.indexOf('友情捐助') !== -1) {
                 this.order.volume = volume + this.order.donation
-            }else{
+            } else {
                 this.order.volume = volume
             }
         },

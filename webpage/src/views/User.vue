@@ -173,6 +173,9 @@ export default {
                     if (res.data.status === "success") {
                         that.taskInfo = res.data.data
                         that.formData.time = that.taskInfo["taskTime"].split(":")[0]
+                        if(that.taskInfo.randOpt === 'Yes'){
+                            that.taskInfo.taskTime = "时段随机"
+                        }
                     }
                 })
         },
