@@ -34,7 +34,7 @@ def main():
     browser.quit()
 
     if risk_data is None:
-        print("[INFO]", "Do Nothing")
+        print("[INFO]", "Do nothing, waiting...")
         time.sleep(10 * 60)
     else:
         print("[INFO]", "Update local data")
@@ -66,6 +66,7 @@ def get_region_info(browser, local_data_time):
     remote_data_time = browser.find_element_by_class_name("r-time").text
     remote_data_time = re.search(r'\d{4}-\d{2}-\d{2}', remote_data_time)
     remote_data_time = remote_data_time.group(0)
+    print("[INFO]", "Remote update time:", remote_data_time)
 
     if local_data_time == remote_data_time:
         print("[INFO]", "Remote data not updated")
@@ -78,11 +79,13 @@ def get_region_info(browser, local_data_time):
     high_risk_dom = area_content[0]
     high_risk_list = high_risk_dom.find_elements_by_class_name("m-header")
     high_risk_list = [it.get_attribute('textContent').split(" ") for it in high_risk_list]
+    print("[INFO]", "Remote high risk num:", len(high_risk_list))
 
     # Get medium risk area
     medium_risk_dom = area_content[1]
     medium_risk_list = medium_risk_dom.find_elements_by_class_name("m-header")
     medium_risk_list = [it.get_attribute('textContent').split(" ") for it in medium_risk_list]
+    print("[INFO]", "Remote medium risk num:", len(medium_risk_list))
     for item in medium_risk_list:
         item[2] = re.sub(r"（.*?）", "", item[2])
 
