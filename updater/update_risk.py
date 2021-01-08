@@ -8,14 +8,16 @@ import pymysql
 
 
 def main():
-    cache_path = "./cache"
+    config = Config.get_config()
+
+    # Check environment
+    cache_path = config['BASE']['cache_path']
     os.makedirs(cache_path, exist_ok=True)
     if Kit.env_check(cache_path) is False:
         print("[ERR]", "Chrome driver run environment not found")
         return exit(1)
 
     # MySQL Connect
-    config = Config.get_config()
     config['MYSQL']['port'] = int(config['MYSQL']['port'])
     conn = pymysql.connect(**config['MYSQL'])
 
