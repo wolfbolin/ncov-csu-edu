@@ -16,10 +16,11 @@ if Kit.run_platform() == "windows":
 version_re = re.compile(r'^[1-9]\d*\.\d*.\d*')
 
 
-def run_browser(driver_path):
+def run_browser(driver_path, headless="Yes"):
     driver_path = os.path.abspath(driver_path) + "/chromedriver"
     option = webdriver.ChromeOptions()
-    option.add_argument('--headless')
+    if headless == "Yes":
+        option.add_argument('--headless')
     option.add_argument('--no-sandbox')
     option.add_argument('--disable-gpu')
     browser = webdriver.Chrome(driver_path, options=option)
