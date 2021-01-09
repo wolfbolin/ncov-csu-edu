@@ -2,9 +2,11 @@
 import os
 import re
 import Kit
+import json
 import time
 import Config
 import pymysql
+import requests
 
 
 def main():
@@ -39,16 +41,33 @@ def main():
         time.sleep(10 * 60)
     else:
         print("[INFO]", "Update local data")
+        msg_text = "**高风险地区**\n\n"
         sql = "DELETE FROM `region_risk`"
         cursor.execute(sql)
         sql = "REPLACE `region_risk`(`province`,`city`,`block`,`level`) VALUES (%s,%s,%s,%s)"
         for item in risk_data[0]:
+            msg_text += "{}-{}-{}\n\n".format(item[0], item[1], item[2])
             cursor.execute(sql, args=[item[0], item[1], item[2], "高风险"])
+        msg_text += "---\n\n"
+        msg_text += "**中风险地区**\n\n"
         for item in risk_data[1]:
+            msg_text += "{}-{}-{}\n\n".format(item[0], item[1], item[2])
             cursor.execute(sql, args=[item[0], item[1], item[2], "中风险"])
         sql = "UPDATE `kvdb` SET `val`=%s WHERE `key`='risk_update_time'"
         cursor.execute(sql, args=[risk_data[2]])
         conn.commit()
+        msg_text += "---\n\n"
+        msg_text += "更新日期：{}\n\n".format(risk_data[2])
+
+        # Send update message
+        msg_data = {
+            "user": "wolfbolin",
+            "title": "疫情风险地区更新",
+            "source": "CSU-Sign",
+            "text": msg_text
+        }
+        requests.post("https://core.wolfbolin.com/message/sugar/text", json=msg_data)
+
     print("[INFO]", "Update finish")
     print("[INFO]", "End at", Kit.str_time())
     return
