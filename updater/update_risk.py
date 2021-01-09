@@ -9,6 +9,7 @@ import pymysql
 
 def main():
     config = Config.get_config()
+    print("[INFO]", "Start at", Kit.str_time())
 
     # Check environment
     cache_path = config['BASE']['cache_path']
@@ -49,6 +50,7 @@ def main():
         cursor.execute(sql, args=[risk_data[2]])
         conn.commit()
     print("[INFO]", "Update finish")
+    print("[INFO]", "End at", Kit.str_time())
     return
 
 
