@@ -77,6 +77,10 @@ def geo_proxy(code):
         return jsonify({"status": "error"})
 
     geo_json["status"] = "success"
+    code_index = {}
+    for item in geo_json["features"]:
+        code_index[item["properties"]["name"]] = item["properties"]["adcode"]
+    geo_json["code_index"] = code_index
     return jsonify(geo_json)
 
 

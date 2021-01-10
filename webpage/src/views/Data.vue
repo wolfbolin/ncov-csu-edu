@@ -27,8 +27,8 @@
                 :current-page.sync="page_now">
             </el-pagination>
             <div class="chart">
-<!--                <component :is="addr_map"></component>-->
                 <component :is="user_line"></component>
+                <component :is="addr_map"></component>
                 <component :is="sign_bar"></component>
             </div>
         </div>
@@ -38,7 +38,7 @@
 <script>
 import user_line from "@/components/echart/user_line";
 import sign_bar from "@/components/echart/sign_bar";
-// import addr_map from "@/components/echart/addr_map";
+import addr_map from "@/components/echart/addr_map";
 
 export default {
     name: "Data",
@@ -46,7 +46,7 @@ export default {
         return {
             user_line: user_line,
             sign_bar: sign_bar,
-            // addr_map: addr_map,
+            addr_map: addr_map,
             loading: true,
             item_num: 0,
             page_now: 1,
@@ -67,7 +67,6 @@ export default {
                     }
                 })
                 .then(function (res) {
-                    console.log(res)
                     if (res.data.status === 'success') {
                         that.loading = false;
                         that.item_num = res.data.data["item_num"]

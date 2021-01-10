@@ -71,15 +71,13 @@ def check_task_data():
     task_data = cursor.fetchall()
 
     # 统计位置信息
-    location_tree = {}
+    location_tree = {"name": "*", "child": {}}
     for region in task_data:
         if region["location"] == "Unknown":
             continue
 
-        location = region["location"]
-        location = json.loads(location)
-
-        country_child = set_location_count(location, location_tree, "country")
+        location = json.loads(region["location"])
+        country_child = set_location_count(location, location_tree["child"], "country")
         province_child = set_location_count(location, country_child, "province")
         city_child = set_location_count(location, province_child, "city")
         set_location_count(location, city_child, "district")
@@ -94,6 +92,30 @@ def set_location_count(location, node, key):
     node.setdefault(location[key], {"name": location[key], "count": 0, "child": {}})
     node[location[key]]["count"] += 1
     return node[location[key]]["child"]
+
+
+@task_blue.route('/count/location')
+def get_location():
+    # 获取数据日期
+    date = request.args.get("date", Kit.str_time("%Y-%m-%d"))
+
+    conn = app.mysql_pool.connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    sql = "SELECT * FROM `count` WHERE `date`=%s AND `range`='00-24'"
+    cursor.execute(sql, args=[date])
+    data = cursor.fetchone()
+    if data is None:
+        return jsonify({
+            "status": "success",
+            "update_date": date,
+            "data": {"中国": {"child": {}}}
+        })
+
+    return jsonify({
+        "status": "success",
+        "update_date": date,
+        "data": json.loads(data["location_tree"])
+    })
 
 
 @task_blue.route('/count/user')
