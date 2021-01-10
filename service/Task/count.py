@@ -81,8 +81,8 @@ def check_task_data():
         province_child = set_location_count(location, country_child, "province")
         city_child = set_location_count(location, province_child, "city")
         set_location_count(location, city_child, "district")
-    sql = "REPLACE INTO `count`(`date`, `range`, `location_tree`) VALUES(%s,%s,%s)"
-    cursor.execute(sql, args=[date_now, range_now, json.dumps(location_tree, ensure_ascii=False)])
+    sql = "UPDATE `count` SET `location_tree`=%s WHERE `date`=%s AND `range`=%s"
+    cursor.execute(sql, args=[json.dumps(location_tree, ensure_ascii=False), date_now, range_now])
     conn.commit()
 
     return "Done"
