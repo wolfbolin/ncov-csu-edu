@@ -44,7 +44,8 @@ def assign_task():
     try:
         # 写入定时用户
         sql = "REPLACE INTO `task` SELECT `username`,`time` as `task_time`, '00:00' as `sign_time`, " \
-              "'waiting' as `status`, 'Unknown' as `location`, CURDATE() as `date` FROM `user` WHERE `online`='Yes';"
+              "'Unknown' as `location`, 'waiting' as `status`, CURDATE() as `date` FROM `user` WHERE `online`='Yes';"
+        print(sql)
         cursor.execute(sql)
         app.logger.info("用户任务写入完成")
 
