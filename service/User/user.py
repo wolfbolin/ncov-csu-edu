@@ -255,64 +255,6 @@ def user_list():
     }
 
 
-@user_blue.route('/count')
-def user_count():
-    conn = app.mysql_pool.connection()
-    cursor = conn.cursor(pymysql.cursors.DictCursor)
-    sql = """
-    SELECT
-        `date`,
-        `user_num` 
-    FROM
-        `count` 
-    WHERE
-        `range` = '23-00' 
-    ORDER BY
-        `date` DESC 
-        LIMIT 30
-    """
-    cursor.execute(query=sql)
-    user_data = cursor.fetchall()
-    user_data_key = []
-    user_data_val = []
-    for it in user_data:
-        user_data_key.append(str(it["date"])[5:])
-        user_data_val.append(it["user_num"])
-
-    sql = """
-    SELECT
-        `date`,
-        `range`,
-        `sign_num` 
-    FROM
-        `count` 
-    WHERE
-        `date` >= DATE_SUB(CURDATE(), INTERVAL 7 DAY ) 
-        AND `sign_num` > 0
-    """
-    cursor.execute(query=sql)
-    sign_data = cursor.fetchall()
-    sign_index = {}
-    sign_matrix = []
-    for item in sign_data:
-        sign_index.setdefault(item["range"], {})
-        sign_index[item["range"]][str(item["date"])[5:]] = item["sign_num"]
-
-    sign_date_list = set()
-    sign_range_list = set()
-    for x, sign_range in enumerate(sign_index.keys()):
-        sign_range_list.add(sign_range)
-        for y, sign_date in enumerate(sign_index[sign_range].keys()):
-            sign_date_list.add(sign_date)
-            sign_matrix.append([x, y, sign_index[sign_range][sign_date]])
-
-    return jsonify({
-        "status": "success",
-        "user_data": [user_data_key[::-1], user_data_val[::-1]],
-        "sign_data": [sorted(list(sign_range_list)), sorted(list(sign_date_list)), sign_matrix]
-    })
-
-
 @user_blue.route('/donor')
 def donor_user():
     conn = app.mysql_pool.connection()

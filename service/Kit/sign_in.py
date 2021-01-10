@@ -81,8 +81,11 @@ def user_clock(config, user_info, risk_area):
 
         # 任务完成
         Kit.write_log(conn, 'user_check', user_info["username"], status, data, run_err)
-        sql = "UPDATE `task` SET `status`=%s, `sign_time`=%s WHERE `username`=%s AND `date` = CURDATE()"
-        cursor.execute(sql, args=["success" if status else "error", Kit.str_time("%H:%M:%S"), user_info["username"]])
+        sql = "UPDATE `task` SET `status`=%s, `sign_time`=%s, `location`=%s WHERE `username`=%s AND `date` = CURDATE()"
+        cursor.execute(sql, args=["success" if status else "error",
+                                  Kit.str_time("%H:%M:%S"),
+                                  run_err if status else "Unknown",
+                                  user_info["username"]])
         conn.commit()
     except BaseException as e:
         Kit.print_red(e)

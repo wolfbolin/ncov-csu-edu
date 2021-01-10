@@ -1,14 +1,10 @@
 # coding=utf-8
 import Kit
-import json
-import random
 import pymysql
-import requests
 from flask import abort
 from flask import jsonify
 from flask import request
 from Task import task_blue
-from requests import utils
 from flask import current_app as app
 
 
@@ -48,7 +44,7 @@ def assign_task():
     try:
         # 写入定时用户
         sql = "REPLACE INTO `task` SELECT `username`,`time` as `task_time`, '00:00' as `sign_time`, " \
-              "'waiting' as `status`, CURDATE() as `date` FROM `user` WHERE `online`='Yes';"
+              "'waiting' as `status`, 'Unknown' as `location`, CURDATE() as `date` FROM `user` WHERE `online`='Yes';"
         cursor.execute(sql)
         app.logger.info("用户任务写入完成")
 
@@ -117,43 +113,3 @@ def check_list(check_time=None):
         "status": "success",
         "message": "Check time: {}".format(time_now)
     })
-
-
-@task_blue.route('/count')
-def check_count():
-    # 本地数据校验
-    client_ip = request.headers.get("X-Real-IP", "0.0.0.0")
-    if client_ip != "127.0.0.1":
-        return abort(400, "Reject IP:{}".format(client_ip))
-
-    # 计算统计时间
-    now_hour = Kit.unix_time()
-    last_hour = now_hour - 3600
-    now_hour = Kit.unix2timestamp(now_hour, "%Y-%m-%d %H:00:00")
-    last_hour = Kit.unix2timestamp(last_hour, "%Y-%m-%d %H:00:00")
-    print("Check log between {} and {}".format(last_hour, now_hour))
-
-    # 查询历史数据
-    conn = app.mysql_pool.connection()
-    cursor = conn.cursor(pymysql.cursors.DictCursor)
-    sql = "SELECT * FROM `log` WHERE `time` BETWEEN %s AND %s "
-    cursor.execute(query=sql, args=[last_hour, now_hour])
-    log_data = cursor.fetchall()
-    sql = "SELECT COUNT(*) as user_num FROM `user` WHERE `online`='Yes'"
-    cursor.execute(query=sql)
-    user_num = int(cursor.fetchone()["user_num"])
-
-    # 统计日志信息
-    sign_count = 0
-    for log in log_data:
-        if log["function"] == "user_check" and log["message"] in ["操作成功", "今天已经填报了"]:
-            sign_count += 1
-
-    # 写入统计信息
-    date = Kit.unix2timestamp(Kit.unix_time())
-    time_range = "{}-{}".format(last_hour[11:13], now_hour[11:13])
-    sql = "INSERT INTO `count`(`date`, `range`, `user_num`, `sign_num`) VALUES(%s,%s,%s,%s)"
-    cursor.execute(query=sql, args=[date, time_range, user_num, sign_count])
-    conn.commit()
-
-    return "Done"
