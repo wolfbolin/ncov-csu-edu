@@ -106,7 +106,7 @@ def check_list(check_time=None):
             conn.commit()
             continue
         risk_area = Kit.get_risk_area(conn)
-        app.executor.submit(Kit.user_clock, app.config, user_info, risk_area)
+        app.executor.submit(Kit.user_sign_task, app.config, user_info, risk_area)
     app.logger.info("Check point {} with {} task".format(time_now, len(user_task_list)))
 
     return jsonify({

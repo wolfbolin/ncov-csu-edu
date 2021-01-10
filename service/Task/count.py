@@ -87,7 +87,7 @@ def check_task_data():
     cursor.execute(sql, args=[date_now, range_now, json.dumps(location_tree, ensure_ascii=False)])
     conn.commit()
 
-    return jsonify(location_tree)
+    return "Done"
 
 
 def set_location_count(location, node, key):

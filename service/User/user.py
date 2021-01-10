@@ -207,13 +207,14 @@ def user_sign():
         return abort(400)
 
     # 查询打卡用户信息
+    app.logger.info("Sign for vip user {}".format(user_info["username"]))
     conn = app.mysql_pool.connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     sql = "SELECT * FROM `user` WHERE `username`=%s AND `phone`=%s AND `online`='Yes'"
     cursor.execute(sql, args=[user_info["username"], user_info["phone"]])
     user_info = cursor.fetchone()
     risk_area = Kit.get_risk_area(conn)
-    app.executor.submit(Kit.user_clock, app.config, user_info, risk_area)
+    app.executor.submit(Kit.user_sign_task, app.config, user_info, risk_area)
 
     return jsonify({
         "status": "success",

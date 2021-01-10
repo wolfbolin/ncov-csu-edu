@@ -53,7 +53,7 @@ def user_login(username, password):
     return True, session, "success"
 
 
-def user_clock(config, user_info, risk_area):
+def user_sign_task(config, user_info, risk_area):
     # 连接数据库
     try:
         # 连接数据库
