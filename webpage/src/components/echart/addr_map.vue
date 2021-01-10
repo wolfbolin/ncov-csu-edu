@@ -111,20 +111,19 @@ export default {
             // 更新地图时间
             this.chartOpt.title.subtext = `数据时间：${this.update_date}`
 
-            // 获取地图数据
-            let geo_data = await this.getGEOJson(code)
-            console.log("地图数据", geo_data)
-            if (geo_data === null) {
-                this.$message({
-                    message: `获取<${name}>地图失败`,
-                    type: 'error'
-                });
-            }
-
-            // 更新地图信息
-            Object.assign(this.code_index, this.code_index, geo_data["code_index"])
             if (this.register_map.indexOf(name) === -1) {
+                // 获取地图数据
                 this.register_map.push(name)
+                // 更新地图信息
+                let geo_data = await this.getGEOJson(code)
+                console.log("地图数据", geo_data)
+                Object.assign(this.code_index, this.code_index, geo_data["code_index"])
+                if (geo_data === null) {
+                    this.$message({
+                        message: `获取<${name}>地图失败`,
+                        type: 'error'
+                    });
+                }
                 echarts.registerMap(name, geo_data) // 注册地图名称
             }
             this.chartOpt.series[0]["map"] = name  // 更新地图配置
@@ -181,8 +180,6 @@ export default {
                                 borderWidth: 1
                             }
                         },
-                        zoom: 1.25,
-                        roam: true,
                         scaleLimit: {
                             min: 1,
                             max: 4

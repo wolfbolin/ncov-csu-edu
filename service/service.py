@@ -81,7 +81,7 @@ def geo_proxy(code):
     for item in geo_json["features"]:
         code_index[item["properties"]["name"]] = item["properties"]["adcode"]
     geo_json["code_index"] = code_index
-    return jsonify(geo_json)
+    return jsonify(geo_json), 200, {"Cache-Control": "public, max-age=31536000"}
 
 
 @app.errorhandler(400)

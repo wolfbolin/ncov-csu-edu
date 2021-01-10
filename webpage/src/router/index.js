@@ -13,12 +13,12 @@ const routes = [
   {
     path: '/user',
     name: 'User',
-    component: () => import(/* webpackChunkName: "list" */ '../views/User.vue')
+    component: () => import(/* webpackChunkName: "user" */ '../views/User.vue')
   },
   {
     path: '/deal',
     name: 'Deal',
-    component: () => import(/* webpackChunkName: "unbind" */ '../views/Deal.vue')
+    component: () => import(/* webpackChunkName: "deal" */ '../views/Deal.vue')
   },
   {
     path: '/about',
@@ -28,7 +28,7 @@ const routes = [
   {
     path: '/data',
     name: 'Data',
-    component: () => import(/* webpackChunkName: "about" */ '../views/Data.vue')
+    component: () => import(/* webpackChunkName: "data" */ '../views/Data.vue')
   }
 ]
 
