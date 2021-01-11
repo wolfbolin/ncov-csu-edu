@@ -21,15 +21,12 @@ export default {
         initChart: function () {
             let userChartWidth = this.$refs.userChart.clientWidth
             let userChartDom = document.getElementById('userChart')
-            userChartDom.style.height = userChartWidth * 0.6 + "px"
+            userChartDom.style.height = userChartWidth * 0.375 + "px"
             this.userChart = echarts.init(userChartDom);
             this.userChartOpt = {
                 title: {
                     text: '30日内用户总量曲线图',
                     left: 'center',
-                    textStyle: {
-                        fontSize: 28
-                    }
                 },
                 tooltip: {
                     trigger: 'axis',

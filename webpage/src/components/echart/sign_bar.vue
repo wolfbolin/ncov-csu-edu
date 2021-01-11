@@ -1,6 +1,6 @@
 <template>
     <div class="chart">
-        <div class="signChart" id="signChart" ref="signChart"></div>
+        <div class="chart" id="chart" ref="chart"></div>
     </div>
 </template>
 
@@ -13,26 +13,25 @@ export default {
     name: "sign_bar",
     data() {
         return {
-            signChart: null,
-            signChartOpt: {},
+            chart: null,
+            chartOpt: {},
         }
     },
     methods: {
         initChart: function () {
-            let signChartWidth = this.$refs.signChart.clientWidth
-            let signChartDom = document.getElementById('signChart')
-            signChartDom.style.height = signChartWidth * 0.8 + "px"
-            this.signChart = echarts.init(signChartDom);
-            this.signChartOpt = {
+            let chartWidth = this.$refs.chart.clientWidth
+            let chartDom = document.getElementById('chart')
+            chartDom.style.height = chartWidth * 0.625 + "px"
+            this.chart = echarts.init(chartDom);
+            this.chartOpt = {
                 title: {
                     text: '7日内自动打卡时刻图',
                     left: 'center',
-                    textStyle: {
-                        fontSize: 28
-                    }
                 },
                 visualMap: {
-                    max: 3000,
+                    min: 0,
+                    max: 2500,
+                    text: ['High', 'Low'],
                     inRange: {
                         color: ['#313695', '#4575b4', '#74add1', '#abd9e9', '#e0f3f8', '#ffffbf', '#fee090', '#fdae61', '#f46d43', '#d73027', '#a50026']
                     }
@@ -50,7 +49,7 @@ export default {
                 },
                 grid3D: {
                     viewControl: {
-                        distance: 200,
+                        distance: 175,
                         zoomSensitivity: 1,
                         rotateSensitivity: 5,
                     },
@@ -101,10 +100,10 @@ export default {
             this.$http.get(data_host + `/task/count/sign`)
                 .then(function (res) {
                     if (res.data.status === 'success') {
-                        that.signChartOpt.xAxis3D.data = res.data["sign_data"][0]
-                        that.signChartOpt.yAxis3D.data = res.data["sign_data"][1]
-                        that.signChartOpt.series[0].data = res.data["sign_data"][2]
-                        that.signChart.setOption(that.signChartOpt)
+                        that.chartOpt.xAxis3D.data = res.data["sign_data"][0]
+                        that.chartOpt.yAxis3D.data = res.data["sign_data"][1]
+                        that.chartOpt.series[0].data = res.data["sign_data"][2]
+                        that.chart.setOption(that.chartOpt)
                     } else {
                         that.$message({
                             message: "res.data.message",

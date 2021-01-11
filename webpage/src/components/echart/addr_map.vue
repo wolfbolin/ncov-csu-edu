@@ -126,6 +126,13 @@ export default {
                 }
                 echarts.registerMap(name, geo_data) // 注册地图名称
             }
+            if (name === "中国") {
+                this.chartOpt.series[0]["center"] = [103.4, 34.4]
+                this.chartOpt.series[0]["zoom"] = 1.45
+            }else{
+                this.chartOpt.series[0]["center"] = null
+                this.chartOpt.series[0]["zoom"] = 1
+            }
             this.chartOpt.series[0]["map"] = name  // 更新地图配置
 
             // 更新地图数据
@@ -151,11 +158,12 @@ export default {
         initChart: function () {
             let chartWidth = this.$refs.addrChart.clientWidth
             let chartDom = document.getElementById('addrChart')
-            chartDom.style.height = chartWidth + "px"
+            chartDom.style.height = chartWidth * 0.625 + "px"
             this.chart = echarts.init(chartDom);
             this.chartOpt = {
                 title: {
                     text: '打卡用户分布图',
+                    left: 'center',
                 },
                 tooltip: {
                     trigger: 'item',
@@ -163,7 +171,7 @@ export default {
                 },
                 visualMap: {
                     min: 0,
-                    max: 5000,
+                    max: 1000,
                     text: ['High', 'Low'],
                     inRange: {
                         color: ['lightskyblue', 'yellow', 'orangered']
@@ -180,10 +188,7 @@ export default {
                                 borderWidth: 1
                             }
                         },
-                        scaleLimit: {
-                            min: 1,
-                            max: 4
-                        },
+                        zoom: 1.45,
                     }
                 ]
             }
