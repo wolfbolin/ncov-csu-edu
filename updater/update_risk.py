@@ -68,12 +68,17 @@ def main():
 
         # Send update message
         msg_data = {
-            "user": "wolfbolin",
             "title": "疫情风险地区更新",
             "source": "CSU-Sign",
             "text": msg_text
         }
-        requests.post("https://core.wolfbolin.com/message/sugar/text", json=msg_data)
+        if config["RUN_ENV"] == "develop":
+            msg_data["user"] = "wolfbolin"
+            requests.post("https://core.wolfbolin.com/message/sugar/text", json=msg_data)
+        else:
+            for (_, user) in config["NOTICE"].items():
+                msg_data["user"] = user
+                requests.post("https://core.wolfbolin.com/message/sugar/text", json=msg_data)
 
     print("[INFO]", "Update finish")
     print("[INFO]", "End at", Kit.str_time())
