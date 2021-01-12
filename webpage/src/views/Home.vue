@@ -5,7 +5,11 @@
             <h1>CSU-COVID19-SIGN</h1>
             <p>简单几步即可建立羁绊</p>
             <div class="alert">
-                <el-alert title="服务反馈与通知群 1158608406" type="warning" center :closable="false"></el-alert>
+                <el-alert type="warning" center :closable="false">
+                    <template slot="title">
+                        服务反馈与通知群 {{ this.$store.state.group }}
+                    </template>
+                </el-alert>
             </div>
             <div class="readme">
                 <h2>使用条款</h2>
@@ -62,23 +66,30 @@
             <el-form class="form" ref="form" label-position="left" label-width="60px"
                      v-loading="loading" :rules="rules" :model="formData">
                 <el-form-item label="账号" prop="username">
-                    <el-input v-model="formData.username" placeholder="信息门户账户" :disabled="closeLogin"></el-input>
+                    <el-input v-model="formData.username" placeholder="旧版信息门户账户" :disabled="closeLogin"></el-input>
                 </el-form-item>
                 <el-form-item label="密码" prop="password">
-                    <el-input v-model="formData.password" placeholder="不会存储密码"
+                    <el-input v-model="formData.password" placeholder="旧版信息门户密码"
                               show-password :disabled="closeLogin"></el-input>
                 </el-form-item>
                 <el-form-item label="昵称" prop="nickname">
-                    <el-input v-model="formData.nickname" placeholder="起个帅气名字" :disabled="closeLogin"></el-input>
+                    <el-input v-model="formData.nickname" placeholder="起个帅气昵称" :disabled="closeLogin"></el-input>
                 </el-form-item>
                 <el-form-item label="手机" prop="phone">
-                    <el-input v-model="formData.phone" placeholder="用于身份认证" type="number"
+                    <el-input v-model="formData.phone" placeholder="关联您的手机" type="number"
                               :disabled="closeLogin"></el-input>
                 </el-form-item>
                 <el-form-item label="须知" prop="readme" style="text-align: left">
                     <el-checkbox v-model="formData.readme" :disabled="closeLogin">我已认真阅读并同意服务使用条款</el-checkbox>
                 </el-form-item>
-                <el-button type="success" @click="check_form" plain :disabled="closeLogin">提交任务</el-button>
+                <div class="alert">
+                    <el-alert type="warning">
+                        <template slot="title">
+                            <el-button type="text" @click="passwdTip=true">关于登录密码错误的说明</el-button>
+                        </template>
+                    </el-alert>
+                </div>
+                <el-button type="success" @click="check_form" plain :disabled="closeLogin">绑定账号</el-button>
             </el-form>
             <div class="tips">
                 <h2>这是什么？</h2>
@@ -111,6 +122,16 @@
                     @全体成员
                 </p>
             </div>
+            <el-dialog title="关于密码" width="80%" :visible.sync="passwdTip">
+                <p>打卡服务密码请使用旧版信网中心密码(改版前后密码不同步)</p>
+                <p>多次尝试失败被暂停服务时，可在一个小时后再次尝试登陆</p>
+                <p>您可以在官方网站
+                <a href="http://ca.its.csu.edu.cn/home/login/215" target="_blank">&lt;点击打开&gt;</a>
+                尝试登陆成功后再绑定账号</p>
+                <span slot="footer" class="dialog-footer">
+                    <el-button type="primary" @click="passwdTip = false">确 定</el-button>
+                </span>
+            </el-dialog>
         </div>
     </div>
 </template>
@@ -128,6 +149,8 @@ export default {
         };
         return {
             loading: false,
+            passwdTip: false,
+            passwdAlert: false,
             closeInfo: "",
             closeLogin: false,
             formData: {
@@ -237,6 +260,12 @@ export default {
         margin-top: 36px;
         display: inline-block;
         text-align: center;
+
+        .alert {
+            .el-button {
+                padding: 0;
+            }
+        }
     }
 
     .el-date-editor.el-input {

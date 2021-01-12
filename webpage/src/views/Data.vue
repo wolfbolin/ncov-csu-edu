@@ -5,7 +5,11 @@
             <h1>CSU-COVID19-SIGN</h1>
             <p>现共有{{ item_num }}位用户正在享用自动打卡服务</p>
             <div class="alert">
-                <el-alert title="服务反馈与通知群 1158608406" type="warning" center :closable="false"></el-alert>
+                <el-alert type="warning" center :closable="false">
+                    <template slot="title">
+                        服务反馈与通知群 {{this.$store.state.group}}
+                    </template>
+                </el-alert>
             </div>
             <el-table class="table" stripe
                       v-loading="loading" :data="dataTable">
@@ -23,38 +27,31 @@
                 :current-page.sync="page_now">
             </el-pagination>
             <div class="chart">
-                <div class="userChart" id="userChart" ref="userChart"></div>
-                <div class="signChart" id="signChart" ref="signChart"></div>
+                <component :is="user_line"></component>
+                <component :is="addr_map"></component>
+                <component :is="sign_bar"></component>
             </div>
         </div>
     </div>
 </template>
 
 <script>
-let echarts = require('echarts/lib/echarts');
-require('echarts/lib/chart/line');
-require('echarts/lib/component/title');
-require('echarts/lib/component/tooltip');
-require('echarts-gl');
+import user_line from "@/components/echart/user_line";
+import sign_bar from "@/components/echart/sign_bar";
+import addr_map from "@/components/echart/addr_map";
 
 export default {
     name: "Data",
     data() {
         return {
+            user_line: user_line,
+            sign_bar: sign_bar,
+            addr_map: addr_map,
             loading: true,
             item_num: 0,
             page_now: 1,
             page_size: 25,
             dataTable: [],
-            userChart: null,
-            userChartOpt: {},
-            userChartKey: [],
-            userChartVal: [],
-            signChart: null,
-            signChartOpt: {},
-            signChartDate: [],
-            signChartData: [],
-            signChartRange: [],
         }
     },
     methods: {
@@ -70,7 +67,6 @@ export default {
                     }
                 })
                 .then(function (res) {
-                    console.log(res)
                     if (res.data.status === 'success') {
                         that.loading = false;
                         that.item_num = res.data.data["item_num"]
@@ -88,163 +84,9 @@ export default {
                     console.log(res);
                 })
         },
-        initChart: function () {
-            let userChartWidth = this.$refs.userChart.clientWidth
-            let userChartDom = document.getElementById('userChart')
-            userChartDom.style.height = userChartWidth * 0.6 + "px"
-            this.userChart = echarts.init(userChartDom);
-            this.userChartOpt = {
-                title: {
-                    text: '30日内用户总量曲线图',
-                    left: 'center',
-                    textStyle: {
-                        fontSize: 28
-                    }
-                },
-                tooltip: {
-                    trigger: 'axis',
-                    axisPointer: {
-                        type: 'cross',
-                        label: {
-                            backgroundColor: '#6a7985'
-                        }
-                    }
-                },
-                xAxis: {
-                    type: 'category',
-                    boundaryGap: false,
-                    data: []
-                },
-                yAxis: {
-                    type: 'value'
-                },
-                series: [{
-                    data: [],
-                    type: 'line',
-                    areaStyle: {
-                        normal: {
-                            color: '#91BEF0' //改变区域颜色
-                        }
-                    },
-                    itemStyle: {
-                        normal: {
-                            color: '#91BEF0', //改变折线点的颜色
-                            lineStyle: {
-                                color: '#91BEF0' //改变折线颜色
-                            }
-                        }
-                    },
-                }]
-            };
-
-            let signChartWidth = this.$refs.signChart.clientWidth
-            let signChartDom = document.getElementById('signChart')
-            signChartDom.style.height = signChartWidth * 0.8 + "px"
-            this.signChart = echarts.init(signChartDom);
-            this.signChartOpt = {
-                title: {
-                    text: '7日内自动打卡时刻图',
-                    left: 'center',
-                    textStyle: {
-                        fontSize: 28
-                    }
-                },
-                visualMap: {
-                    max: 3000,
-                    inRange: {
-                        color: ['#313695', '#4575b4', '#74add1', '#abd9e9', '#e0f3f8', '#ffffbf', '#fee090', '#fdae61', '#f46d43', '#d73027', '#a50026']
-                    }
-                },
-                xAxis3D: {
-                    type: 'category',
-                    data: []
-                },
-                yAxis3D: {
-                    type: 'category',
-                    data: []
-                },
-                zAxis3D: {
-                    type: 'value'
-                },
-                grid3D: {
-                    viewControl: {
-                        distance: 200,
-                        zoomSensitivity: 1,
-                        rotateSensitivity: 5,
-                    },
-                    boxWidth: 100,
-                    boxDepth: 80,
-                    light: {
-                        main: {
-                            intensity: 1.2
-                        },
-                        ambient: {
-                            intensity: 0.3
-                        }
-                    }
-                },
-                series: [{
-                    type: 'bar3D',
-                    data: [],
-                    shading: 'lambert',
-                    label: {
-                        show: false,
-                        textStyle: {
-                            fontSize: 16,
-                            borderWidth: 1
-                        }
-                    },
-                    itemStyle: {
-                        opacity: 1
-                    },
-                    emphasis: {
-                        label: {
-                            textStyle: {
-                                fontSize: 20,
-                                color: '#900'
-                            }
-                        },
-                        itemStyle: {
-                            color: '#900'
-                        }
-                    }
-                }]
-            }
-        },
-        updateChart: function () {
-            // 获取数据
-            this.loading = true;
-            let that = this;
-            let data_host = this.$store.state.host;
-            this.$http.get(data_host + `/user/count`)
-                .then(function (res) {
-                    console.log(res)
-                    if (res.data.status === 'success') {
-                        console.log(res.data["user_data"])
-                        that.userChartOpt.xAxis.data = res.data["user_data"][0]
-                        that.userChartOpt.series[0].data = res.data["user_data"][1]
-                        that.userChart.setOption(that.userChartOpt)
-                        that.signChartOpt.xAxis3D.data = res.data["sign_data"][0]
-                        that.signChartOpt.yAxis3D.data = res.data["sign_data"][1]
-                        console.log(that.signChartOpt.series)
-                        that.signChartOpt.series[0].data = res.data["sign_data"][2]
-                        that.signChart.setOption(that.signChartOpt)
-                    } else {
-                        that.$message({
-                            message: "res.data.message",
-                            type: 'error'
-                        });
-                    }
-                })
-                .catch(function (res) {
-                    console.log(res);
-                })
-        }
     },
     mounted() {
         this.pageChange();
-        this.initChart();
-        this.updateChart();
     }
 }
 </script>
@@ -256,7 +98,6 @@ export default {
         display: inline-block;
         margin-bottom: 16px;
     }
-
     .chart {
         margin-top: 36px;
     }

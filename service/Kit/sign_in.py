@@ -53,7 +53,7 @@ def user_login(username, password):
     return True, session, "success"
 
 
-def user_clock(config, user_info, risk_area):
+def user_sign_task(config, user_info, risk_area):
     # 连接数据库
     try:
         # 连接数据库
@@ -81,8 +81,11 @@ def user_clock(config, user_info, risk_area):
 
         # 任务完成
         Kit.write_log(conn, 'user_check', user_info["username"], status, data, run_err)
-        sql = "UPDATE `task` SET `status`=%s, `sign_time`=%s WHERE `username`=%s AND `date` = CURDATE()"
-        cursor.execute(sql, args=["success" if status else "error", Kit.str_time("%H:%M:%S"), user_info["username"]])
+        sql = "UPDATE `task` SET `status`=%s, `sign_time`=%s, `location`=%s WHERE `username`=%s AND `date` = CURDATE()"
+        cursor.execute(sql, args=["success" if status else "error",
+                                  Kit.str_time("%H:%M:%S"),
+                                  run_err if status else "Unknown",
+                                  user_info["username"]])
         conn.commit()
     except BaseException as e:
         Kit.print_red(e)
@@ -126,9 +129,9 @@ def user_sign_in(session, risk_area):
     api_data = json.loads(api_string)
     sign_data["geo_api_info"] = str(api_string)
     sign_data["address"] = api_data["formattedAddress"]
-    sign_data["area"] = api_data["addressComponent"]["province"] \
-                        + api_data["addressComponent"]["city"] \
-                        + api_data["addressComponent"]["district"]
+    sign_data["area"] = "{} {} {}".format(api_data["addressComponent"]["province"],
+                                          api_data["addressComponent"]["city"],
+                                          api_data["addressComponent"]["district"])
     sign_data["province"] = api_data["addressComponent"]["province"]
     sign_data["city"] = api_data["addressComponent"]["city"]
     if sign_data["province"] in ('北京市', '上海市', '重庆市', '天津市'):

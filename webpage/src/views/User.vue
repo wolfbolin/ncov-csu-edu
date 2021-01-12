@@ -5,7 +5,11 @@
             <h1>CSU-COVID19-SIGN</h1>
             <p>关于用户他自己的一些事情</p>
             <div class="alert">
-                <el-alert title="服务反馈与通知群 1158608406" type="warning" center :closable="false"></el-alert>
+                <el-alert type="warning" center :closable="false">
+                    <template slot="title">
+                        服务反馈与通知群 {{this.$store.state.group}}
+                    </template>
+                </el-alert>
             </div>
             <div class="readme">
                 <h2>常见问答</h2>
@@ -43,8 +47,8 @@
                         </el-form-item>
                         <el-button type="primary" @click="check_form('mod_task')"
                                    plain v-if="taskInfo.randOpt === 'Yes'">修改任务</el-button>
-                        <el-button type="success" @click="check_form('get_task')" plain>查询任务</el-button>
-                        <el-button type="danger" @click="check_form('del_task')" plain>删除任务</el-button>
+                        <el-button type="success" @click="check_form('get_task')" plain>查询状态</el-button>
+                        <el-button type="danger" @click="check_form('del_task')" plain>解除绑定</el-button>
                     </el-form>
                 </el-col>
                 <el-col :lg="8" :sm="8" :xs="24" class="info">
@@ -129,7 +133,7 @@ export default {
             rules: {
                 username: [
                     {required: true, message: '请输入信息门户账户', trigger: 'blur'},
-                    {min: 8, max: 14, message: '长度在 8 到 14 个字符', trigger: 'blur'}
+                    {min: 6, max: 14, message: '长度在 6 到 14 个字符', trigger: 'blur'}
                 ],
                 phone: [
                     {required: true, message: '请输入收信电话号码', trigger: 'blur'},
@@ -169,6 +173,9 @@ export default {
                     if (res.data.status === "success") {
                         that.taskInfo = res.data.data
                         that.formData.time = that.taskInfo["taskTime"].split(":")[0]
+                        if(that.taskInfo.randOpt === 'Yes'){
+                            that.taskInfo.taskTime = "时段随机"
+                        }
                     }
                 })
         },

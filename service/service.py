@@ -1,7 +1,9 @@
 # coding=utf-8
 import os
+import json
 import pymysql
 import logging
+import requests
 import sentry_sdk
 from flask import Flask
 from flask import jsonify
@@ -63,6 +65,23 @@ CORS(app, supports_credentials=True,
 def hello_world():
     app.logger.info('Trigger "Hello,world!"')
     return "Hello, world!"
+
+
+@app.route('/api/geo/<code>')
+def geo_proxy(code):
+    try:
+        url = "https://geo.datav.aliyun.com/areas/bound/geojson?code={}_full".format(code)
+        geo_data = requests.get(url, proxies=app.config["PROXY"])
+        geo_json = json.loads(geo_data.text)
+    except (json.decoder.JSONDecodeError, requests.RequestException):
+        return jsonify({"status": "error"})
+
+    geo_json["status"] = "success"
+    code_index = {}
+    for item in geo_json["features"]:
+        code_index[item["properties"]["name"]] = item["properties"]["adcode"]
+    geo_json["code_index"] = code_index
+    return jsonify(geo_json), 200, {"Cache-Control": "public, max-age=31536000"}
 
 
 @app.errorhandler(400)
