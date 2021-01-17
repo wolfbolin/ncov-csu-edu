@@ -105,17 +105,14 @@ def get_region_info(browser, local_data_time):
         print("[INFO]", "Remote data not updated")
         return None
 
-    # Get risk data
-    area_content = browser.find_elements_by_class_name("m-content")
-
     # Get high risk area
-    high_risk_dom = area_content[0]
+    high_risk_dom = browser.find_element_by_class_name("h-content")
     high_risk_list = high_risk_dom.find_elements_by_class_name("m-header")
     high_risk_list = [it.get_attribute('textContent').split(" ") for it in high_risk_list]
     print("[INFO]", "Remote high risk num:", len(high_risk_list))
 
     # Get medium risk area
-    medium_risk_dom = area_content[1]
+    medium_risk_dom = browser.find_element_by_class_name("m-content")
     medium_risk_list = medium_risk_dom.find_elements_by_class_name("m-header")
     medium_risk_list = [it.get_attribute('textContent').split(" ") for it in medium_risk_list]
     print("[INFO]", "Remote medium risk num:", len(medium_risk_list))
