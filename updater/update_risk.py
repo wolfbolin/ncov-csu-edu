@@ -107,7 +107,7 @@ def get_region_info(browser, local_data_time):
 
     # Get high risk area
     high_risk_dom = browser.find_element_by_class_name("h-content")
-    high_risk_list = high_risk_dom.find_elements_by_class_name("m-header")
+    high_risk_list = high_risk_dom.find_elements_by_class_name("h-header")
     high_risk_list = [it.get_attribute('textContent').split(" ") for it in high_risk_list]
     print("[INFO]", "Remote high risk num:", len(high_risk_list))
 
