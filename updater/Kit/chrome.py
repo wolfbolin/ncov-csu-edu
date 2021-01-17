@@ -3,6 +3,7 @@ import os
 import re
 import Kit
 import stat
+import time
 import zipfile
 import requests
 import subprocess
@@ -108,54 +109,51 @@ def get_driver_version(driver_path):
 
 def download_driver(version, driver_path):
     print("[INFO]", "Download driver on", Kit.run_platform())
-
     driver_path = os.path.abspath(driver_path)
 
-    proxies = {"http": None, "https": None}
-    session = requests.session()
-    session.trust_env = False
+    # 获取淘宝镜像列表
+    http_res = requests.get("http://npm.taobao.org/mirrors/chromedriver")
+    mirror_list = re.findall(r'<a href="/(.*)/">(.*)</a>', http_res.text)
 
-    file_url = ""
+    # 检索驱动版本列表
+    url_path = ""
+    version_prefix = version_re.findall(version)[0]
+    for mirrors in mirror_list:
+        if mirrors[1].startswith(version_prefix):
+            url_path = mirrors[0]
+
+    print("[INFO]", "Download driver version:", url_path.split("/")[-1])
     if Kit.run_platform() == "windows":
-        version_prefix = version_re.findall(version)[0]
-        # 获取淘宝镜像列表
-        http_res = session.get("http://npm.taobao.org/mirrors/chromedriver", proxies=proxies)
-        mirror_list = re.findall(r'<a href="(.*)">(.*)</a>', http_res.text)
-        for mirrors in mirror_list:
-            if mirrors[1].startswith(version_prefix):
-                print("[INFO]", "Download version:", mirrors[1][:-1])
-                file_url = "http://npm.taobao.org" + mirrors[0] + "/chromedriver_win32.zip"
-                break
+        file_url = "http://npm.taobao.org/{}/chromedriver_win32.zip".format(url_path)
+    elif Kit.run_platform() == "linux":
+        file_url = "http://npm.taobao.org/{}/chromedriver_linux64.zip".format(url_path)
+    elif Kit.run_platform() == "darwin":
+        file_url = "http://npm.taobao.org/{}/chromedriver_mac64.zip".format(url_path)
     else:
-        print("[INFO]", "Download version:", version)
-        file_url = "http://chromedriver.storage.googleapis.com/{}/chromedriver_linux64.zip".format(version)
-
-    # 下载驱动文件
-    if file_url == "":
         print("[ERR]", "Not found chrome driver")
         return False
-    else:
-        print("[INFO]", "Download driver url:", file_url)
-        driver_res = session.get(file_url, proxies=proxies)
 
-        # 写入压缩文件
-        zip_path = driver_path + "/chromedriver.zip"
-        zip_file = open(zip_path, "wb")
-        zip_file.write(driver_res.content)
-        zip_file.close()
+    print("[INFO]", "Download driver url:", file_url)
+    driver_res = requests.get(file_url)
 
-        # 下载完成后解压
-        zip_file = zipfile.ZipFile(zip_path, "r")
-        for fileM in zip_file.namelist():
-            zip_file.extract(fileM, os.path.dirname(zip_path))
-        zip_file.close()
+    # 写入压缩文件
+    zip_path = driver_path + "/chromedriver.zip"
+    zip_file = open(zip_path, "wb")
+    zip_file.write(driver_res.content)
+    zip_file.close()
 
-        # 删除残留文件
-        os.remove(zip_path)
+    # 下载完成后解压
+    zip_file = zipfile.ZipFile(zip_path, "r")
+    for fileM in zip_file.namelist():
+        zip_file.extract(fileM, os.path.dirname(zip_path))
+    zip_file.close()
 
-        # 授予执行权限
-        if Kit.run_platform() == "linux":
-            os.chmod(driver_path + "/chromedriver", stat.S_IXGRP)
+    # 删除残留文件
+    os.remove(zip_path)
 
-        print("[INFO]", "Download chrome driver finish")
-        return True
+    # 授予执行权限
+    if Kit.run_platform() == "linux":
+        os.chmod(driver_path + "/chromedriver", stat.S_IXGRP)
+
+    print("[INFO]", "Download chrome driver finish")
+    return True
