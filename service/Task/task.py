@@ -37,9 +37,6 @@ def assign_task():
     # 锁定数据表
     conn = app.mysql_pool.connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
-    sql = "LOCK TABLES `user` READ, `task` WRITE"
-    cursor.execute(sql)
-    app.logger.info("锁定数据表完成")
 
     try:
         # 写入定时用户
@@ -56,11 +53,8 @@ def assign_task():
         cursor.execute(sql)
         app.logger.info("随机时间写入完成")
         conn.commit()
-    finally:
-        # 释放数据表
-        sql = "UNLOCK TABLES"
-        cursor.execute(sql)
-        app.logger.info("释放数据表完成")
+    except pymysql.Error:
+        app.logger.error("任务分配过程，数据库写入异常")
 
     return jsonify({
         "status": "success",
