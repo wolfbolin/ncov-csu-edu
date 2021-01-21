@@ -146,6 +146,7 @@ def cpu_core():
 
 
 def run_platform():
+    # windows / linux / darwin
     return platform.system().lower()
 
 
