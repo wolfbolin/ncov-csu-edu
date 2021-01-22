@@ -88,10 +88,9 @@ def user_login():
     # 登录成功写入session
     cursor = conn.cursor()
     sql = "INSERT `user`(`cookies`, `username`, `nickname`, `phone`, `time`) " \
-          "VALUES (%s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE " \
+          "VALUES (%s, %s, %s, %s, rand_time()) ON DUPLICATE KEY UPDATE " \
           "`cookies`=VALUES(`cookies`),`nickname`=VALUES(`nickname`),`phone`=VALUES(`phone`),`online`='Yes'"
-    cursor.execute(query=sql, args=[cookies, user_info["username"], user_info["nickname"],
-                                    user_info["phone"], Kit.rand_time()])
+    cursor.execute(query=sql, args=[cookies, user_info["username"], user_info["nickname"], user_info["phone"]])
     conn.commit()
 
     return jsonify({
