@@ -8,7 +8,7 @@ def main():
         for n in range(60):  # 0 - 59
             sign_time = "{:02d}:{:02d}".format(m, n)
             print("Sign time {}".format(sign_time))
-            res = requests.get("https://covid19.csu-edu.cn/api/task/sign/{}".format(sign_time))
+            res = requests.get("https://covid19.csu-edu.cn/api/task/sign/{}?sms=No".format(sign_time))
             print(res.status_code)
             print(res.text.strip())
             time.sleep(1)
