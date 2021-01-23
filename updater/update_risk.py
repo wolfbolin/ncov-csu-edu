@@ -20,20 +20,14 @@ def main():
         print("[ERR]", "Chrome driver run environment not found")
         return exit(1)
 
-    # MySQL Connect
-    config['MYSQL']['port'] = int(config['MYSQL']['port'])
-    conn = pymysql.connect(**config['MYSQL'])
-
     # Get update time
-    cursor = conn.cursor()
-    sql = "SELECT `val` FROM `kvdb` WHERE `key` = 'risk_update_time'"
-    cursor.execute(sql)
-    local_data_time = cursor.fetchone()[0]
+    res = requests.get("https://covid19.csu-edu.cn/api/data/risk")
+    local_data_time = json.loads(res.text)["update_time"]
     print("[INFO]", "Local update time:", local_data_time)
 
     # Get data
     browser = open_website(cache_path, config['BASE']['headless'])
-    risk_data = get_region_info(browser, local_data_time)
+    risk_data = get_region_info(config, browser, local_data_time)
     browser.quit()
 
     if risk_data is None:
@@ -41,45 +35,18 @@ def main():
         time.sleep(10 * 60)
     else:
         print("[INFO]", "Update local data")
-        sql = "DELETE FROM `region_risk`"
-        cursor.execute(sql)
-        sql = "REPLACE `region_risk`(`province`,`city`,`block`,`level`) VALUES (%s,%s,%s,%s)"
-        high_region_list = []
-        for item in risk_data[0]:
-            high_region_list.append("{}-{}-{}".format(item[0], item[1], item[2]))
-            cursor.execute(sql, args=[item[0], item[1], item[2], "高风险"])
-        high_region_list.sort()
-        medium_region_list = []
-        for item in risk_data[1]:
-            medium_region_list.append("{}-{}-{}".format(item[0], item[1], item[2]))
-            cursor.execute(sql, args=[item[0], item[1], item[2], "中风险"])
-        medium_region_list.sort()
-        sql = "UPDATE `kvdb` SET `val`=%s WHERE `key`='risk_update_time'"
-        cursor.execute(sql, args=[risk_data[2]])
-        conn.commit()
-
-        msg_text = "**高风险地区**\n\n"
-        msg_text += "\n\n".join(high_region_list)
-        msg_text += "\n\n---\n\n"
-        msg_text += "**中风险地区**\n\n"
-        msg_text += "\n\n".join(medium_region_list)
-        msg_text += "\n\n---\n\n"
-        msg_text += "更新日期：{}\n\n".format(risk_data[2])
-
-        # Send update message
-        msg_data = {
-            "title": "疫情风险地区更新",
-            "source": "CSU-Sign",
-            "text": msg_text
-        }
         if config["RUN_ENV"] == "develop":
-            msg_data["user"] = "wolfbolin"
-            requests.post("https://core.wolfbolin.com/message/sugar/text", json=msg_data)
+            url = "http://127.0.0.1:12880/api/data/risk"
         else:
-            for (_, user) in config["NOTICE"].items():
-                print("[INFO]", "Send message to {}".format(user))
-                msg_data["user"] = user
-                requests.post("https://core.wolfbolin.com/message/sugar/text", json=msg_data)
+            url = "https://covid19.csu-edu.cn/api/data/risk"
+
+        data = {
+            "token": config["BASE"]["risk_token"],
+            "high_risk": risk_data[0],
+            "medium_risk": risk_data[1],
+            "update_time": risk_data[2]
+        }
+        requests.post(url, json=data)
 
     print("[INFO]", "Update finish")
     print("[INFO]", "End at", Kit.str_time())
@@ -95,27 +62,27 @@ def open_website(driver_path, headless):
     return browser
 
 
-def get_region_info(browser, local_data_time):
+def get_region_info(config, browser, local_data_time):
     # Get update time
     remote_data_time = browser.find_element_by_class_name("r-time").text
     remote_data_time = re.search(r'\d{4}-\d{2}-\d{2}', remote_data_time)
     remote_data_time = remote_data_time.group(0)
     print("[INFO]", "Remote update time:", remote_data_time)
 
-    if local_data_time == remote_data_time:
+    if local_data_time == remote_data_time and config["RUN_ENV"] != "develop":
         print("[INFO]", "Remote data not updated")
         return None
 
     # Get high risk area
     high_risk_dom = browser.find_element_by_class_name("h-content")
     high_risk_list = high_risk_dom.find_elements_by_class_name("h-header")
-    high_risk_list = [it.get_attribute('textContent').split(" ") for it in high_risk_list]
+    high_risk_list = [it.get_attribute('textContent').strip().split(" ")[:3] for it in high_risk_list]
     print("[INFO]", "Remote high risk num:", len(high_risk_list))
 
     # Get medium risk area
     medium_risk_dom = browser.find_element_by_class_name("m-content")
     medium_risk_list = medium_risk_dom.find_elements_by_class_name("m-header")
-    medium_risk_list = [it.get_attribute('textContent').split(" ") for it in medium_risk_list]
+    medium_risk_list = [it.get_attribute('textContent').strip().split(" ")[:3] for it in medium_risk_list]
     print("[INFO]", "Remote medium risk num:", len(medium_risk_list))
     for item in medium_risk_list:
         item[2] = re.sub(r"（.*?）", "", item[2])
