@@ -15,7 +15,7 @@ def get_key_val(conn, key):
 
 def get_risk_area(conn):
     cursor = conn.cursor(pymysql.cursors.DictCursor)
-    sql = "SELECT DISTINCT `province`, `city`, `level` FROM `region_risk` WHERE `level` != '低风险地区'"
+    sql = "SELECT DISTINCT `province`, `city`, `level` FROM `region_risk`"
     cursor.execute(sql)
 
     risk_area = {}

@@ -52,10 +52,12 @@ app.executor = ThreadPoolExecutor(max_workers=int(app_config["SERVICE"]["signer"
 from User import user_blue
 from Task import task_blue
 from Deal import deal_blue
+from Data import data_blue
 
 app.register_blueprint(user_blue, url_prefix='/api/user')
 app.register_blueprint(task_blue, url_prefix='/api/task')
 app.register_blueprint(deal_blue, url_prefix='/api/deal')
+app.register_blueprint(data_blue, url_prefix='/api/data')
 CORS(app, supports_credentials=True,
      resources={r"/*": {"origins": app_config["BASE"]["web_host"]}})
 
