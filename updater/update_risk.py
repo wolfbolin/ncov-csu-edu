@@ -77,6 +77,7 @@ def main():
             requests.post("https://core.wolfbolin.com/message/sugar/text", json=msg_data)
         else:
             for (_, user) in config["NOTICE"].items():
+                print("[INFO]", "Send message to {}".format(user))
                 msg_data["user"] = user
                 requests.post("https://core.wolfbolin.com/message/sugar/text", json=msg_data)
 
