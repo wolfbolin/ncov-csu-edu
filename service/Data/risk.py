@@ -1,5 +1,6 @@
 # coding=utf-8
 import Kit
+import json
 import pymysql
 import requests
 from flask import jsonify
@@ -78,8 +79,9 @@ def update_risk():
         requests.post("https://core.wolfbolin.com/message/sugar/text", json=msg_data)
     else:
         msg_listener = Kit.get_key_val(conn, "risk_data_listener")
-        for (user, token) in msg_listener:
-            app.logger.info("[INFO]", "Send message to {}".format(user))
+        msg_listener = json.loads(msg_listener)
+        for (user, token) in msg_listener.items():
+            app.logger.info("Send message to {}".format(user))
             msg_data["user"] = user
             params = {"token": token}
             requests.post("https://core.wolfbolin.com/message/sugar/text", json=msg_data, params=params)
