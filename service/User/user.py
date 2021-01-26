@@ -177,7 +177,7 @@ def update_task_info():
             "status": "error",
             "message": "时间范围溢出"
         })
-    task_time = "{:02d}:00".format(task_time)
+    task_time = "{:02d}:23".format(task_time)
 
     # 检查并更新任务
     conn = app.mysql_pool.connection()
