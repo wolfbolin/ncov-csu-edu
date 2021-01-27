@@ -12,7 +12,7 @@
                 </el-alert>
             </div>
             <div class="readme">
-                <h2>功能说明</h2>
+                <h2>订阅服务</h2>
                 <el-row :gutter="36">
                     <el-col :sm="12" :xs="24">
                         <h3>友情捐赠</h3>
@@ -99,7 +99,7 @@
                             </el-form-item>
                             <el-form-item label="支付留言" prop="attach">
                                 <el-input type="textarea" v-model="order.attach" maxlength="128"
-                                          placeholder="请勿在此描述您的业务需求" show-word-limit></el-input>
+                                          placeholder="留言鼓励一下开发者吧" show-word-limit></el-input>
                             </el-form-item>
                             <div class="alert">
                                 <el-alert title="请认真阅读使用说明后选用服务" type="info" center :closable="false"></el-alert>
@@ -108,7 +108,7 @@
                                 刷新
                             </el-button>
                             <el-button type="primary" @click="precreat_payment" v-else>
-                                提交
+                                结算
                             </el-button>
                         </el-form>
                     </el-col>

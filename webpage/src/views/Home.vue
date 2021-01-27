@@ -17,31 +17,9 @@
                     <el-col :sm="12" :xs="24">
                         <h3>关于打卡</h3>
                         <p>
-                            本服务用于向用户提供，每日签到打卡的自动检查能力。旨在帮助用户在容易遗忘的时刻也能保持打卡不中断。
-                        </p>
-                        <p>
+                            <span>本服务用于向用户提供，每日签到打卡的自动检查能力。旨在帮助用户在容易遗忘的时刻也能保持打卡不中断。</span>
                             <span>这不代表你完全移交签到打卡的主动权，该服务仅作为减少工作量与提高效率的工具存在，</span>
                             <span>请自行衡量使用该服务所产生的影响，系统与用户可在任何时间主动终止服务。</span>
-                        </p>
-                    </el-col>
-                    <el-col :sm="12" :xs="24">
-                        <h3>关于服务</h3>
-                        <p>
-                            <span>本服务将在一个合适的时间，读取你上一次成功完成打卡的记录，并按照该记录进行签到打卡。</span>
-                            <span>这一签到过程包含打卡必要的所有信息，并且该过程不需要用户的设备参与。</span>
-                        </p>
-                        <p>
-                            <span>您可以在在服务自动选取的时间之前，自主完成签到打卡并填写您最新的打卡信息。</span>
-                        </p>
-                    </el-col>
-                </el-row>
-                <el-row :gutter="36">
-                    <el-col :sm="12" :xs="24">
-                        <h3>使用说明</h3>
-                        <p>
-                            <span>你需要在下方输入框填写您的信息门户账号密码，并关联您自己的手机号，</span>
-                            <span>本服务会验证该信息并保存登录态。</span>
-                            <span>为防止恶意行为，多次登录失败时将在一小时内的暂停登录服务。</span>
                         </p>
                         <p>
                             <span>本服务将在必要时调整面向使用者的用户政策，包含但不限于修改设置、暂停服务和移除账户。</span>
@@ -51,46 +29,164 @@
                         <h3>数据安全</h3>
                         <p>
                             <span>本服务将不会在服务器中保存您的账号密码，这意味着如果本服务不慎丢失您的登录态，签到打卡服务将被暂停。</span>
-                            <span>当您成功关闭签到任务时，服务端将释放您的登录态，并解除所有与该账号相关联的附加功能，请谨慎操作。</span>
+                            <span>您可以在需要时解除绑定，当您成功解除绑定后，服务将清除您绑定时产生的登录信息，但将保留您其他的服务信息。</span>
+                            <span>如果您有其他安全顾虑可以与开发者联系以获得帮助。</span>
                         </p>
                         <p>
-                            <span>如果您有其他安全顾虑可以与开发者联系以获得帮助</span>
+                            <span>服务未与任何第三方组织和个人达成合作关系，未授权任何组织和个人代理完成打卡，谨防受骗。</span>
+                        </p>
+                    </el-col>
+                </el-row>
+                <el-row :gutter="36">
+                    <el-col :sm="12" :xs="24">
+                        <h3>使用说明</h3>
+                        <p>
+                            <span>本服务会通过代理访问的方式，验证您的账号信息并保留账号的登录态在数据库中。</span>
+                            <span>为防止恶意使用代理，多次登录失败时将在一小时内的暂停登录服务。</span>
+                        </p>
+                        <p>
+                            <span>系统不会也不能监控你的设备以实现数据的更新。</span>
+                            <span>请自行保证打卡信息符合你个人的实际情况，请勿将打卡服务用于欺瞒、诈骗等手段。</span>
+                        </p>
+
+                    </el-col>
+                    <el-col :sm="12" :xs="24">
+                        <h3>常见问答</h3>
+                        <p>
+                            <span>本服务将在为您分配的时间点，使用您最后一次成功完成打卡的信息进行签到打卡。</span>
+                            <span>当您的打卡信息需要变化时，请在服务自动打卡之前手动打卡一次，以实现打卡信息的更新。</span>
+                        </p>
+                        <p>
+                            <span>系统将自动更新当前中高风险地区的疫情信息，并拒绝向中高风险地区所在城市提供打卡服务。</span>
                         </p>
                     </el-col>
                 </el-row>
             </div>
-            <div class="alert">
-                <el-alert :title="closeInfo" type="error" center
-                          v-if="closeLogin" :closable="false"></el-alert>
+            <div class="panel">
+                <el-tabs v-model="activeTab" type="card">
+                    <el-tab-pane label="绑定账号" name="bind">
+                        <el-form class="form" ref="form1" label-position="left" label-width="60px"
+                                 v-loading="loading" :rules="rules" :model="formData">
+                            <el-form-item label="账号" prop="username">
+                                <el-input v-model="formData.username" placeholder="旧版信息门户账户"
+                                          :disabled="closeLogin"></el-input>
+                            </el-form-item>
+                            <el-form-item label="手机" prop="phone">
+                                <el-input v-model="formData.phone" placeholder="关联您的手机" type="number"
+                                          :disabled="closeLogin"></el-input>
+                            </el-form-item>
+                            <el-form-item label="密码" prop="password">
+                                <el-input v-model="formData.password" placeholder="旧版信息门户密码"
+                                          show-password :disabled="closeLogin"></el-input>
+                            </el-form-item>
+                            <el-form-item label="昵称" prop="nickname">
+                                <el-input v-model="formData.nickname" placeholder="起个帅气昵称"
+                                          :disabled="closeLogin"></el-input>
+                            </el-form-item>
+                            <el-form-item label="须知" prop="readme" style="text-align: left">
+                                <el-checkbox v-model="formData.readme" :disabled="closeLogin">我已认真阅读并同意服务使用条款
+                                </el-checkbox>
+                            </el-form-item>
+                            <div class="alert">
+                                <el-alert :title="closeInfo" type="error" center
+                                          v-if="closeLogin" :closable="false"></el-alert>
+                            </div>
+                            <div class="alert">
+                                <el-alert type="warning">
+                                    <template slot="title">
+                                        <el-button type="text" @click="passwdTip=true">关于登录密码错误的说明</el-button>
+                                    </template>
+                                </el-alert>
+                            </div>
+                            <el-button type="success" @click="check_form('add_task')" plain :disabled="closeLogin">
+                                绑定账号
+                            </el-button>
+                        </el-form>
+                    </el-tab-pane>
+                    <el-tab-pane label="查询修改" name="modify">
+                        <el-row>
+                            <el-col :lg="16" :sm="16" :xs="24" class="info">
+                                <el-form class="form" ref="form2" label-position="left" label-width="60px"
+                                         v-loading="loading" :rules="rules" :model="formData">
+                                    <el-form-item label="账号" prop="username">
+                                        <el-input v-model="formData.username" placeholder="信息门户账户"></el-input>
+                                    </el-form-item>
+                                    <el-form-item label="手机" prop="phone">
+                                        <el-input v-model="formData.phone" placeholder="用于身份认证"></el-input>
+                                    </el-form-item>
+                                    <el-form-item label="时间" prop="time" style="text-align: left">
+                                        <el-select v-model="formData.time" placeholder="打卡时段"
+                                                   :disabled="taskInfo.randOpt !== 'Yes'">
+                                            <el-option v-for="item in taskTimeGroup" :key="item.value"
+                                                       :label="item.label" :value="item.value">
+                                            </el-option>
+                                        </el-select>
+                                    </el-form-item>
+                                    <div class="alert">
+                                        <el-alert type="success">仅限订阅了随机时间功能的用户修改打卡时段</el-alert>
+                                    </div>
+                                    <el-button type="primary" @click="check_form('mod_task')"
+                                               plain v-if="taskInfo.randOpt === 'Yes'">修改任务
+                                    </el-button>
+                                    <el-button type="success" @click="check_form('get_task')" plain>查询状态</el-button>
+                                </el-form>
+                            </el-col>
+                            <el-col :lg="8" :sm="8" :xs="24" class="info">
+                                <el-row class="item">
+                                    <el-col :span="12" class="key">
+                                        <p>用户昵称</p>
+                                    </el-col>
+                                    <el-col :span="12" class="val">
+                                        <p>{{ taskInfo.nickname }}</p>
+                                    </el-col>
+                                </el-row>
+                                <el-row class="item">
+                                    <el-col :span="12" class="key">
+                                        <p>打卡时间</p>
+                                    </el-col>
+                                    <el-col :span="12" class="val">
+                                        <p>{{ taskInfo.taskTime }}</p>
+                                    </el-col>
+                                </el-row>
+                                <el-row class="item">
+                                    <el-col :span="12" class="key">
+                                        <p>随机时间</p>
+                                    </el-col>
+                                    <el-col :span="12" class="val">
+                                        <p>{{ taskInfo.randOpt }}</p>
+                                    </el-col>
+                                </el-row>
+                                <el-row class="item">
+                                    <el-col :span="12" class="key">
+                                        <p>短信通知</p>
+                                    </el-col>
+                                    <el-col :span="12" class="val">
+                                        <p>{{ taskInfo.smsOpt }}</p>
+                                    </el-col>
+                                </el-row>
+                            </el-col>
+                        </el-row>
+                    </el-tab-pane>
+                    <el-tab-pane label="解除绑定" name="unbind">
+                        <el-form class="form" ref="form3" label-position="left" label-width="60px"
+                                 v-loading="loading" :rules="rules" :model="formData">
+                            <el-form-item label="账号" prop="username">
+                                <el-input v-model="formData.username" placeholder="信息门户账户"></el-input>
+                            </el-form-item>
+                            <el-form-item label="手机" prop="phone">
+                                <el-input v-model="formData.phone" placeholder="用于身份认证"></el-input>
+                            </el-form-item>
+                            <div class="alert">
+                                <el-alert type="warning">
+                                    提交后立即生效，请勿重复提交
+                                </el-alert>
+                            </div>
+                            <el-button type="danger" @click="check_form('del_task')" plain>解除绑定</el-button>
+                        </el-form>
+                    </el-tab-pane>
+                </el-tabs>
             </div>
-            <el-form class="form" ref="form" label-position="left" label-width="60px"
-                     v-loading="loading" :rules="rules" :model="formData">
-                <el-form-item label="账号" prop="username">
-                    <el-input v-model="formData.username" placeholder="旧版信息门户账户" :disabled="closeLogin"></el-input>
-                </el-form-item>
-                <el-form-item label="密码" prop="password">
-                    <el-input v-model="formData.password" placeholder="旧版信息门户密码"
-                              show-password :disabled="closeLogin"></el-input>
-                </el-form-item>
-                <el-form-item label="昵称" prop="nickname">
-                    <el-input v-model="formData.nickname" placeholder="起个帅气昵称" :disabled="closeLogin"></el-input>
-                </el-form-item>
-                <el-form-item label="手机" prop="phone">
-                    <el-input v-model="formData.phone" placeholder="关联您的手机" type="number"
-                              :disabled="closeLogin"></el-input>
-                </el-form-item>
-                <el-form-item label="须知" prop="readme" style="text-align: left">
-                    <el-checkbox v-model="formData.readme" :disabled="closeLogin">我已认真阅读并同意服务使用条款</el-checkbox>
-                </el-form-item>
-                <div class="alert">
-                    <el-alert type="warning">
-                        <template slot="title">
-                            <el-button type="text" @click="passwdTip=true">关于登录密码错误的说明</el-button>
-                        </template>
-                    </el-alert>
-                </div>
-                <el-button type="success" @click="check_form" plain :disabled="closeLogin">绑定账号</el-button>
-            </el-form>
+
             <div class="tips">
                 <h2>这是什么？</h2>
                 <p>懂的都懂<br/>
@@ -126,8 +222,8 @@
                 <p>打卡服务密码请使用旧版信网中心密码(改版前后密码不同步)</p>
                 <p>多次尝试失败被暂停服务时，可在一个小时后再次尝试登陆</p>
                 <p>您可以在官方网站
-                <a href="http://ca.its.csu.edu.cn/home/login/215" target="_blank">&lt;点击打开&gt;</a>
-                尝试登陆成功后再绑定账号</p>
+                    <a href="http://ca.its.csu.edu.cn/home/login/215" target="_blank">&lt;点击打开&gt;</a>
+                    尝试登陆成功后再绑定账号</p>
                 <span slot="footer" class="dialog-footer">
                     <el-button type="primary" @click="passwdTip = false">确 定</el-button>
                 </span>
@@ -148,6 +244,7 @@ export default {
             }
         };
         return {
+            activeTab: "bind",
             loading: false,
             passwdTip: false,
             passwdAlert: false,
@@ -158,7 +255,26 @@ export default {
                 password: "",
                 nickname: "",
                 readme: "",
-                phone: ""
+                phone: "",
+                time: ""
+            },
+            taskTimeGroup: [
+                {value: "00", label: "00:00-00:59"},
+                {value: "01", label: "01:00-01:59"},
+                {value: "02", label: "02:00-02:59"},
+                {value: "03", label: "03:00-03:59"},
+                {value: "04", label: "04:00-04:59"},
+                {value: "05", label: "05:00-05:59"},
+                {value: "06", label: "06:00-06:59"},
+                {value: "07", label: "07:00-07:59"},
+                {value: "08", label: "08:00-08:59"},
+                {value: "09", label: "09:00-09:59"},
+            ],
+            taskInfo: {
+                nickname: "",
+                taskTime: "",
+                randOpt: "",
+                smsOpt: ""
             },
             rules: {
                 username: [
@@ -189,7 +305,6 @@ export default {
             let data_host = this.$store.state.host
             this.$http.get(data_host + `/user/open`)
                 .then(function (res) {
-                    console.log(res)
                     that.loading = false;
                     if (res.data.status !== 'success') {
                         that.closeLogin = true
@@ -201,16 +316,32 @@ export default {
                     console.log(res);
                 })
         },
-        check_form: function () {
-            this.$refs["form"].validate((valid) => {
-                if (valid) {
-                    console.log("Check success, submit!");
-                    this.user_login();
-                } else {
-                    console.log('"Check error"');
-                    return false;
-                }
-            });
+        check_form: function (task) {
+            if (task === "add_task") {
+                this.$refs["form1"].validate((valid) => {
+                    if (valid) {
+                        this.user_login();
+                    }
+                })
+            }else if(task === "get_task"){
+                this.$refs["form2"].validate((valid) => {
+                    if (valid) {
+                        this.user_task();
+                    }
+                })
+            }else if(task === "mod_task"){
+                this.$refs["form2"].validate((valid) => {
+                    if (valid) {
+                        this.user_modify();
+                    }
+                })
+            }else if(task === "del_task"){
+                this.$refs["form1"].validate((valid) => {
+                    if (valid) {
+                        this.user_logout();
+                    }
+                })
+            }
         },
         user_login: function () {
             this.loading = true;
@@ -233,7 +364,93 @@ export default {
                             message: res.data.message,
                             type: 'success'
                         });
-                        that.$router.push("/user");
+                        that.formData.password = ""
+                    } else {
+                        that.$message({
+                            message: res.data.message,
+                            type: 'error'
+                        });
+                    }
+                })
+                .catch(function (res) {
+                    that.loading = false;
+                    console.log(res);
+                })
+        },
+        user_task: function () {
+            this.loading = true;
+            let that = this;
+            let data_host = this.$store.state.host;
+            this.$http.get(data_host + `/user/task`,
+                {
+                    params: {
+                        username: this.formData.username,
+                        phone: this.formData.phone,
+                    }
+                })
+                .then(function (res) {
+                    that.loading = false
+                    if (res.data.status === "success") {
+                        that.taskInfo = res.data.data
+                        that.formData.time = that.taskInfo["taskTime"].split(":")[0]
+                        if (that.taskInfo.randOpt === 'Yes') {
+                            that.taskInfo.taskTime = "时段随机"
+                        }
+                    } else {
+                        that.$message({
+                            message: res.data.message,
+                            type: 'error'
+                        });
+                    }
+                })
+        },
+        user_logout: function () {
+            this.loading = true;
+            let that = this;
+            let data_host = this.$store.state.host;
+            let http_data = {
+                username: this.formData.username,
+                phone: this.formData.phone,
+            }
+            this.$http.post(data_host + `/user/logout`, http_data)
+                .then(function (res) {
+                    console.log(res)
+                    that.loading = false;
+                    if (res.data.status === 'success') {
+                        that.loading = false;
+                        that.$message({
+                            message: res.data.message,
+                            type: 'success'
+                        });
+                    } else {
+                        that.$message({
+                            message: res.data.message,
+                            type: 'error'
+                        });
+                    }
+                })
+                .catch(function (res) {
+                    that.loading = false;
+                    console.log(res);
+                })
+        },
+        user_modify: function () {
+            this.loading = true;
+            let that = this;
+            let data_host = this.$store.state.host;
+            let http_data = {
+                username: this.formData.username,
+                phone: this.formData.phone,
+                time: this.formData.time
+            }
+            this.$http.put(data_host + `/user/task`, http_data)
+                .then(function (res) {
+                    that.loading = false
+                    if (res.data.status === "success") {
+                        that.$message({
+                            message: res.data.message,
+                            type: 'success'
+                        });
                     } else {
                         that.$message({
                             message: res.data.message,
@@ -255,15 +472,43 @@ export default {
 
 <style lang="scss" scoped>
 .wb-home {
-    .form {
+    .panel {
         width: 90%;
-        margin-top: 36px;
+        margin: 16px auto auto;
+    }
+
+    .form {
+        width: 100%;
+        margin-top: 16px;
         display: inline-block;
         text-align: center;
 
         .alert {
             .el-button {
                 padding: 0;
+            }
+        }
+    }
+
+    .info {
+        padding: 16px 16px;
+
+        .item {
+            margin-bottom: 12px;
+
+            p {
+                margin: 0.5em 0;
+            }
+
+            .key {
+                min-height: 38px;
+                border-radius: 4px;
+                background-color: rgba(145, 190, 240, 0.3);
+            }
+
+            .val {
+                min-height: 38px;
+                background-color: rgba(145, 190, 240, 0.1);
             }
         }
     }
