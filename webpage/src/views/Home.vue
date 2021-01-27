@@ -344,8 +344,8 @@ export default {
             }
         },
         user_login: function () {
-            this.loading = true;
             let that = this;
+            this.loading = true;
             let data_host = this.$store.state.host;
             let http_data = {
                 username: this.formData.username,
@@ -353,10 +353,8 @@ export default {
                 nickname: this.formData.nickname,
                 phone: this.formData.phone
             }
-            console.log(http_data)
             this.$http.post(data_host + `/user/login`, http_data)
                 .then(function (res) {
-                    console.log(res)
                     that.loading = false;
                     if (res.data.status === 'success') {
                         that.loading = false;
@@ -375,11 +373,15 @@ export default {
                 .catch(function (res) {
                     that.loading = false;
                     console.log(res);
+                    that.$message({
+                        message: "网络异常，请重试",
+                        type: 'error'
+                    });
                 })
         },
         user_task: function () {
-            this.loading = true;
             let that = this;
+            this.loading = true;
             let data_host = this.$store.state.host;
             this.$http.get(data_host + `/user/task`,
                 {
@@ -403,10 +405,18 @@ export default {
                         });
                     }
                 })
+                .catch(function (res) {
+                    that.loading = false;
+                    console.log(res);
+                    that.$message({
+                        message: "网络异常，请重试",
+                        type: 'error'
+                    });
+                })
         },
         user_logout: function () {
-            this.loading = true;
             let that = this;
+            this.loading = true;
             let data_host = this.$store.state.host;
             let http_data = {
                 username: this.formData.username,
@@ -414,7 +424,6 @@ export default {
             }
             this.$http.post(data_host + `/user/logout`, http_data)
                 .then(function (res) {
-                    console.log(res)
                     that.loading = false;
                     if (res.data.status === 'success') {
                         that.loading = false;
@@ -432,11 +441,15 @@ export default {
                 .catch(function (res) {
                     that.loading = false;
                     console.log(res);
+                    that.$message({
+                        message: "网络异常，请重试",
+                        type: 'error'
+                    });
                 })
         },
         user_modify: function () {
-            this.loading = true;
             let that = this;
+            this.loading = true;
             let data_host = this.$store.state.host;
             let http_data = {
                 username: this.formData.username,
@@ -461,6 +474,10 @@ export default {
                 .catch(function (res) {
                     that.loading = false;
                     console.log(res);
+                    that.$message({
+                        message: "网络异常，请重试",
+                        type: 'error'
+                    });
                 })
         }
     },
