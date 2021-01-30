@@ -336,7 +336,7 @@ export default {
                     }
                 })
             }else if(task === "del_task"){
-                this.$refs["form1"].validate((valid) => {
+                this.$refs["form3"].validate((valid) => {
                     if (valid) {
                         this.user_logout();
                     }
