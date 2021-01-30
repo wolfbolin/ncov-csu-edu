@@ -12,7 +12,7 @@
                 </el-alert>
             </div>
             <div class="readme">
-                <h2>功能说明</h2>
+                <h2>订阅服务</h2>
                 <el-row :gutter="36">
                     <el-col :sm="12" :xs="24">
                         <h3>友情捐赠</h3>
@@ -75,7 +75,7 @@
                 <el-row :gutter="20" class="wb-alipay">
                     <el-col :xs="24" :sm="16">
                         <el-form :model="order" :rules="payRule" ref="payForm" label-width="80px"
-                                 label-position="right" class="wb-alipay-form">
+                                 v-loading="loading" label-position="right" class="wb-alipay-form">
                             <el-form-item label="选择功能" style="text-align: left" prop="itemList">
                                 <el-checkbox-group v-model="order.itemList" size="small" @change="choose_change">
                                     <template v-for="item in menu">
@@ -99,7 +99,7 @@
                             </el-form-item>
                             <el-form-item label="支付留言" prop="attach">
                                 <el-input type="textarea" v-model="order.attach" maxlength="128"
-                                          placeholder="请勿在此描述您的业务需求" show-word-limit></el-input>
+                                          placeholder="留言鼓励一下开发者吧" show-word-limit></el-input>
                             </el-form-item>
                             <div class="alert">
                                 <el-alert title="请认真阅读使用说明后选用服务" type="info" center :closable="false"></el-alert>
@@ -108,7 +108,7 @@
                                 刷新
                             </el-button>
                             <el-button type="primary" @click="precreat_payment" v-else>
-                                提交
+                                结算
                             </el-button>
                         </el-form>
                     </el-col>
@@ -242,17 +242,28 @@ export default {
         },
         fetch_volume: function () {
             let that = this;
+            this.loading = true
             let data_host = this.$store.state.host;
             let http_url = data_host + `/deal/menu`
             this.$http.get(http_url)
                 .then(function (res) {
-                    console.log(res.data)
+                    that.loading = false
                     if (res.data.status === "success") {
                         that.menu = res.data.data
+                    } else {
+                        that.$message({
+                            message: res.data.message,
+                            type: 'error'
+                        });
                     }
                 })
                 .catch(function (res) {
+                    that.loading = false
                     console.log(res)
+                    that.$message({
+                        message: "网络异常，请重试",
+                        type: 'error'
+                    });
                 })
         },
         fetch_donor: function () {
@@ -261,13 +272,22 @@ export default {
             let http_url = data_host + `/user/donor`
             this.$http.get(http_url)
                 .then(function (res) {
-                    console.log(res.data)
+                    that.loading = false
                     if (res.data.status === "success") {
                         that.donor_list = res.data.data
+                    } else {
+                        that.$message({
+                            message: res.data.message,
+                            type: 'error'
+                        });
                     }
                 })
                 .catch(function (res) {
                     console.log(res)
+                    that.$message({
+                        message: "网络异常，赞助者加载失败",
+                        type: 'error'
+                    });
                 })
         },
         precreat_payment: function () {
@@ -287,6 +307,7 @@ export default {
 
                         // 创建交易订单
                         let that = this;
+                        this.loading = true
                         let data_host = this.$store.state.host;
                         let http_url = data_host + `/deal/order`
                         this.$http.post(http_url,
@@ -298,6 +319,7 @@ export default {
                                 item_list: itemList,
                             })
                             .then(function (res) {
+                                that.loading = false
                                 if (res.data.status === "success") {
                                     let order_info = res.data.data
                                     that.order.order_status = "已创建"
@@ -312,7 +334,12 @@ export default {
                                 }
                             })
                             .catch(function (res) {
+                                that.loading = false
                                 console.log(res)
+                                that.$message({
+                                    message: "网络异常，请重试",
+                                    type: 'error'
+                                });
                             })
                     }
                 }
@@ -321,6 +348,7 @@ export default {
         query_payment: function () {
             console.log("Check deal order")
             let that = this;
+            this.loading = true
             let data_host = this.$store.state.host;
             let http_url = data_host + `/deal/order`
             this.$http.get(http_url, {
@@ -366,7 +394,12 @@ export default {
                     }
                 })
                 .catch(function (res) {
+                    that.loading = false
                     console.log(res)
+                    that.$message({
+                        message: "网络异常，请重试",
+                        type: 'error'
+                    });
                 })
         },
         check_payment: function () {
@@ -396,6 +429,10 @@ export default {
                 .catch(function (res) {
                     that.loading = false
                     console.log(res)
+                    that.$message({
+                        message: "网络异常，请重试",
+                        type: 'error'
+                    });
                 })
         }
     },

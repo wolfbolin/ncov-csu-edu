@@ -15,14 +15,13 @@ def get_key_val(conn, key):
 
 def get_risk_area(conn):
     cursor = conn.cursor(pymysql.cursors.DictCursor)
-    sql = "SELECT DISTINCT `province`, `city`, `level` FROM `region_risk` WHERE `level` != '低风险地区'"
+    sql = "SELECT DISTINCT `province`, `city`, `level` FROM `region_risk`"
     cursor.execute(sql)
 
     risk_area = {}
     for area in cursor.fetchall():
-        province = area["province"] + "省"
-        risk_area.setdefault(province, {})
-        risk_area[province].setdefault(area["city"], {})
-        risk_area[province][area["city"]] = area["level"]
+        risk_area.setdefault(area["province"], {})
+        risk_area[area["province"]].setdefault(area["city"], {})
+        risk_area[area["province"]][area["city"]] = area["level"]
 
     return risk_area

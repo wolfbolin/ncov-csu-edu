@@ -65,6 +65,7 @@ def assign_task():
 @task_blue.route('/sign')
 @task_blue.route('/sign/<string:check_time>')
 def check_list(check_time=None):
+    sms_flag = request.args.get("sms", "Yes")
     if check_time is None:
         time_now = Kit.str_time("%H:%M")
     else:
@@ -94,6 +95,8 @@ def check_list(check_time=None):
     user_task_list = cursor.fetchall()
     # 提交用户打卡任务到进程池
     for user_info in user_task_list:
+        if sms_flag == "No":
+            user_info["sms"] = "No"
         if user_info["online"] != "Yes":
             sql = "UPDATE `task` SET `status`=%s, `sign_time`=%s WHERE `username`=%s AND `date` = CURDATE()"
             cursor.execute(sql, args=["logout", Kit.str_time("%H:%M:%S"), user_info["username"]])

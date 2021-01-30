@@ -145,6 +145,9 @@ def user_sign_in(session, risk_area):
         "district": api_data["addressComponent"]["district"],
         "township": api_data["addressComponent"]["township"]
     }
+    if location["province"] in ('北京市', '上海市', '重庆市', '天津市'):
+        location["city"] = location["district"]
+        location["district"] = location["township"]
 
     # 检查打卡位置
     risk_data = risk_area.get(location["province"], {})
