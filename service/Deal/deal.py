@@ -311,16 +311,22 @@ def close_inactive_service():
             expire_time = user_data[username][item]
             if item == "donation":
                 continue
-            elif item == "message" and expire_time < Kit.unix_time():
-                sql = "UPDATE `user` SET `sms`='No' WHERE `username`=%s"
+            elif item == "message":
+                if expire_time < Kit.unix_time():
+                    sql = "UPDATE `user` SET `sms`='No' WHERE `username`=%s"
+                    close_count += 1
+                else:
+                    sql = "UPDATE `user` SET `sms`='Yes' WHERE `username`=%s"
+                    keep_count += 1
                 cursor.execute(sql, args=[username])
-                close_count += 1
-            elif item == "random" and expire_time < Kit.unix_time():
-                sql = "UPDATE `user` SET `rand`='No',`time`=rand_time() WHERE `username`=%s"
+            elif item == "random":
+                if expire_time < Kit.unix_time():
+                    sql = "UPDATE `user` SET `rand`='No',`time`=rand_time() WHERE `username`=%s"
+                    close_count += 1
+                else:
+                    sql = "UPDATE `user` SET `rand`='Yes' WHERE `username`=%s"
+                    keep_count += 1
                 cursor.execute(sql, args=[username])
-                close_count += 1
-            else:
-                keep_count += 1
     conn.commit()
 
     return jsonify({
