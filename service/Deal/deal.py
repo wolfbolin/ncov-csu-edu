@@ -330,7 +330,7 @@ def close_inactive_service():
 
 
 def update_active_time(data, key, begin, length):
-    if key not in data.keys() or data[key] > begin:
+    if key not in data.keys() or data[key] < begin:
         data[key] = begin + length
     else:
         # data[key] <= begin
