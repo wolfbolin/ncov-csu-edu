@@ -249,6 +249,8 @@ def check_order_list(conn, order_list):
             # 调整用户功能
             item_list = json.loads(order["item_list"])
             for item in item_list:
+                if Kit.datetime2unix(order["created_time"]) + 2592000 < Kit.unix_time():
+                    continue
                 if item == "donation":
                     sql = "UPDATE `user` SET `donor`='Yes' WHERE `username`=%s"
                     cursor.execute(sql, args=[order["username"]])
