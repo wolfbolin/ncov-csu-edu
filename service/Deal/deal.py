@@ -249,6 +249,8 @@ def check_order_list(conn, order_list):
             # 调整用户功能
             item_list = json.loads(order["item_list"])
             for item in item_list:
+                if Kit.datetime2unix(order["created_time"]) + 2592000 < Kit.unix_time():
+                    continue
                 if item == "donation":
                     sql = "UPDATE `user` SET `donor`='Yes' WHERE `username`=%s"
                     cursor.execute(sql, args=[order["username"]])
@@ -311,16 +313,22 @@ def close_inactive_service():
             expire_time = user_data[username][item]
             if item == "donation":
                 continue
-            elif item == "message" and expire_time < Kit.unix_time():
-                sql = "UPDATE `user` SET `sms`='No' WHERE `username`=%s"
+            elif item == "message":
+                if expire_time < Kit.unix_time():
+                    sql = "UPDATE `user` SET `sms`='No' WHERE `username`=%s"
+                    close_count += 1
+                else:
+                    sql = "UPDATE `user` SET `sms`='Yes' WHERE `username`=%s"
+                    keep_count += 1
                 cursor.execute(sql, args=[username])
-                close_count += 1
-            elif item == "random" and expire_time < Kit.unix_time():
-                sql = "UPDATE `user` SET `rand`='No',`time`=rand_time() WHERE `username`=%s"
+            elif item == "random":
+                if expire_time < Kit.unix_time():
+                    sql = "UPDATE `user` SET `rand`='No',`time`=rand_time() WHERE `username`=%s"
+                    close_count += 1
+                else:
+                    sql = "UPDATE `user` SET `rand`='Yes' WHERE `username`=%s"
+                    keep_count += 1
                 cursor.execute(sql, args=[username])
-                close_count += 1
-            else:
-                keep_count += 1
     conn.commit()
 
     return jsonify({
@@ -330,7 +338,7 @@ def close_inactive_service():
 
 
 def update_active_time(data, key, begin, length):
-    if key not in data.keys() or data[key] > begin:
+    if key not in data.keys() or data[key] < begin:
         data[key] = begin + length
     else:
         # data[key] <= begin
