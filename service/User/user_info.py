@@ -174,3 +174,59 @@ def user_sign_in(session, risk_area):
     elif sign_res["e"] == 1 and sign_res["m"] == "今天已经填报了":
         return True, sign_res["m"], json.dumps(location, ensure_ascii=False)
     return False, sign_res["m"], "Unknown situation"
+
+
+def base_info_update(conn, username, cookies):
+    if cookies == "":
+        user_status_lose(conn, username)
+        return
+
+    # 初始化连接
+    session = requests.Session()
+    cookies = json.loads(cookies)
+    cookies_jar = requests.utils.cookiejar_from_dict(cookies)
+    session.cookies = cookies_jar
+
+    # 获取页面数据
+    url = "https://wxxy.csu.edu.cn/ncov/wap/default/index"
+    try:
+        http_result = session.get(url, proxies={"https": None}, allow_redirects=False)
+    except requests.exceptions.ReadTimeout:
+        run_err = "requests.exceptions.ReadTimeout:[%s]" % url
+        user_status_lose(conn, username)
+        Kit.print_red(run_err)
+        return
+    except requests.exceptions.ConnectionError:
+        run_err = "requests.exceptions.ConnectionError:[%s]" % url
+        user_status_lose(conn, username)
+        Kit.print_red(run_err)
+        return
+
+    if http_result.status_code == 302:
+        user_status_lose(conn, username)
+        return
+
+    # 解析用户姓名
+    regex = r'realname: "(.*)",'
+    re_result = re.search(regex, http_result.text)
+    realname = re_result.group(1)
+
+    # 解析学院名称
+    regex = r'xymc: "(.*)",'
+    re_result = re.search(regex, http_result.text)
+    college = re_result.group(1)
+
+    print("用户身份：{}={}.{}".format(username, realname, college))
+
+    # 更新用户数据
+    cursor = conn.cursor()
+    sql = "UPDATE `user` SET `realname`=%s, `college`=%s WHERE `username`=%s"
+    cursor.execute(sql, args=[realname, college, username])
+    conn.commit()
+
+
+def user_status_lose(conn, username):
+    cursor = conn.cursor()
+    sql = "UPDATE `user` SET `online`='No' WHERE `username`=%s"
+    cursor.execute(sql, args=[username])
+    Kit.write_log(conn, 'info_update', username, 0, "登录态丢失", "自动退出登录状态{}".format(Kit.str_time()))
