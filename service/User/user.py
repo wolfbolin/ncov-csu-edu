@@ -6,10 +6,9 @@ import requests
 from flask import abort
 from flask import jsonify
 from flask import request
-from requests import utils
 from User import user_blue
 from flask import current_app as app
-from User.user_info import user_login
+from User.user_info import user_sso_login
 from User.user_info import user_sign_task
 from User.user_info import base_info_update
 
@@ -80,7 +79,7 @@ def user_login():
         })
 
     # 验证用户账号信息并获取session
-    status, data, run_err = user_login(user_info["username"], user_info["password"])
+    status, data, run_err = user_sso_login(user_info["username"], user_info["password"])
     if status is False:
         Kit.write_log(conn, 'user_login', user_info["username"], status, data, run_err)
         return jsonify({

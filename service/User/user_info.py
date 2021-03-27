@@ -8,7 +8,7 @@ from requests import utils
 from flask import current_app as app
 
 
-def user_login(username, password):
+def user_sso_login(username, password):
     # 信息门户登录
     session = requests.Session()
     url = "http://ca.its.csu.edu.cn/Home/Login/215"
