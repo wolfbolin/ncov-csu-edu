@@ -1,12 +1,16 @@
 # coding=utf-8
-import json
 import Kit
+import json
 import pymysql
+import requests
 from flask import abort
 from flask import jsonify
 from flask import request
 from User import user_blue
 from flask import current_app as app
+from User.user_info import user_sso_login
+from User.user_info import user_sign_task
+from User.user_info import base_info_update
 
 
 @user_blue.route('/open', methods=["GET"])
@@ -75,7 +79,7 @@ def user_login():
         })
 
     # 验证用户账号信息并获取session
-    status, data, run_err = Kit.user_login(user_info["username"], user_info["password"])
+    status, data, run_err = user_sso_login(user_info["username"], user_info["password"])
     if status is False:
         Kit.write_log(conn, 'user_login', user_info["username"], status, data, run_err)
         return jsonify({
@@ -92,6 +96,9 @@ def user_login():
           "`cookies`=VALUES(`cookies`),`nickname`=VALUES(`nickname`),`phone`=VALUES(`phone`),`online`='Yes'"
     cursor.execute(query=sql, args=[cookies, user_info["username"], user_info["nickname"], user_info["phone"]])
     conn.commit()
+
+    # 检查用户登录态与基本信息
+    base_info_update(conn, user_info["username"], cookies)
 
     return jsonify({
         "status": "success",
@@ -213,7 +220,7 @@ def user_sign():
     cursor.execute(sql, args=[user_info["username"], user_info["phone"]])
     user_info = cursor.fetchone()
     risk_area = Kit.get_risk_area(conn)
-    app.executor.submit(Kit.user_sign_task, app.config, user_info, risk_area)
+    app.executor.submit(user_sign_task, app.config, user_info, risk_area)
 
     return jsonify({
         "status": "success",
@@ -222,7 +229,7 @@ def user_sign():
 
 
 @user_blue.route('/list')
-def user_list():
+def user_page_list():
     # 读取分页信息
     page_now = int(request.args.get("page_now", 1))
     page_size = int(request.args.get("page_size", 50))
@@ -234,7 +241,7 @@ def user_list():
     cursor.execute(query=sql)
     item_num = cursor.fetchone()["num"]
     sql = "SELECT `username`, `nickname`, `phone`, `time` FROM `user` WHERE `online`='Yes' LIMIT %s OFFSET %s"
-    cursor.execute(query=sql, args=[page_size, page_now - 1])
+    cursor.execute(query=sql, args=[page_size, (page_now - 1) * page_size])
     result = []
     for item in cursor.fetchall():
         if len(item["username"]) <= 6:

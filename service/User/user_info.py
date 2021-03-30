@@ -8,7 +8,7 @@ from requests import utils
 from flask import current_app as app
 
 
-def user_login(username, password):
+def user_sso_login(username, password):
     # 信息门户登录
     session = requests.Session()
     url = "http://ca.its.csu.edu.cn/Home/Login/215"
@@ -88,6 +88,9 @@ def user_sign_task(config, user_info, risk_area):
                                   user_info["username"]])
         conn.commit()
     except BaseException as e:
+        # 异常故障强制登出
+        conn = pymysql.connect(**config['MYSQL'])
+        user_force_logout(conn, user_info["username"], "打卡状态异常", "Runtime error:{}".format(e))
         Kit.print_red(e)
 
 
@@ -174,3 +177,59 @@ def user_sign_in(session, risk_area):
     elif sign_res["e"] == 1 and sign_res["m"] == "今天已经填报了":
         return True, sign_res["m"], json.dumps(location, ensure_ascii=False)
     return False, sign_res["m"], "Unknown situation"
+
+
+def base_info_update(conn, username, cookies):
+    if cookies == "":
+        user_force_logout(conn, username, "登录态丢失", "自动退出登录状态")
+        return
+
+    # 初始化连接
+    session = requests.Session()
+    cookies = json.loads(cookies)
+    cookies_jar = requests.utils.cookiejar_from_dict(cookies)
+    session.cookies = cookies_jar
+
+    # 获取页面数据
+    url = "https://wxxy.csu.edu.cn/ncov/wap/default/index"
+    try:
+        http_result = session.get(url, proxies={"https": None}, allow_redirects=False)
+    except requests.exceptions.ReadTimeout:
+        run_err = "requests.exceptions.ReadTimeout:[%s]" % url
+        user_force_logout(conn, username, "登录态丢失", "自动退出登录状态")
+        Kit.print_red(run_err)
+        return
+    except requests.exceptions.ConnectionError:
+        run_err = "requests.exceptions.ConnectionError:[%s]" % url
+        user_force_logout(conn, username, "登录态丢失", "自动退出登录状态")
+        Kit.print_red(run_err)
+        return
+
+    if http_result.status_code == 302:
+        user_force_logout(conn, username, "登录态丢失", "自动退出登录状态")
+        return
+
+    # 解析用户姓名
+    regex = r'realname: "(.*)",'
+    re_result = re.search(regex, http_result.text)
+    realname = re_result.group(1)
+
+    # 解析学院名称
+    regex = r'xymc: "(.*)",'
+    re_result = re.search(regex, http_result.text)
+    college = re_result.group(1)
+
+    print("用户身份：{}={}.{}".format(username, realname, college))
+
+    # 更新用户数据
+    cursor = conn.cursor()
+    sql = "UPDATE `user` SET `realname`=%s, `college`=%s WHERE `username`=%s"
+    cursor.execute(sql, args=[realname, college, username])
+    conn.commit()
+
+
+def user_force_logout(conn, username, status, message=Kit.str_time()):
+    cursor = conn.cursor()
+    sql = "UPDATE `user` SET `online`='No' WHERE `username`=%s"
+    cursor.execute(sql, args=[username])
+    Kit.write_log(conn, 'info_update', username, 0, status, message)

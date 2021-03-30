@@ -4,11 +4,13 @@ import logging
 import configparser
 
 
-def get_config():
+def get_config(run_env=None):
     # 读取配置文件
-    run_env = 'production'
-    if 'SERVICE_ENV' in os.environ:
-        run_env = os.environ['SERVICE_ENV']
+    if run_env is None:
+        if 'SERVICE_ENV' in os.environ:
+            run_env = os.environ['SERVICE_ENV']
+        else:
+            run_env = 'production'
     print("Load config [%s]" % run_env)
     config_path = '{}/{}.ini'.format(os.path.split(os.path.abspath(__file__))[0], run_env)
     if os.path.isfile(config_path):
