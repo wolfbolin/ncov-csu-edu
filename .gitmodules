@@ -1,0 +1,4 @@
+[submodule "service/package/tencent/CMQ"]
+	path = service/package/tencent/CMQ
+	url = https://github.com/tencentyun/cmq-python-sdk.git
+	branch = python3
