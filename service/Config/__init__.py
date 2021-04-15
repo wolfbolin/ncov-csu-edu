@@ -4,6 +4,14 @@ import logging
 import configparser
 
 
+class UserConfigParser(configparser.ConfigParser):
+    def __init__(self, defaults=None):
+        configparser.ConfigParser.__init__(self, defaults=None)
+
+    def optionxform(self, option_str):
+        return option_str
+
+
 def get_config(run_env=None):
     # 读取配置文件
     if run_env is None:
@@ -14,7 +22,7 @@ def get_config(run_env=None):
     print("Load config [%s]" % run_env)
     config_path = '{}/{}.ini'.format(os.path.split(os.path.abspath(__file__))[0], run_env)
     if os.path.isfile(config_path):
-        config = configparser.ConfigParser()
+        config = UserConfigParser()
         config.read(config_path, encoding='utf-8')
 
         app_config = dict()
