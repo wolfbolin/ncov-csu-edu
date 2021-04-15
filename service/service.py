@@ -1,5 +1,6 @@
 # coding=utf-8
 import os
+import re
 import json
 import pymysql
 import logging
@@ -11,12 +12,13 @@ from flask import request
 from flask_cors import CORS
 from Config import get_config
 from dbutils.pooled_db import PooledDB
-from concurrent.futures import ThreadPoolExecutor
+from logging.handlers import TimedRotatingFileHandler
 from sentry_sdk.integrations.flask import FlaskIntegration
 
 # 获取配置
 app_config = get_config()
 base_path = os.path.split(os.path.abspath(__file__))[0]
+app_config["BASE_PATH"] = base_path
 
 # Sentry
 sentry_sdk.init(
@@ -30,10 +32,12 @@ app = Flask(__name__)
 app.config.from_mapping(app_config)
 
 # 服务日志
-file_logger = logging.getLogger('file_log')
-file_logger.setLevel(logging.INFO)
-file_handler = logging.FileHandler(filename='{}/log/run.log'.format(base_path), encoding="utf-8")
+logger = logging.getLogger('file_log')
+log_name = '{}/log/run_{}.log'.format(base_path, os.getpid())
+file_handler = TimedRotatingFileHandler(filename=log_name, when='midnight', backupCount=7)
 file_handler.setFormatter(logging.Formatter('%(asctime)s:<%(levelname)s> %(message)s'))
+file_handler.extMatch = re.compile(r'^\d{4}-\d{2}-\d{2}.log')
+file_handler.suffix = '%Y-%m-%d.log'
 app.logger.addHandler(file_handler)
 app.logger.setLevel(logging.INFO)
 
@@ -44,9 +48,6 @@ app.config.get('MYSQL')["port"] = int(app.config.get('MYSQL')["port"])
 pool_config = app.config.get('POOL')
 mysql_config = app.config.get('MYSQL')
 app.mysql_pool = PooledDB(creator=pymysql, **mysql_config, **pool_config)
-
-# 初始化异步线程
-app.executor = ThreadPoolExecutor(max_workers=int(app_config["SERVICE"]["signer"]))
 
 # 初始化路由
 from User import user_blue
@@ -103,7 +104,12 @@ def http_forbidden(msg):
     })
 
 
+if __name__ != '__main__':
+    gunicorn_logger = logging.getLogger('gunicorn.error')
+    app.logger.handlers = gunicorn_logger.handlers
+    app.logger.setLevel(gunicorn_logger.level)
+
 if __name__ == '__main__':
     app.logger.setLevel(logging.DEBUG)
-    app.run(host='127.0.0.1', port=12880, debug=True)
+    app.run(host='127.0.0.1', port=12880, debug=True, use_reloader=False)
     exit()
