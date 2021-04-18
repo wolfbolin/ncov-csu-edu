@@ -30,6 +30,10 @@ def get_config(run_env=None):
             app_config[section] = dict(config.items(section))
 
         app_config["RUN_ENV"] = run_env
+        if run_env == "develop":
+            app_config["DEBUG"] = True
+        else:
+            app_config["DEBUG"] = False
         return app_config
     else:
         logging.error("Config not exist")
