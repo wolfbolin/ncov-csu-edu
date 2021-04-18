@@ -1,9 +1,10 @@
 # coding=utf-8
+import datetime
 import json
 import time
 import random
-import pymysql
 import requests
+from flask import current_app as app
 
 
 # Print tools
@@ -47,6 +48,10 @@ def print_none(message, tag="DEBUG", end='\n'):
     _print(message, None, tag, end)  # 默认
 
 
+def time_now():
+    return datetime.datetime.now()
+
+
 def unix_time(unit=1):
     return int(time.time() * unit)
 
@@ -55,6 +60,10 @@ def str_time(pattern='%Y-%m-%d %H:%M:%S', timing=None):
     if timing is None:
         timing = time.time()
     return time.strftime(pattern, time.localtime(timing))
+
+
+def timestamp2datetime(time_string, pattern='%Y-%m-%d %H:%M:%S'):
+    return datetime.datetime.strptime(time_string, pattern)
 
 
 def timestamp2unix(time_string, pattern='%Y-%m-%d %H:%M:%S'):
