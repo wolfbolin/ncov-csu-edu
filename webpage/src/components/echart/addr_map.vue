@@ -6,9 +6,10 @@
 
 <script>
 let echarts = require('echarts/lib/echarts');
-require('echarts/lib/chart/map');
-require('echarts/lib/component/title');
 require('echarts/lib/component/tooltip');
+require('echarts/lib/component/title');
+require('echarts/lib/chart/map');
+require('echarts-gl');
 export default {
     name: "user_line",
     data() {

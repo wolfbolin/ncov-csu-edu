@@ -29,7 +29,6 @@
             <div class="chart">
                 <component :is="user_line"></component>
                 <component :is="addr_map"></component>
-                <component :is="sign_bar"></component>
             </div>
         </div>
     </div>
@@ -37,7 +36,6 @@
 
 <script>
 import user_line from "@/components/echart/user_line";
-import sign_bar from "@/components/echart/sign_bar";
 import addr_map from "@/components/echart/addr_map";
 
 export default {
@@ -45,7 +43,6 @@ export default {
     data() {
         return {
             user_line: user_line,
-            sign_bar: sign_bar,
             addr_map: addr_map,
             loading: true,
             item_num: 0,
