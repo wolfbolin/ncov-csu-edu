@@ -111,9 +111,11 @@ def send_sms_message(sms_token, user_name, user_phone, result):
     print("Send SMS Result: {}".format(res.text.strip()))
 
 
-def write_log(conn, function, username, status, message, run_err):
-    cursor = conn.cursor(pymysql.cursors.DictCursor)
-    sql = "INSERT `log`(`function`, `username`, `result`, `message`, `error`) " \
-          "VALUES (%s, %s, %s, %s, %s)"
-    cursor.execute(query=sql, args=[function, username, status, message, run_err])
-    conn.commit()
+def write_log(level, function, username, status, message):
+    message = {
+        "username": username,
+        "function": function,
+        "status": status,
+        "message": message,
+    }
+    app.logger.log(level, json.dumps(message, ensure_ascii=False, separators=(',', ':')))

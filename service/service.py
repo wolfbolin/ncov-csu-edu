@@ -1,6 +1,7 @@
 # coding=utf-8
 import os
 import re
+import Kit
 import json
 import pymysql
 import logging
@@ -18,7 +19,6 @@ from sentry_sdk.integrations.flask import FlaskIntegration
 # 获取配置
 app_config = get_config()
 base_path = os.path.split(os.path.abspath(__file__))[0]
-app_config["BASE_PATH"] = base_path
 
 # Sentry
 sentry_sdk.init(
@@ -32,14 +32,15 @@ app = Flask(__name__)
 app.config.from_mapping(app_config)
 
 # 服务日志
-logger = logging.getLogger('file_log')
-log_name = '{}/log/run_{}.log'.format(base_path, os.getpid())
-file_handler = TimedRotatingFileHandler(filename=log_name, when='midnight', backupCount=7)
-file_handler.setFormatter(logging.Formatter('%(asctime)s:<%(levelname)s> %(message)s'))
-file_handler.extMatch = re.compile(r'^\d{4}-\d{2}-\d{2}.log')
-file_handler.suffix = '%Y-%m-%d.log'
-app.logger.addHandler(file_handler)
-app.logger.setLevel(logging.INFO)
+if app_config["RUN_ENV"] != 'develop2':
+    logger = logging.getLogger('file_log')
+    log_name = '{}/log/run_{}.log'.format(base_path, os.getpid())
+    file_handler = TimedRotatingFileHandler(filename=log_name, encoding="utf-8", when='midnight', backupCount=7)
+    file_handler.setFormatter(logging.Formatter('%(asctime)s:<%(levelname)s> %(message)s'))
+    file_handler.extMatch = re.compile(r'^\d{4}-\d{2}-\d{2}.log')
+    file_handler.suffix = '%Y-%m-%d.log'
+    app.logger.addHandler(file_handler)
+    app.logger.setLevel(logging.INFO)
 
 # 初始化连接池
 for key in app.config.get('POOL').keys():
@@ -65,7 +66,7 @@ CORS(app, supports_credentials=True, resources={r"/*": {"origins": app_config["B
 @app.route('/')
 @app.route('/api/')
 def hello_world():
-    app.logger.info('Trigger "Hello,world!"')
+    Kit.write_log(logging.INFO, "hello_world", "system", "success", 'Trigger "Hello,world!"')
     return "Hello, world!"
 
 
@@ -111,5 +112,6 @@ if __name__ != '__main__':
 
 if __name__ == '__main__':
     app.logger.setLevel(logging.DEBUG)
+    # debug file logger => use_reloader=False
     app.run(host='127.0.0.1', port=12880, debug=True, use_reloader=False)
     exit()
