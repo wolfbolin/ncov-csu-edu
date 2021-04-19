@@ -33,7 +33,7 @@ app = Flask(__name__)
 app.config.from_mapping(app_config)
 
 # 服务日志
-if app_config["RUN_ENV"] != 'develop2':
+if app_config["RUN_ENV"] != 'develop':
     logger = logging.getLogger('file_log')
     log_name = '{}/log/run_{}.log'.format(base_path, os.getpid())
     file_handler = TimedRotatingFileHandler(filename=log_name, encoding="utf-8", when='midnight', backupCount=7)

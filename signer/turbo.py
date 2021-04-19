@@ -87,7 +87,8 @@ def multithread_slave(config, ids, conn):
     user_config = {
         "host": config["CMQ"]["endpoint"],
         "secretId": config["CMQ"]["secret_id"],
-        "secretKey": config["CMQ"]["secret_key"]
+        "secretKey": config["CMQ"]["secret_key"],
+        "debug": False
     }
     queue_client = CMQ_Account(**user_config)
     sign_queue = queue_client.get_queue(config["CMQ"]["queue_name"])

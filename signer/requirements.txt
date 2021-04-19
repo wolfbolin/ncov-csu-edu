@@ -1,0 +1,17 @@
+blinker==1.4
+certifi==2020.12.5
+chardet==4.0.0
+click==7.1.2
+DBUtils==2.0.1
+Flask==1.1.2
+idna==2.10
+itsdangerous==1.1.0
+Jinja2==2.11.3
+MarkupSafe==1.1.1
+PyMySQL==1.0.2
+python-logstash==0.4.6
+qcloud-cmq-sdk-py3==0.1
+requests==2.25.1
+sentry-sdk==1.0.0
+urllib3==1.26.4
+Werkzeug==1.0.1
