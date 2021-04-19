@@ -8,13 +8,13 @@ import pymysql
 import random
 from flask import abort
 from flask import request
-from Task import task_blue
+from Data import data_blue
 from flask import current_app as app
 from cmq.queue import Message as CMQ_Message
 from cmq.account import Account as CMQ_Account
 
 
-@task_blue.route('/balance')
+@data_blue.route('/balance')
 def balance_task():
     # 本地数据校验
     client_ip = request.headers.get("X-Real-IP", "0.0.0.0")
@@ -31,8 +31,8 @@ def balance_task():
     return "Affected rows: {}".format(cursor.rowcount)
 
 
-@task_blue.route('/poster')
-@task_blue.route('/poster/<string:check_time>')
+@data_blue.route('/poster')
+@data_blue.route('/poster/<string:check_time>')
 def sign_task_post(check_time=None):
     sms_control = request.args.get("sms", "Yes")
     if check_time is None:

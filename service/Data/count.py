@@ -5,11 +5,11 @@ import pymysql
 from flask import abort
 from flask import request
 from flask import jsonify
-from Task import task_blue
+from Data import data_blue
 from flask import current_app as app
 
 
-@task_blue.route('/count', methods=["POST"])
+@data_blue.route('/count', methods=["POST"])
 def update_count_data():
     # 本地数据校验
     client_ip = request.headers.get("X-Real-IP", "0.0.0.0")
@@ -56,7 +56,7 @@ def set_location_count(location, node, key):
     return node[location[key]]["child"]
 
 
-@task_blue.route('/count/location')
+@data_blue.route('/count/location')
 def get_location():
     # 获取数据日期
     date = request.args.get("date", Kit.str_time("%Y-%m-%d"))
@@ -80,7 +80,7 @@ def get_location():
     })
 
 
-@task_blue.route('/count/user')
+@data_blue.route('/count/user')
 def get_user_count():
     conn = app.mysql_pool.connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)

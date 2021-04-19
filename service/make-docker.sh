@@ -1,5 +1,5 @@
 #!/bin/bash
-docker_name="csu-covid19-sign"
+docker_name="csu-service"
 docker image prune -f
 docker stop ${docker_name}
 docker rm ${docker_name}
