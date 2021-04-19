@@ -1,0 +1,16 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+requests = "*"
+pymysql = "*"
+dbutils = "*"
+sentry-sdk = {extras = ["flask"], version = "*"}
+python-logstash = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.8"
