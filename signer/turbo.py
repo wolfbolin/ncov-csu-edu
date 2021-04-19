@@ -106,7 +106,7 @@ def multithread_slave(config, ids, conn):
             continue
 
         # 接收到打卡数据
-        Kit.print_white("<P:{0} G:{1} T:{2}> Receive message {3}".format(*ids, recv_msg.msgId))
+        Kit.print_white("<P:{0} G:{1} T:{2}> {3} Receive message {4}".format(*ids, Kit.str_time(), recv_msg.msgId))
         user_info = json.loads(recv_msg.msgBody)
 
         # 检查风险地区更新

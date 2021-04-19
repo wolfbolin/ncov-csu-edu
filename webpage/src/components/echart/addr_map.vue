@@ -30,7 +30,7 @@ export default {
         fetch_data: function () {
             let that = this;
             let data_host = this.$store.state.host;
-            this.$http.get(data_host + `/task/count/location`)
+            this.$http.get(data_host + `/data/count/location`)
                 .then(function (res) {
                     if (res.data.status === 'success') {
                         console.log("地图数据", res.data)
