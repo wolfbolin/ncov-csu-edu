@@ -49,12 +49,12 @@ def sign_task_post(check_time=None):
     if time_now.endswith(":00"):
         # 读取本时间段内随机时间用户
         sql = "SELECT * FROM `user` WHERE `online`='Yes' AND `rand`='Yes' AND `time` LIKE %s"
-        cursor.execute(sql, args=[check_time.split(":")[0] + ":%"])
+        cursor.execute(sql, args=[time_now.split(":")[0] + ":%"])
         user_list = cursor.fetchall()
     else:
         # 读取时间点需要打卡用户
         sql = "SELECT * FROM `user` WHERE `online`='Yes' AND `rand`='No' AND `time`=%s"
-        cursor.execute(sql, args=[check_time])
+        cursor.execute(sql, args=[time_now])
         user_list = cursor.fetchall()
 
     # 连接至消息队列中间件
