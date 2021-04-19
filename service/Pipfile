@@ -11,6 +11,7 @@ requests = "*"
 pymysql = "*"
 dbutils = "*"
 flask-cors = "*"
+python-logstash = "*"
 sentry-sdk = {extras = ["flask"], version = "*"}
 
 [requires]

@@ -5,6 +5,7 @@ import Kit
 import json
 import pymysql
 import logging
+import logstash
 import requests
 import sentry_sdk
 from flask import Flask
@@ -41,6 +42,12 @@ if app_config["RUN_ENV"] != 'develop2':
     file_handler.suffix = '%Y-%m-%d.log'
     app.logger.addHandler(file_handler)
     app.logger.setLevel(logging.INFO)
+
+# 初始化ELK日志组件
+elk_logger = logging.getLogger('logstash')
+elk_logger.addHandler(logstash.LogstashHandler(app_config["ELK"]["host"], int(app_config["ELK"]["port"]), version=1))
+elk_logger.setLevel(logging.INFO)
+app.elk_logger = elk_logger
 
 # 初始化连接池
 for key in app.config.get('POOL').keys():

@@ -112,10 +112,13 @@ def send_sms_message(sms_token, user_name, user_phone, result):
 
 
 def write_log(level, function, username, status, message):
-    message = {
-        "username": username,
+    extra = json.loads(app.config["ELK"]["extra"])
+    log_data = {
         "function": function,
+        "username": username,
+        "result": "success",
         "status": status,
-        "message": message,
+        "message": message
     }
-    app.logger.log(level, json.dumps(message, ensure_ascii=False, separators=(',', ':')))
+    app.elk_logger.log(level, json.dumps(log_data), extra=extra)
+    app.logger.log(level, json.dumps(log_data, ensure_ascii=False))

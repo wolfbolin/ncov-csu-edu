@@ -43,10 +43,11 @@ def update_count_data():
         set_location_count(location, city_child, "district")
 
     # 更新当日统计数据
-    sql = "REPLACE INTO `count`(`date`,`user_num`,`location_tree`) VALUES (%s,%s,%s) " \
-          "ON DUPLICATE KEY UPDATE `location_tree`=VALUES(`location_tree`)"
+    sql = "REPLACE INTO `count`(`date`,`user_num`,`location_tree`) VALUES (%s,%s,%s)"
     cursor.execute(sql, args=[date_now, user_num, json.dumps(location_tree, ensure_ascii=False)])
     conn.commit()
+
+    return "Re-count success"
 
 
 def set_location_count(location, node, key):
