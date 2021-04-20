@@ -44,7 +44,7 @@ if app_config["RUN_ENV"] != 'develop':
     app.logger.setLevel(logging.INFO)
 
 # 初始化ELK日志组件
-elk_logger = logging.getLogger('logstash')
+elk_logger = logging.getLogger('logstash-{}'.format(os.getpid()))
 elk_logger.addHandler(logstash.LogstashHandler(app_config["ELK"]["host"], int(app_config["ELK"]["port"]), version=1))
 elk_logger.setLevel(logging.INFO)
 app.elk_logger = elk_logger
