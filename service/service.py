@@ -92,6 +92,31 @@ def geo_proxy(code):
     return jsonify(geo_json), 200, {"Cache-Control": "public, max-age=31536000"}
 
 
+@app.route('/api/open', methods=["GET"])
+def open_service():
+    # 分时关闭服务
+    time_now = Kit.unix_time() % 86400
+    if time_now < 3600 * 7 or time_now > 3600 * 23 + 60 * 55:
+        return jsonify({
+            "status": "error",
+            "message": "服务临时关闭，流量保护<23:55 - 8:00>"
+        })
+
+    # 服务关闭标记
+    conn = app.mysql_pool.connection()
+    flag = Kit.get_key_val(conn, "shutdown_login")
+    if flag != "open":
+        return jsonify({
+            "status": "error",
+            "message": "登录服务临时关闭"
+        })
+
+    return jsonify({
+        "status": "success",
+        "message": "开放登录"
+    })
+
+
 @app.errorhandler(400)
 def http_forbidden(msg):
     app.logger.warning("{}: <HTTP 400> {}".format(request.url, msg))

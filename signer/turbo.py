@@ -78,7 +78,7 @@ def multithread_master(config, gid):
 
 def multithread_slave(config, ids, conn):
     # 初始化ELK日志组件
-    elk_logger = logging.getLogger('signer-logger-{}'.format(ids[2]))
+    elk_logger = logging.getLogger('signer-logger-{}@{}'.format(ids[2], ids[1]))
     elk_logger.addHandler(logstash.LogstashHandler(config["ELK"]["host"], int(config["ELK"]["port"]), version=1))
     elk_logger.setLevel(logging.INFO)
     extra = json.loads(config["ELK"]["extra"])

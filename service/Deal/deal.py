@@ -323,7 +323,7 @@ def close_inactive_service():
                 cursor.execute(sql, args=[username])
             elif item == "random":
                 if expire_time < Kit.unix_time():
-                    sql = "UPDATE `user` SET `rand`='No',`time`=rand_time() WHERE `username`=%s"
+                    sql = "UPDATE `user` SET `rand`='No' WHERE `username`=%s"
                     close_count += 1
                 else:
                     sql = "UPDATE `user` SET `rand`='Yes' WHERE `username`=%s"

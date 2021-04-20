@@ -79,8 +79,9 @@ def datetime2unix(timing):
     return int(time.mktime(timing.timetuple()))
 
 
-def rand_time():
-    rand_hour = random.randint(0, 6)
+def rand_time(rand_hour=None):
+    if rand_hour is None:
+        rand_hour = random.randint(0, 6)
     rand_min = random.randint(1, 59)
     return "{:02d}:{:02d}".format(rand_hour, rand_min)
 
