@@ -40,7 +40,7 @@ def sign_task_post(check_time=None):
     else:
         unix_time = Kit.timestamp2unix("2020-01-01 " + check_time + ":00")
         time_now = Kit.unix2timestamp(unix_time, pattern="%H:%M")
-    Kit.print_white("[RUN] Service check time {}".format(time_now))
+    app.logger.info("Service check time {}".format(time_now))
 
     # 连接至数据库
     conn = app.mysql_pool.connection()
@@ -78,6 +78,9 @@ def sign_task_post(check_time=None):
 
         message = CMQ_Message(json.dumps(user))
         msg_res = sign_queue.send_message(message, delayTime=delay)
-        Kit.write_log(logging.INFO, "sign_task_post", user["username"], "success", "{}@{}".format(msg_res.msgId, delay))
+        Kit.write_log(logging.INFO, "sign_task_post", user["username"], "success",
+                      "{}@{}".format(msg_res.msgId, delay), to_stream=False)
+
+    app.logger.info("Post {} task to CMQ".format(len(user_list)))
 
     return "Post message num: {}".format(len(user_list))

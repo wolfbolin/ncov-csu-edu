@@ -93,7 +93,7 @@ def base_info_update(conn, username, cookies):
     re_result = re.search(regex, http_result.text)
     college = re_result.group(1)
 
-    Kit.print_white("登录用户身份：{}={}@{}".format(username, realname, college))
+    app.logger.info("登录用户身份：{}={}@{}".format(username, realname, college))
 
     # 更新用户数据
     cursor = conn.cursor()

@@ -112,7 +112,7 @@ def send_sms_message(sms_token, user_name, user_phone, result):
     print("Send SMS Result: {}".format(res.text.strip()))
 
 
-def write_log(level, function, username, status, message):
+def write_log(level, function, username, status, message, to_stream=True):
     extra = json.loads(app.config["ELK"]["extra"])
     log_data = {
         "function": function,
@@ -122,4 +122,5 @@ def write_log(level, function, username, status, message):
         "message": message
     }
     app.elk_logger.log(level, json.dumps(log_data), extra=extra)
-    app.logger.log(level, json.dumps(log_data, ensure_ascii=False))
+    if to_stream:
+        app.logger.log(level, json.dumps(log_data, ensure_ascii=False))

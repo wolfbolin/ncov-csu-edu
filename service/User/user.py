@@ -35,7 +35,7 @@ def user_login():
         user_info["phone"] = user_info["phone"].strip()
     else:
         return abort(400)
-    Kit.print_white("User try to login: {}".format(user_info["username"]))
+    app.logger.info("User try to login: {}".format(user_info["username"]))
 
     # 查询并写入数据
     conn = app.mysql_pool.connection()
@@ -97,7 +97,7 @@ def user_logout():
         user_info["phone"] = user_info["phone"].strip()
     else:
         return abort(400)
-    Kit.print_white("User try to logout: {}".format(user_info["username"]))
+    app.logger.info("User try to logout: {}".format(user_info["username"]))
 
     # 检查并删除任务
     conn = app.mysql_pool.connection()
