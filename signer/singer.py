@@ -43,9 +43,9 @@ def user_sign(config, conn, user_info, risk_area, elk_logger):
         cursor.execute(query=sql, args=[new_cookies, user_info["username"]])
 
     # 写入用户打卡位置
-    if result is True:
+    if result in ["success", "risk_area"]:
         sql = "INSERT `location`(date,user,location) VALUES(%s,%s,%s)"
-        cursor.execute(sql, args=[Kit.str_time("%Y-%m-%d"), user_info["username"], message])
+        cursor.execute(sql, args=[Kit.str_time("%Y-%m-%d"), user_info["username"], status])
 
     conn.commit()
 
@@ -59,17 +59,23 @@ def user_sign(config, conn, user_info, risk_area, elk_logger):
     log_data = {
         "function": "user_sign",
         "username": user_info["username"],
-        "result": "success" if result else "error",
+        "result": result,
         "status": status,
         "message": message
+
     }
+    if result == "success":
+        log_data["status"] = "User sign success"
+    elif result == "risk_area":
+        log_data["status"] = "Risk area user"
+
     elk_logger.info(json.dumps(log_data), extra=extra)
 
 
 def send_sms_message(sms_token, user_name, user_phone, result):
     # 位置信息
-    if result[0] is True:
-        location = json.loads(result[2])
+    if result[0] in ["success", "risk_area"]:
+        location = json.loads(result[1])
         location = "{}-{}".format(location["province"], location["city"])
     else:
         location = "暂无"
@@ -81,7 +87,7 @@ def send_sms_message(sms_token, user_name, user_phone, result):
         "params": [
             user_name,
             Kit.str_time("%H:%M"),
-            str(result[1]),
+            str(result[2]),
             location
         ]
     }
@@ -97,7 +103,7 @@ def user_sign_core(session, risk_area):
     完成打卡数据获取与打卡全流程
     :param session: 网络连接session
     :param risk_area: 风险区域信息
-    :return: 打卡成功(Boolean) 响应描述 响应信息
+    :return: 打卡成功(Boolean) 响应信息 响应描述
     """
     # 获取历史数据
     url = "https://wxxy.csu.edu.cn/ncov/wap/default/index"
@@ -106,31 +112,31 @@ def user_sign_core(session, risk_area):
     except requests.exceptions.ReadTimeout:
         run_err = "requests.exceptions.ReadTimeout:[%s]" % url
         Kit.print_red(run_err)
-        return False, "自动登录失败", run_err
+        return "error", run_err, "自动登录失败"
     except requests.exceptions.ConnectionError:
         run_err = "requests.exceptions.ConnectionError:[%s]" % url
         Kit.print_red(run_err)
-        return False, "自动登录失败", run_err
+        return "error", run_err, "自动登录失败"
 
     # 历史数据解析
     regex = r'oldInfo: (.*),'
     re_result = re.search(regex, http_result.text)
     if re_result is None:
-        return False, "缺少历史数据", "Missing history data"
+        return "error", "Missing history data", "缺少历史数据"
     sign_data = json.loads(re_result.group(1))
 
     # 模板数据解析
     regex = r'var def = (.*);'
     re_result = re.search(regex, http_result.text)
     if re_result is None:
-        return False, "缺少模版数据", "Missing template data"
+        return "error", "Missing template data", "缺少模版数据"
 
     # 定位数据解析
     def_string = re_result.group(1)
     def_data = json.loads(def_string)
     api_string = def_data["geo_api_info"].replace(r'\"', '"')
     if len(api_string.strip()) == 0:
-        return False, "缺少定位数据", "Missing location data"
+        return "error", "Missing location data", "缺少定位数据"
 
     # 位置信息回填
     api_data = json.loads(api_string)
@@ -160,7 +166,7 @@ def user_sign_core(session, risk_area):
     risk_data = risk_area.get(location["province"], {})
     risk_data = risk_data.get(location["city"], None)
     if risk_data is not None:
-        return True, "中高风险地区".format(risk_data), json.dumps(location, ensure_ascii=False)
+        return "risk_area", json.dumps(location, ensure_ascii=False), "中高风险地区".format(risk_data)
 
     # 重发数据完成签到
     url = "https://wxxy.csu.edu.cn/ncov/wap/default/save"
@@ -169,15 +175,15 @@ def user_sign_core(session, risk_area):
     except requests.exceptions.ReadTimeout:
         run_err = "requests.exceptions.ReadTimeout:[%s]" % url
         Kit.print_red(run_err)
-        return False, "自动签到失败", run_err
+        return "error", run_err, "自动签到失败"
     except requests.exceptions.ConnectionError:
         run_err = "requests.exceptions.ConnectionError:[%s]" % url
         Kit.print_red(run_err)
-        return False, "自动签到失败", run_err
+        return "error", run_err, "自动签到失败"
 
     sign_res = json.loads(http_result.text)
     if sign_res["e"] == 0:
-        return True, sign_res["m"], json.dumps(location, ensure_ascii=False)
+        return "success", json.dumps(location, ensure_ascii=False), sign_res["m"]
     elif sign_res["e"] == 1 and sign_res["m"] == "今天已经填报了":
-        return True, sign_res["m"], json.dumps(location, ensure_ascii=False)
-    return False, sign_res["m"], "Unknown situation"
+        return "success", json.dumps(location, ensure_ascii=False), sign_res["m"]
+    return "error", "Unknown situation", sign_res["m"]

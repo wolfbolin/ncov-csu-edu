@@ -133,7 +133,7 @@ def multithread_slave(config, ids, conn):
                 "function": "user_sign",
                 "username": user_info["username"],
                 "result": "error",
-                "status": "进程运行异常",
+                "status": "Sign user error",
                 "message": str(e)
             }
             elk_logger.info(json.dumps(log_data), extra=extra)
