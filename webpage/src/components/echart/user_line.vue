@@ -69,7 +69,7 @@ export default {
             this.loading = true;
             let that = this;
             let data_host = this.$store.state.host;
-            this.$http.get(data_host + `/task/count/user`)
+            this.$http.get(data_host + `/data/count/user`)
                 .then(function (res) {
                     if (res.data.status === 'success') {
                         that.userChartOpt.xAxis.data = res.data["user_data"][0]

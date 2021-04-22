@@ -97,7 +97,7 @@ export default {
             this.loading = true;
             let that = this;
             let data_host = this.$store.state.host;
-            this.$http.get(data_host + `/task/count/sign`)
+            this.$http.get(data_host + `/data/count/sign`)
                 .then(function (res) {
                     if (res.data.status === 'success') {
                         that.chartOpt.xAxis3D.data = res.data["sign_data"][0]

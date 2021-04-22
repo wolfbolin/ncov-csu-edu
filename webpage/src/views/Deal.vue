@@ -77,7 +77,8 @@
                         <el-form :model="order" :rules="payRule" ref="payForm" label-width="80px"
                                  v-loading="loading" label-position="right" class="wb-alipay-form">
                             <el-form-item label="选择功能" style="text-align: left" prop="itemList">
-                                <el-checkbox-group v-model="order.itemList" size="small" @change="choose_change">
+                                <el-checkbox-group v-model="order.itemList" size="small"
+                                                   :disabled="closeOpen" @change="choose_change">
                                     <template v-for="item in menu">
                                         <el-checkbox v-bind:key="item.name" :label="item.name"
                                                      class="wb-checkbox" border></el-checkbox>
@@ -91,16 +92,23 @@
                             </el-form-item>
                             <el-form-item label="用户账号" prop="username">
                                 <el-input type="text" v-model="order.username"
-                                          placeholder="绑定用户账号"></el-input>
+                                          :disabled="closeOpen" placeholder="绑定用户账号">
+                                </el-input>
                             </el-form-item>
                             <el-form-item label="手机号码" prop="phone">
                                 <el-input type="text" v-model="order.phone"
-                                          placeholder="账号关联手机"></el-input>
+                                          :disabled="closeOpen" placeholder="账号关联手机">
+                                </el-input>
                             </el-form-item>
                             <el-form-item label="支付留言" prop="attach">
-                                <el-input type="textarea" v-model="order.attach" maxlength="128"
-                                          placeholder="留言鼓励一下开发者吧" show-word-limit></el-input>
+                                <el-input type="textarea" v-model="order.attach" maxlength="128" :disabled="closeOpen"
+                                          placeholder="留言鼓励一下开发者吧" show-word-limit>
+                                </el-input>
                             </el-form-item>
+                            <div class="alert">
+                                <el-alert :title="closeInfo" type="error" center
+                                          v-if="closeOpen" :closable="false"></el-alert>
+                            </div>
                             <div class="alert">
                                 <el-alert title="请认真阅读使用说明后选用服务" type="info" center :closable="false"></el-alert>
                             </div>
@@ -133,10 +141,10 @@
                 <el-form :model="order" :rules="payRule" ref="payForm" label-width="80px"
                          label-position="right" class="wb-alipay-form">
                     <el-form-item label="用户学号" prop="username">
-                        <el-input type="text" v-model="order.username"></el-input>
+                        <el-input type="text" v-model="order.username" :disabled="closeOpen"></el-input>
                     </el-form-item>
                     <el-form-item label="手机号码" prop="phone">
-                        <el-input type="text" v-model="order.phone"></el-input>
+                        <el-input type="text" v-model="order.phone" :disabled="closeOpen"></el-input>
                     </el-form-item>
                     <el-button type="primary" @click="check_payment">
                         查询
@@ -180,6 +188,8 @@ export default {
             itemList: [],
             activeTab: "create",
             qrcode_image: "",
+            closeInfo: "",
+            closeOpen: false,
             order: {
                 itemList: [],
                 donation: 0,
@@ -221,6 +231,23 @@ export default {
         }
     },
     methods: {
+        check_open: function () {
+            this.loading = true;
+            let that = this;
+            let data_host = this.$store.state.host
+            this.$http.get(data_host + `/open`)
+                .then(function (res) {
+                    that.loading = false;
+                    if (res.data.status !== 'success') {
+                        that.closeOpen = true
+                        that.closeInfo = res.data.message
+                    }
+                })
+                .catch(function (res) {
+                    that.loading = false;
+                    console.log(res);
+                })
+        },
         open_app: function () {
             window.open(this.order.order_link)
         },
@@ -437,6 +464,7 @@ export default {
         }
     },
     mounted() {
+        this.check_open()
         this.fetch_volume()
         this.fetch_donor()
     }

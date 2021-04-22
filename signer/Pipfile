@@ -1,18 +1,16 @@
 [[source]]
-name = "pypi"
 url = "https://pypi.org/simple"
 verify_ssl = true
-
-[dev-packages]
+name = "pypi"
 
 [packages]
-flask = "*"
 requests = "*"
 pymysql = "*"
 dbutils = "*"
-flask-cors = "*"
-python-logstash = "*"
 sentry-sdk = {extras = ["flask"], version = "*"}
+python-logstash = "*"
+
+[dev-packages]
 
 [requires]
 python_version = "3.8"

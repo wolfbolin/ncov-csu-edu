@@ -1,10 +1,7 @@
 # coding=utf-8
-import datetime
-import json
 import time
 import random
-import requests
-from flask import current_app as app
+import datetime
 
 
 # Print tools
@@ -79,48 +76,7 @@ def datetime2unix(timing):
     return int(time.mktime(timing.timetuple()))
 
 
-def rand_time(rand_hour=None):
-    if rand_hour is None:
-        rand_hour = random.randint(0, 6)
+def rand_time():
+    rand_hour = random.randint(0, 6)
     rand_min = random.randint(1, 59)
     return "{:02d}:{:02d}".format(rand_hour, rand_min)
-
-
-def send_sms_message(sms_token, user_name, user_phone, result):
-    # 位置信息
-    if result[0] or str(result[1]).startswith("自动终止"):
-        location = json.loads(result[2])
-        location = "{}-{}".format(location["province"], location["city"])
-    else:
-        location = "暂无"
-
-    url = "https://core.wolfbolin.com/message/sms/send/%s" % user_phone
-    data = {
-        "phone": user_phone,
-        "template": 805977,
-        "params": [
-            user_name,
-            str_time("%H:%M"),
-            str(result[1]),
-            location
-        ]
-    }
-    params = {
-        "token": sms_token
-    }
-    res = requests.post(url=url, json=data, params=params)
-    print("Send SMS Result: {}".format(res.text.strip()))
-
-
-def write_log(level, function, username, result, status, message, to_stream=True):
-    extra = json.loads(app.config["ELK"]["extra"])
-    log_data = {
-        "function": function,
-        "username": username,
-        "result": result,
-        "status": status,
-        "message": message
-    }
-    app.elk_logger.log(level, json.dumps(log_data), extra=extra)
-    if to_stream:
-        app.logger.log(level, json.dumps(log_data, ensure_ascii=False))
