@@ -1,5 +1,5 @@
 #!/bin/bash
-docker_name="csu-service"
+docker_name="csu-signer"
 docker image prune -f
 docker stop ${docker_name}
 docker rm ${docker_name}
@@ -13,7 +13,6 @@ docker run -itd \
 	--restart always \
 	--name ${docker_name} \
 	-v $(pwd):/var/app \
-	-p 12865:80 \
 	${docker_name}:"${time_now}"
 echo -e "\033[5;36mOrz 镜像启动完成\033[0m"
 docker ps -a

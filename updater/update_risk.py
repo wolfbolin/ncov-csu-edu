@@ -2,13 +2,16 @@
 import os
 import re
 import Kit
+import json
 import time
 import Config
 import pymysql
+import requests
 
 
 def main():
     config = Config.get_config()
+    print("[INFO]", "Start at", Kit.str_time())
 
     # Check environment
     cache_path = config['BASE']['cache_path']
@@ -17,20 +20,14 @@ def main():
         print("[ERR]", "Chrome driver run environment not found")
         return exit(1)
 
-    # MySQL Connect
-    config['MYSQL']['port'] = int(config['MYSQL']['port'])
-    conn = pymysql.connect(**config['MYSQL'])
-
     # Get update time
-    cursor = conn.cursor()
-    sql = "SELECT `val` FROM `kvdb` WHERE `key` = 'risk_update_time'"
-    cursor.execute(sql)
-    local_data_time = cursor.fetchone()[0]
+    res = requests.get("https://covid19.csu-edu.cn/api/data/risk")
+    local_data_time = json.loads(res.text)["update_time"]
     print("[INFO]", "Local update time:", local_data_time)
 
     # Get data
     browser = open_website(cache_path, config['BASE']['headless'])
-    risk_data = get_region_info(browser, local_data_time)
+    risk_data = get_region_info(config, browser, local_data_time)
     browser.quit()
 
     if risk_data is None:
@@ -38,17 +35,21 @@ def main():
         time.sleep(10 * 60)
     else:
         print("[INFO]", "Update local data")
-        sql = "DELETE FROM `region_risk`"
-        cursor.execute(sql)
-        sql = "REPLACE `region_risk`(`province`,`city`,`block`,`level`) VALUES (%s,%s,%s,%s)"
-        for item in risk_data[0]:
-            cursor.execute(sql, args=[item[0], item[1], item[2], "高风险"])
-        for item in risk_data[1]:
-            cursor.execute(sql, args=[item[0], item[1], item[2], "中风险"])
-        sql = "UPDATE `kvdb` SET `val`=%s WHERE `key`='risk_update_time'"
-        cursor.execute(sql, args=[risk_data[2]])
-        conn.commit()
+        if config["RUN_ENV"] == "develop":
+            url = "http://127.0.0.1:12880/api/data/risk"
+        else:
+            url = "https://covid19.csu-edu.cn/api/data/risk"
+
+        data = {
+            "token": config["BASE"]["risk_token"],
+            "high_risk": risk_data[0],
+            "medium_risk": risk_data[1],
+            "update_time": risk_data[2]
+        }
+        requests.post(url, json=data)
+
     print("[INFO]", "Update finish")
+    print("[INFO]", "End at", Kit.str_time())
     return
 
 
@@ -61,30 +62,27 @@ def open_website(driver_path, headless):
     return browser
 
 
-def get_region_info(browser, local_data_time):
+def get_region_info(config, browser, local_data_time):
     # Get update time
     remote_data_time = browser.find_element_by_class_name("r-time").text
     remote_data_time = re.search(r'\d{4}-\d{2}-\d{2}', remote_data_time)
     remote_data_time = remote_data_time.group(0)
     print("[INFO]", "Remote update time:", remote_data_time)
 
-    if local_data_time == remote_data_time:
+    if local_data_time == remote_data_time and config["RUN_ENV"] != "develop":
         print("[INFO]", "Remote data not updated")
         return None
 
-    # Get risk data
-    area_content = browser.find_elements_by_class_name("m-content")
-
     # Get high risk area
-    high_risk_dom = area_content[0]
-    high_risk_list = high_risk_dom.find_elements_by_class_name("m-header")
-    high_risk_list = [it.get_attribute('textContent').split(" ") for it in high_risk_list]
+    high_risk_dom = browser.find_element_by_class_name("h-content")
+    high_risk_list = high_risk_dom.find_elements_by_class_name("h-header")
+    high_risk_list = [it.get_attribute('textContent').strip().split(" ")[:3] for it in high_risk_list]
     print("[INFO]", "Remote high risk num:", len(high_risk_list))
 
     # Get medium risk area
-    medium_risk_dom = area_content[1]
+    medium_risk_dom = browser.find_element_by_class_name("m-content")
     medium_risk_list = medium_risk_dom.find_elements_by_class_name("m-header")
-    medium_risk_list = [it.get_attribute('textContent').split(" ") for it in medium_risk_list]
+    medium_risk_list = [it.get_attribute('textContent').strip().split(" ")[:3] for it in medium_risk_list]
     print("[INFO]", "Remote medium risk num:", len(medium_risk_list))
     for item in medium_risk_list:
         item[2] = re.sub(r"（.*?）", "", item[2])

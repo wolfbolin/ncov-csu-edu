@@ -1,47 +1,31 @@
 # coding=utf-8
-import json
+import logging
+
 import Kit
+import json
 import pymysql
+import datetime
 from flask import abort
 from flask import jsonify
 from flask import request
 from User import user_blue
 from flask import current_app as app
-
-
-@user_blue.route('/open', methods=["GET"])
-def open_login():
-    # 分时关闭服务
-    time_now = int(Kit.str_time("%H"))
-    if time_now == 0:
-        return jsonify({
-            "status": "error",
-            "message": "流量过载，请凌晨一点后再试"
-        })
-
-    # 服务关闭标记
-    conn = app.mysql_pool.connection()
-    flag = Kit.get_key_val(conn, "shutdown_login")
-    if flag != "open":
-        return jsonify({
-            "status": "error",
-            "message": "登录服务临时关闭"
-        })
-
-    return jsonify({
-        "status": "success",
-        "message": "开放登录"
-    })
+from User.user_info import user_sso_login
+from User.user_info import base_info_update
 
 
 @user_blue.route('/login', methods=["POST"])
 def user_login():
     # 分时关闭服务
-    time_now = int(Kit.str_time("%H"))
-    if time_now == 0:
+    zero_time = Kit.timestamp2datetime(Kit.str_time("%Y-%m-%d"), "%Y-%m-%d")
+    time_now = datetime.datetime.now()
+    dt_time = time_now - zero_time
+    time_now = dt_time.seconds
+
+    if time_now < 3600 * 7 or time_now > 3600 * 23 + 60 * 55:
         return jsonify({
             "status": "error",
-            "message": "流量过载，请凌晨一点后再试"
+            "message": "服务临时关闭，流量保护<23:55 - 8:00>"
         })
 
     # 检查请求数据
@@ -60,39 +44,50 @@ def user_login():
 
     # 查询并写入数据
     conn = app.mysql_pool.connection()
+
     # 简单反Dos攻击
     cursor = conn.cursor()
-    sql = "SELECT COUNT(*) FROM `log` WHERE `time` > DATE_SUB(NOW(),INTERVAL 1 HOUR) " \
-          "AND `function` = 'user_login' AND `username` = %s"
+    sql = "INSERT `event`(`user`,`event`) VALUES(%s,'user_login')"
+    cursor.execute(query=sql, args=[user_info["username"]])
+    conn.commit()
+
+    sql = "SELECT COUNT(*) FROM `event` WHERE " \
+          "`user` = %s AND `event` = 'user_login' AND " \
+          "`time` > DATE_SUB(NOW(),INTERVAL 1 HOUR)"
     cursor.execute(query=sql, args=[user_info["username"]])
     log_num = int(cursor.fetchone()[0])
-    if log_num > 2:
-        Kit.write_log(conn, 'user_login', user_info["username"], False, "反复操作被拒绝",
-                      "The user operates {} times in an hour".format(log_num))
+    if log_num > 5:
+        Kit.write_log(logging.WARNING, 'user_login', user_info["username"], "warning", "Login failed", "反复操作被拒绝")
         return jsonify({
             "status": "error",
             "message": "您在一小时内操作次数过多，已被暂停服务"
         })
+    sql = "DELETE FROM `event` WHERE `time` < DATE_SUB(NOW(),INTERVAL 2 HOUR)"
+    cursor.execute(query=sql)
 
     # 验证用户账号信息并获取session
-    status, data, run_err = Kit.user_login(user_info["username"], user_info["password"])
+    status, data, message = user_sso_login(user_info["username"], user_info["password"])
     if status is False:
-        Kit.write_log(conn, 'user_login', user_info["username"], status, data, run_err)
+        Kit.write_log(logging.WARNING, 'user_login', user_info["username"], "warning", str(data), str(message))
         return jsonify({
             "status": "error",
-            "message": str(data)
+            "message": str(message)
         })
     cookies = json.dumps(data.cookies.get_dict())
-    Kit.write_log(conn, 'user_login', user_info["username"], status, "用户登录成功", run_err)
 
     # 登录成功写入session
     cursor = conn.cursor()
     sql = "INSERT `user`(`cookies`, `username`, `nickname`, `phone`, `time`) " \
-          "VALUES (%s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE " \
+          "VALUES (%s, %s, %s, %s, rand_time()) ON DUPLICATE KEY UPDATE " \
           "`cookies`=VALUES(`cookies`),`nickname`=VALUES(`nickname`),`phone`=VALUES(`phone`),`online`='Yes'"
-    cursor.execute(query=sql, args=[cookies, user_info["username"], user_info["nickname"],
-                                    user_info["phone"], Kit.rand_time()])
+    cursor.execute(query=sql, args=[cookies, user_info["username"], user_info["nickname"], user_info["phone"]])
     conn.commit()
+
+    # 检查用户登录态与基本信息
+    base_info_update(conn, user_info["username"], cookies)
+
+    # 写入登录日志
+    Kit.write_log(logging.INFO, 'user_login', user_info["username"], "success", "Login success", message)
 
     return jsonify({
         "status": "success",
@@ -107,7 +102,7 @@ def user_logout():
     user_info = json.loads(user_info)
     if set(user_info.keys()) != {"username", "phone"}:
         return abort(400)
-    if 8 <= len(user_info["username"]) <= 14 and len(user_info["phone"]) == 11:
+    if 6 <= len(user_info["username"]) <= 14 and len(user_info["phone"]) == 11:
         user_info["username"] = user_info["username"].strip()
         user_info["phone"] = user_info["phone"].strip()
     else:
@@ -122,13 +117,13 @@ def user_logout():
     conn.commit()
     rowcount = cursor.rowcount
     if rowcount >= 1:
-        Kit.write_log(conn, 'user_logout', user_info["username"], True, "用户退出成功", "success")
+        Kit.write_log(logging.INFO, 'user_logout', user_info["username"], "success", "Logout success", "用户登出打卡服务成功")
         return jsonify({
             "status": "success",
             "message": "用户取消任务成功"
         })
     else:
-        Kit.write_log(conn, 'user_logout', user_info["username"], False, "用户退出失败", "User does not exist")
+        Kit.write_log(logging.INFO, 'user_logout', user_info["username"], "warning", "Login failed", "用户不存在或信息错误")
         return jsonify({
             "status": "error",
             "message": "用户不存在或信息错误"
@@ -165,7 +160,7 @@ def get_task_info():
 
 
 @user_blue.route('/task', methods=["PUT"])
-def update_task_info():
+def update_user_info():
     # 检查请求数据
     user_info = request.get_data(as_text=True)
     user_info = json.loads(user_info)
@@ -178,7 +173,7 @@ def update_task_info():
             "status": "error",
             "message": "时间范围溢出"
         })
-    task_time = "{:02d}:00".format(task_time)
+    task_time = Kit.rand_time(task_time)
 
     # 检查并更新任务
     conn = app.mysql_pool.connection()
@@ -192,37 +187,15 @@ def update_task_info():
         })
     conn.commit()
 
+    Kit.write_log(logging.INFO, 'update_user_info', user_info["username"], "success", "Set time success", "任务信息更新成功")
     return jsonify({
         "status": "success",
         "message": "任务信息更新成功"
     })
 
 
-@user_blue.route('/sign', methods=["POST"])
-def user_sign():
-    # 检查请求数据
-    user_info = request.get_data(as_text=True)
-    user_info = json.loads(user_info)
-    if set(user_info.keys()) != {"username", "phone"}:
-        return abort(400)
-
-    # 查询打卡用户信息
-    conn = app.mysql_pool.connection()
-    cursor = conn.cursor(pymysql.cursors.DictCursor)
-    sql = "SELECT * FROM `user` WHERE `username`=%s AND `phone`=%s AND `online`='Yes'"
-    cursor.execute(sql, args=[user_info["username"], user_info["phone"]])
-    user_info = cursor.fetchone()
-    risk_area = Kit.get_risk_area(conn)
-    app.executor.submit(Kit.user_clock, app.config, user_info, risk_area)
-
-    return jsonify({
-        "status": "success",
-        "message": "Check user: {}".format(user_info["username"])
-    })
-
-
 @user_blue.route('/list')
-def user_list():
+def user_page_list():
     # 读取分页信息
     page_now = int(request.args.get("page_now", 1))
     page_size = int(request.args.get("page_size", 50))
@@ -234,7 +207,7 @@ def user_list():
     cursor.execute(query=sql)
     item_num = cursor.fetchone()["num"]
     sql = "SELECT `username`, `nickname`, `phone`, `time` FROM `user` WHERE `online`='Yes' LIMIT %s OFFSET %s"
-    cursor.execute(query=sql, args=[page_size, page_now - 1])
+    cursor.execute(query=sql, args=[page_size, (page_now - 1) * page_size])
     result = []
     for item in cursor.fetchall():
         if len(item["username"]) <= 6:
@@ -253,64 +226,6 @@ def user_list():
             "page_size": page_size,
         }
     }
-
-
-@user_blue.route('/count')
-def user_count():
-    conn = app.mysql_pool.connection()
-    cursor = conn.cursor(pymysql.cursors.DictCursor)
-    sql = """
-    SELECT
-        `date`,
-        `user_num` 
-    FROM
-        `count` 
-    WHERE
-        `range` = '23-00' 
-    ORDER BY
-        `date` DESC 
-        LIMIT 30
-    """
-    cursor.execute(query=sql)
-    user_data = cursor.fetchall()
-    user_data_key = []
-    user_data_val = []
-    for it in user_data:
-        user_data_key.append(str(it["date"])[5:])
-        user_data_val.append(it["user_num"])
-
-    sql = """
-    SELECT
-        `date`,
-        `range`,
-        `sign_num` 
-    FROM
-        `count` 
-    WHERE
-        `date` >= DATE_SUB(CURDATE(), INTERVAL 7 DAY ) 
-        AND `sign_num` > 0
-    """
-    cursor.execute(query=sql)
-    sign_data = cursor.fetchall()
-    sign_index = {}
-    sign_matrix = []
-    for item in sign_data:
-        sign_index.setdefault(item["range"], {})
-        sign_index[item["range"]][str(item["date"])[5:]] = item["sign_num"]
-
-    sign_date_list = set()
-    sign_range_list = set()
-    for x, sign_range in enumerate(sign_index.keys()):
-        sign_range_list.add(sign_range)
-        for y, sign_date in enumerate(sign_index[sign_range].keys()):
-            sign_date_list.add(sign_date)
-            sign_matrix.append([x, y, sign_index[sign_range][sign_date]])
-
-    return jsonify({
-        "status": "success",
-        "user_data": [user_data_key[::-1], user_data_val[::-1]],
-        "sign_data": [sorted(list(sign_range_list)), sorted(list(sign_date_list)), sign_matrix]
-    })
 
 
 @user_blue.route('/donor')

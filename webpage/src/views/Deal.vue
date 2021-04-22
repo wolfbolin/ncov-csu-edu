@@ -5,10 +5,14 @@
             <h1>CSU-COVID19-SIGN</h1>
             <p>让我们一起建立更加深刻的契约吧</p>
             <div class="alert">
-                <el-alert title="服务反馈与通知群 1158608406" type="warning" center :closable="false"></el-alert>
+                <el-alert type="warning" center :closable="false">
+                    <template slot="title">
+                        服务反馈与通知群 {{ this.$store.state.group }}
+                    </template>
+                </el-alert>
             </div>
             <div class="readme">
-                <h2>功能说明</h2>
+                <h2>订阅服务</h2>
                 <el-row :gutter="36">
                     <el-col :sm="12" :xs="24">
                         <h3>友情捐赠</h3>
@@ -31,7 +35,7 @@
                         <p>
                             <span>除捐助服务外，其他选项的费用由系统标定，有效期为一个月。</span>
                             <span>若在此期间发生服务变更，可向作者申请全额退还相关费用。</span>
-                            <span>重复充值不能延迟有效期(还没写好代码)，请不要那么做。</span>
+                            <span>重复充值可以自动延长有效期，到期前不会收到提示。</span>
                         </p>
                     </el-col>
                 </el-row>
@@ -71,9 +75,10 @@
                 <el-row :gutter="20" class="wb-alipay">
                     <el-col :xs="24" :sm="16">
                         <el-form :model="order" :rules="payRule" ref="payForm" label-width="80px"
-                                 label-position="right" class="wb-alipay-form">
+                                 v-loading="loading" label-position="right" class="wb-alipay-form">
                             <el-form-item label="选择功能" style="text-align: left" prop="itemList">
-                                <el-checkbox-group v-model="order.itemList" size="small" @change="choose_change">
+                                <el-checkbox-group v-model="order.itemList" size="small"
+                                                   :disabled="closeOpen" @change="choose_change">
                                     <template v-for="item in menu">
                                         <el-checkbox v-bind:key="item.name" :label="item.name"
                                                      class="wb-checkbox" border></el-checkbox>
@@ -85,39 +90,47 @@
                                 <el-slider v-model="order.donation" :min="1" :max="200"
                                            @change="choose_change" style="padding: 0 12px"></el-slider>
                             </el-form-item>
-                            <el-form-item label="用户学号" prop="username">
-                                <el-input type="text" v-model="order.username"></el-input>
+                            <el-form-item label="用户账号" prop="username">
+                                <el-input type="text" v-model="order.username"
+                                          :disabled="closeOpen" placeholder="绑定用户账号">
+                                </el-input>
                             </el-form-item>
                             <el-form-item label="手机号码" prop="phone">
-                                <el-input type="text" v-model="order.phone"></el-input>
+                                <el-input type="text" v-model="order.phone"
+                                          :disabled="closeOpen" placeholder="账号关联手机">
+                                </el-input>
                             </el-form-item>
                             <el-form-item label="支付留言" prop="attach">
-                                <el-input type="textarea" v-model="order.attach" maxlength="128"
-                                          show-word-limit></el-input>
+                                <el-input type="textarea" v-model="order.attach" maxlength="128" :disabled="closeOpen"
+                                          placeholder="留言鼓励一下开发者吧" show-word-limit>
+                                </el-input>
                             </el-form-item>
                             <div class="alert">
-                                <el-alert title="请在支付完成后确认支付结果" type="info" center :closable="false"></el-alert>
+                                <el-alert :title="closeInfo" type="error" center
+                                          v-if="closeOpen" :closable="false"></el-alert>
+                            </div>
+                            <div class="alert">
+                                <el-alert title="请认真阅读使用说明后选用服务" type="info" center :closable="false"></el-alert>
                             </div>
                             <el-button @click="query_payment" v-if="order.order_status !== '未创建'">
                                 刷新
                             </el-button>
                             <el-button type="primary" @click="precreat_payment" v-else>
-                                提交
+                                结算
                             </el-button>
                         </el-form>
                     </el-col>
                     <el-col :xs="24" :sm="8" class="wb-alipay-qrcode">
                         <p>交易金额：{{ order.volume }}元(RMB)</p>
-                        <img v-if="order.order_status === '未创建'"
-                             src="@/assets/QR_Code.png" alt="qrcode"/>
-                        <img v-else-if="order.order_status === '已支付'"
-                             src="@/assets/done.png" alt="qrcode"/>
-                        <div class="alert" v-if="order.order_status === '未创建'">
-                            <el-alert title="请使用支付宝" type="info" center :closable="false"></el-alert>
+                        <div>
+                            <img v-if="order.order_status === '未创建'" src="@/assets/QR_Code.png" alt="qrcode"/>
+                            <img v-else-if="order.order_status === '已支付'" src="@/assets/done.png" alt="qrcode"/>
+                            <vue-qr v-else margin="0" :text="order.order_link"></vue-qr>
                         </div>
-                        <div v-else>
-                            <vue-qr :text="order.order_link"></vue-qr>
-                            <el-button type="primary" @click="open_app" plain>在支付宝中打开</el-button>
+                        <div class="alert">
+                            <el-alert title="请使用支付宝" type="info" center :closable="false"
+                                      v-if="order.order_status === '未创建'"></el-alert>
+                            <el-button v-else type="primary" @click="open_app" plain>在支付宝中打开</el-button>
                         </div>
                         <p>状态：{{ order.order_status }}</p>
                         <p>订单号：{{ order.order_str }}</p>
@@ -128,10 +141,10 @@
                 <el-form :model="order" :rules="payRule" ref="payForm" label-width="80px"
                          label-position="right" class="wb-alipay-form">
                     <el-form-item label="用户学号" prop="username">
-                        <el-input type="text" v-model="order.username"></el-input>
+                        <el-input type="text" v-model="order.username" :disabled="closeOpen"></el-input>
                     </el-form-item>
                     <el-form-item label="手机号码" prop="phone">
-                        <el-input type="text" v-model="order.phone"></el-input>
+                        <el-input type="text" v-model="order.phone" :disabled="closeOpen"></el-input>
                     </el-form-item>
                     <el-button type="primary" @click="check_payment">
                         查询
@@ -175,6 +188,8 @@ export default {
             itemList: [],
             activeTab: "create",
             qrcode_image: "",
+            closeInfo: "",
+            closeOpen: false,
             order: {
                 itemList: [],
                 donation: 0,
@@ -216,6 +231,23 @@ export default {
         }
     },
     methods: {
+        check_open: function () {
+            this.loading = true;
+            let that = this;
+            let data_host = this.$store.state.host
+            this.$http.get(data_host + `/open`)
+                .then(function (res) {
+                    that.loading = false;
+                    if (res.data.status !== 'success') {
+                        that.closeOpen = true
+                        that.closeInfo = res.data.message
+                    }
+                })
+                .catch(function (res) {
+                    that.loading = false;
+                    console.log(res);
+                })
+        },
         open_app: function () {
             window.open(this.order.order_link)
         },
@@ -231,23 +263,34 @@ export default {
             }
             if (this.order.itemList.indexOf('友情捐助') !== -1) {
                 this.order.volume = volume + this.order.donation
-            }else{
+            } else {
                 this.order.volume = volume
             }
         },
         fetch_volume: function () {
             let that = this;
+            this.loading = true
             let data_host = this.$store.state.host;
             let http_url = data_host + `/deal/menu`
             this.$http.get(http_url)
                 .then(function (res) {
-                    console.log(res.data)
+                    that.loading = false
                     if (res.data.status === "success") {
                         that.menu = res.data.data
+                    } else {
+                        that.$message({
+                            message: res.data.message,
+                            type: 'error'
+                        });
                     }
                 })
                 .catch(function (res) {
+                    that.loading = false
                     console.log(res)
+                    that.$message({
+                        message: "网络异常，请重试",
+                        type: 'error'
+                    });
                 })
         },
         fetch_donor: function () {
@@ -256,13 +299,22 @@ export default {
             let http_url = data_host + `/user/donor`
             this.$http.get(http_url)
                 .then(function (res) {
-                    console.log(res.data)
+                    that.loading = false
                     if (res.data.status === "success") {
                         that.donor_list = res.data.data
+                    } else {
+                        that.$message({
+                            message: res.data.message,
+                            type: 'error'
+                        });
                     }
                 })
                 .catch(function (res) {
                     console.log(res)
+                    that.$message({
+                        message: "网络异常，赞助者加载失败",
+                        type: 'error'
+                    });
                 })
         },
         precreat_payment: function () {
@@ -282,6 +334,7 @@ export default {
 
                         // 创建交易订单
                         let that = this;
+                        this.loading = true
                         let data_host = this.$store.state.host;
                         let http_url = data_host + `/deal/order`
                         this.$http.post(http_url,
@@ -293,6 +346,7 @@ export default {
                                 item_list: itemList,
                             })
                             .then(function (res) {
+                                that.loading = false
                                 if (res.data.status === "success") {
                                     let order_info = res.data.data
                                     that.order.order_status = "已创建"
@@ -307,7 +361,12 @@ export default {
                                 }
                             })
                             .catch(function (res) {
+                                that.loading = false
                                 console.log(res)
+                                that.$message({
+                                    message: "网络异常，请重试",
+                                    type: 'error'
+                                });
                             })
                     }
                 }
@@ -316,6 +375,7 @@ export default {
         query_payment: function () {
             console.log("Check deal order")
             let that = this;
+            this.loading = true
             let data_host = this.$store.state.host;
             let http_url = data_host + `/deal/order`
             this.$http.get(http_url, {
@@ -361,7 +421,12 @@ export default {
                     }
                 })
                 .catch(function (res) {
+                    that.loading = false
                     console.log(res)
+                    that.$message({
+                        message: "网络异常，请重试",
+                        type: 'error'
+                    });
                 })
         },
         check_payment: function () {
@@ -391,10 +456,15 @@ export default {
                 .catch(function (res) {
                     that.loading = false
                     console.log(res)
+                    that.$message({
+                        message: "网络异常，请重试",
+                        type: 'error'
+                    });
                 })
         }
     },
     mounted() {
+        this.check_open()
         this.fetch_volume()
         this.fetch_donor()
     }

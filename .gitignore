@@ -4,3 +4,5 @@ __pycache__
 *.ini
 !example.ini
 updater/cache/
+
+service/Config/recalc_list.csv

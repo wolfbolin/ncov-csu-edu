@@ -209,8 +209,8 @@ def check_user_order():
     })
 
 
-@deal_blue.route('/order/review')
-def check_current_order():
+@deal_blue.route('/service/review')
+def open_active_service():
     # 本地数据校验
     client_ip = request.headers.get("X-Real-IP", "0.0.0.0")
     if client_ip != "127.0.0.1":
@@ -249,6 +249,8 @@ def check_order_list(conn, order_list):
             # 调整用户功能
             item_list = json.loads(order["item_list"])
             for item in item_list:
+                if Kit.datetime2unix(order["created_time"]) + 2592000 < Kit.unix_time():
+                    continue
                 if item == "donation":
                     sql = "UPDATE `user` SET `donor`='Yes' WHERE `username`=%s"
                     cursor.execute(sql, args=[order["username"]])
@@ -258,7 +260,7 @@ def check_order_list(conn, order_list):
                 if item == "random":
                     sql = "UPDATE `user` SET `rand`='Yes' WHERE `username`=%s"
                     cursor.execute(sql, args=[order["username"]])
-                conn.commit()
+    conn.commit()
 
 
 def check_order(order_str):
@@ -278,3 +280,66 @@ def check_order(order_str):
         }
     res = json.loads(res.text)
     return res["data"]
+
+
+@deal_blue.route('/service/close')
+def close_inactive_service():
+    # 本地数据校验
+    client_ip = request.headers.get("X-Real-IP", "0.0.0.0")
+    if client_ip != "127.0.0.1":
+        return abort(400, "Reject IP:{}".format(client_ip))
+
+    # 获取订单信息
+    conn = app.mysql_pool.connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    sql = "SELECT * FROM `order` WHERE `status`='SUCCESS'"
+    cursor.execute(sql)
+    order_list = cursor.fetchall()
+
+    # 用户服务区间检查
+    user_data = {}
+    for order in order_list:
+        username = order["username"]
+        item_list = json.loads(order["item_list"])
+        update_time = Kit.datetime2unix(order["updated_time"])
+
+        user_data.setdefault(username, {})
+        for item in item_list:
+            update_active_time(user_data[username], item, update_time, 2592000)  # 30Day
+
+    keep_count = close_count = 0
+    for username in user_data:
+        for item in user_data[username]:
+            expire_time = user_data[username][item]
+            if item == "donation":
+                continue
+            elif item == "message":
+                if expire_time < Kit.unix_time():
+                    sql = "UPDATE `user` SET `sms`='No' WHERE `username`=%s"
+                    close_count += 1
+                else:
+                    sql = "UPDATE `user` SET `sms`='Yes' WHERE `username`=%s"
+                    keep_count += 1
+                cursor.execute(sql, args=[username])
+            elif item == "random":
+                if expire_time < Kit.unix_time():
+                    sql = "UPDATE `user` SET `rand`='No' WHERE `username`=%s"
+                    close_count += 1
+                else:
+                    sql = "UPDATE `user` SET `rand`='Yes' WHERE `username`=%s"
+                    keep_count += 1
+                cursor.execute(sql, args=[username])
+    conn.commit()
+
+    return jsonify({
+        "status": "success",
+        "message": "At {}, {} service active, {} service live".format(Kit.str_time("%m-%d"), keep_count, close_count)
+    })
+
+
+def update_active_time(data, key, begin, length):
+    if key not in data.keys() or data[key] < begin:
+        data[key] = begin + length
+    else:
+        # data[key] <= begin
+        data[key] += length

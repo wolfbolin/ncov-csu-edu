@@ -13,6 +13,7 @@ import {
     Alert,
     Input,
     Table,
+    Dialog,
     Button,
     Slider,
     Select,
@@ -36,6 +37,7 @@ Vue.use(Form);
 Vue.use(Alert);
 Vue.use(Input);
 Vue.use(Table);
+Vue.use(Dialog);
 Vue.use(Button);
 Vue.use(Slider);
 Vue.use(Select);
