@@ -109,8 +109,16 @@ def multithread_slave(config, ids, conn):
             continue
 
         # 接收到打卡数据
-        Kit.print_white("<P:{0} G:{1} T:{2}> {3} Receive message {4}".format(*ids, Kit.str_time(), recv_msg.msgId))
         user_info = json.loads(recv_msg.msgBody)
+        log_data = {
+            "function": "user_sign_receiver",
+            "username": user_info["username"],
+            "result": "success",
+            "status": "Receive message from CMQ",
+            "message": str(recv_msg.msgId)
+        }
+        elk_logger.info(json.dumps(log_data), extra=extra)
+        Kit.print_white("<P:{0} G:{1} T:{2}> {3} Receive message {4}".format(*ids, Kit.str_time(), recv_msg.msgId))
 
         # 检查风险地区更新
         if Kit.unix_time() > risk_expire:

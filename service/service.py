@@ -103,8 +103,6 @@ def open_service():
     dt_time = time_now - zero_time
     time_now = dt_time.seconds
 
-    time_now = 8 * 3600
-
     if time_now < 3600 * 7 or time_now > 3600 * 23 + 60 * 55:
         return jsonify({
             "status": "error",
