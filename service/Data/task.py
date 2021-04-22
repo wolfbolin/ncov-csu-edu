@@ -78,8 +78,8 @@ def sign_task_post(check_time=None):
 
         message = CMQ_Message(json.dumps(user))
         msg_res = sign_queue.send_message(message, delayTime=delay)
-        Kit.write_log(logging.INFO, "sign_task_post", user["username"], "success",
-                      "{}@{}".format(msg_res.msgId, delay), to_stream=False)
+        Kit.write_log(logging.INFO, "sign_task_post", user["username"], "success", "Send sign task to CMQ",
+                      "ID:{} Delay:{}".format(msg_res.msgId, delay), to_stream=False)
 
     app.logger.info("Post {} task to CMQ".format(len(user_list)))
 

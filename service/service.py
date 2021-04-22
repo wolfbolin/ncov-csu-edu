@@ -73,7 +73,7 @@ CORS(app, supports_credentials=True, resources={r"/*": {"origins": app_config["B
 @app.route('/')
 @app.route('/api/')
 def hello_world():
-    Kit.write_log(logging.INFO, "hello_world", "system", "success", 'Trigger "Hello,world!"')
+    Kit.write_log(logging.INFO, "hello_world", "system", "success", 'Trigger', "Hello,world!")
     return "Hello, world!"
 
 

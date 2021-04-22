@@ -106,4 +106,4 @@ def user_force_logout(conn, username, message=Kit.str_time()):
     cursor = conn.cursor()
     sql = "UPDATE `user` SET `online`='No' WHERE `username`=%s"
     cursor.execute(sql, args=[username])
-    Kit.write_log(logging.WARNING, 'force_logout', username, "success", message)
+    Kit.write_log(logging.WARNING, 'force_logout', username, "success", "Force user logout", message)

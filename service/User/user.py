@@ -47,7 +47,7 @@ def user_login():
     cursor.execute(query=sql, args=[user_info["username"]])
     log_num = int(cursor.fetchone()[0])
     if log_num > 2:
-        Kit.write_log(logging.WARNING, 'user_login', user_info["username"], "success", "反复操作被拒绝")
+        Kit.write_log(logging.WARNING, 'user_login', user_info["username"], "warning", "Login failed", "反复操作被拒绝")
         return jsonify({
             "status": "error",
             "message": "您在一小时内操作次数过多，已被暂停服务"
@@ -58,7 +58,7 @@ def user_login():
     # 验证用户账号信息并获取session
     status, data, message = user_sso_login(user_info["username"], user_info["password"])
     if status is False:
-        Kit.write_log(logging.WARNING, 'user_login', user_info["username"], "success", message + ": " + data)
+        Kit.write_log(logging.WARNING, 'user_login', user_info["username"], "warning", str(data), str(message))
         return jsonify({
             "status": "error",
             "message": str(message)
@@ -77,7 +77,7 @@ def user_login():
     base_info_update(conn, user_info["username"], cookies)
 
     # 写入登录日志
-    Kit.write_log(logging.INFO, 'user_login', user_info["username"], "success", message)
+    Kit.write_log(logging.INFO, 'user_login', user_info["username"], "success", "Login success", message)
 
     return jsonify({
         "status": "success",
@@ -107,13 +107,13 @@ def user_logout():
     conn.commit()
     rowcount = cursor.rowcount
     if rowcount >= 1:
-        Kit.write_log(logging.INFO, 'user_logout', user_info["username"], "success", "用户登出打卡服务成功")
+        Kit.write_log(logging.INFO, 'user_logout', user_info["username"], "success", "Logout success", "用户登出打卡服务成功")
         return jsonify({
             "status": "success",
             "message": "用户取消任务成功"
         })
     else:
-        Kit.write_log(logging.INFO, 'user_logout', user_info["username"], "success", "用户不存在或信息错误")
+        Kit.write_log(logging.INFO, 'user_logout', user_info["username"], "warning", "Login failed", "用户不存在或信息错误")
         return jsonify({
             "status": "error",
             "message": "用户不存在或信息错误"
@@ -177,7 +177,7 @@ def update_user_info():
         })
     conn.commit()
 
-    Kit.write_log(logging.INFO, 'update_user_info', user_info["username"], "success", "任务信息更新成功")
+    Kit.write_log(logging.INFO, 'update_user_info', user_info["username"], "success", "Set time success", "任务信息更新成功")
     return jsonify({
         "status": "success",
         "message": "任务信息更新成功"

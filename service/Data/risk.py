@@ -59,9 +59,8 @@ def risk_update():
     cursor.execute(sql, args=[risk_data["update_time"]])
     conn.commit()
 
-    Kit.write_log(logging.INFO, "risk_update", "system", "success", "High risk: {}".format(len(high_region_list)))
-    Kit.write_log(logging.INFO, "risk_update", "system", "success", "Medium risk: {}".format(len(medium_region_list)))
-    Kit.write_log(logging.INFO, "risk_update", "system", "success", "Medium risk: {}".format(len(medium_region_list)))
+    Kit.write_log(logging.INFO, "risk_update", "system", "success", "Risk area update",
+                  "High num: {}. Medium num: {}".format(len(high_region_list), len(medium_region_list)))
 
     # 发送数据更新提示
     msg_text = "**高风险地区**\n\n"
@@ -84,7 +83,7 @@ def risk_update():
         msg_listener = Kit.get_key_val(conn, "risk_data_listener")
         msg_listener = json.loads(msg_listener)
         for (user, token) in msg_listener.items():
-            Kit.write_log(logging.INFO, "risk_update", user, "success", "Send risk message")
+            Kit.write_log(logging.INFO, "risk_update", user, "success", "Send risk message", "Send to {}".format(user))
             msg_data["user"] = user
             params = {"token": token}
             requests.post("https://core.wolfbolin.com/message/sugar/text", json=msg_data, params=params)
