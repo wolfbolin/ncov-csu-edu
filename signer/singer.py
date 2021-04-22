@@ -66,8 +66,10 @@ def user_sign(config, conn, user_info, risk_area, elk_logger):
     }
     if result == "success":
         log_data["status"] = "User sign success"
+        log_data["message"] += " @ {}".format(status)
     elif result == "risk_area":
         log_data["status"] = "Risk area user"
+        log_data["message"] += " @ {}".format(status)
 
     elk_logger.info(json.dumps(log_data), extra=extra)
 
