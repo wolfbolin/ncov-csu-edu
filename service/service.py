@@ -7,6 +7,7 @@ import pymysql
 import logging
 import logstash
 import requests
+import datetime
 import sentry_sdk
 from flask import Flask
 from flask import jsonify
@@ -97,7 +98,13 @@ def geo_proxy(code):
 @app.route('/api/open', methods=["GET"])
 def open_service():
     # 分时关闭服务
-    time_now = Kit.unix_time() % 86400
+    zero_time = Kit.timestamp2datetime(Kit.str_time("%Y-%m-%d"), "%Y-%m-%d")
+    time_now = datetime.datetime.now()
+    dt_time = time_now - zero_time
+    time_now = dt_time.seconds
+
+    time_now = 8 * 3600
+
     if time_now < 3600 * 7 or time_now > 3600 * 23 + 60 * 55:
         return jsonify({
             "status": "error",

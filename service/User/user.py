@@ -4,6 +4,7 @@ import logging
 import Kit
 import json
 import pymysql
+import datetime
 from flask import abort
 from flask import jsonify
 from flask import request
@@ -16,11 +17,16 @@ from User.user_info import base_info_update
 @user_blue.route('/login', methods=["POST"])
 def user_login():
     # 分时关闭服务
-    time_now = int(Kit.str_time("%H"))
-    if time_now == 0:
+    zero_time = Kit.timestamp2datetime(Kit.str_time("%Y-%m-%d"), "%Y-%m-%d")
+    time_now = datetime.datetime.now()
+    dt_time = time_now - zero_time
+    time_now = dt_time.seconds
+
+    time_now = 8 * 3600
+    if time_now < 3600 * 7 or time_now > 3600 * 23 + 60 * 55:
         return jsonify({
             "status": "error",
-            "message": "流量过载，请凌晨一点后再试"
+            "message": "服务临时关闭，流量保护<23:55 - 8:00>"
         })
 
     # 检查请求数据
@@ -39,21 +45,26 @@ def user_login():
 
     # 查询并写入数据
     conn = app.mysql_pool.connection()
+
     # 简单反Dos攻击
     cursor = conn.cursor()
+    sql = "INSERT `event`(`user`,`event`) VALUES(%s,'user_login')"
+    cursor.execute(query=sql, args=[user_info["username"]])
+    conn.commit()
+
     sql = "SELECT COUNT(*) FROM `event` WHERE " \
           "`user` = %s AND `event` = 'user_login' AND " \
           "`time` > DATE_SUB(NOW(),INTERVAL 1 HOUR)"
     cursor.execute(query=sql, args=[user_info["username"]])
     log_num = int(cursor.fetchone()[0])
-    if log_num > 2:
+    if log_num > 5:
         Kit.write_log(logging.WARNING, 'user_login', user_info["username"], "warning", "Login failed", "反复操作被拒绝")
         return jsonify({
             "status": "error",
             "message": "您在一小时内操作次数过多，已被暂停服务"
         })
-    sql = "INSERT `event`(`user`,`event`) VALUES(%s,'user_login')"
-    cursor.execute(query=sql, args=[user_info["username"]])
+    sql = "DELETE FROM `event` WHERE `time` < DATE_SUB(NOW(),INTERVAL 2 HOUR)"
+    cursor.execute(query=sql)
 
     # 验证用户账号信息并获取session
     status, data, message = user_sso_login(user_info["username"], user_info["password"])
