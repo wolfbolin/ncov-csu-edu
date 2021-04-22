@@ -69,27 +69,27 @@
                                  v-loading="loading" :rules="rules" :model="formData">
                             <el-form-item label="账号" prop="username">
                                 <el-input v-model="formData.username" placeholder="旧版信息门户账户"
-                                          :disabled="closeLogin"></el-input>
+                                          :disabled="closeOpen"></el-input>
                             </el-form-item>
                             <el-form-item label="手机" prop="phone">
                                 <el-input v-model="formData.phone" placeholder="关联您的手机" type="number"
-                                          :disabled="closeLogin"></el-input>
+                                          :disabled="closeOpen"></el-input>
                             </el-form-item>
                             <el-form-item label="密码" prop="password">
                                 <el-input v-model="formData.password" placeholder="旧版信息门户密码"
-                                          show-password :disabled="closeLogin"></el-input>
+                                          show-password :disabled="closeOpen"></el-input>
                             </el-form-item>
                             <el-form-item label="昵称" prop="nickname">
                                 <el-input v-model="formData.nickname" placeholder="起个帅气昵称"
-                                          :disabled="closeLogin"></el-input>
+                                          :disabled="closeOpen"></el-input>
                             </el-form-item>
                             <el-form-item label="须知" prop="readme" style="text-align: left">
-                                <el-checkbox v-model="formData.readme" :disabled="closeLogin">我已认真阅读并同意服务使用条款
+                                <el-checkbox v-model="formData.readme" :disabled="closeOpen">我已认真阅读并同意服务使用条款
                                 </el-checkbox>
                             </el-form-item>
                             <div class="alert">
                                 <el-alert :title="closeInfo" type="error" center
-                                          v-if="closeLogin" :closable="false"></el-alert>
+                                          v-if="closeOpen" :closable="false"></el-alert>
                             </div>
                             <div class="alert">
                                 <el-alert type="warning">
@@ -98,7 +98,7 @@
                                     </template>
                                 </el-alert>
                             </div>
-                            <el-button type="success" @click="check_form('add_task')" plain :disabled="closeLogin">
+                            <el-button type="success" @click="check_form('add_task')" plain :disabled="closeOpen">
                                 绑定账号
                             </el-button>
                         </el-form>
@@ -249,7 +249,7 @@ export default {
             passwdTip: false,
             passwdAlert: false,
             closeInfo: "",
-            closeLogin: false,
+            closeOpen: false,
             formData: {
                 username: "",
                 password: "",
@@ -303,11 +303,11 @@ export default {
             this.loading = true;
             let that = this;
             let data_host = this.$store.state.host
-            this.$http.get(data_host + `/user/open`)
+            this.$http.get(data_host + `/open`)
                 .then(function (res) {
                     that.loading = false;
                     if (res.data.status !== 'success') {
-                        that.closeLogin = true
+                        that.closeOpen = true
                         that.closeInfo = res.data.message
                     }
                 })

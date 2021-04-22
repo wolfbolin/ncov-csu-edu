@@ -1,4 +1,6 @@
 # coding=utf-8
+import logging
+
 import Kit
 import json
 import pymysql
@@ -24,7 +26,7 @@ def fetch_risk():
 
 
 @data_blue.route('/risk', methods=["POST"])
-def update_risk():
+def risk_update():
     # 验证消息来源
     risk_data = request.get_json()
     if risk_data["token"] != app.config["BASE"]["risk_token"]:
@@ -57,8 +59,8 @@ def update_risk():
     cursor.execute(sql, args=[risk_data["update_time"]])
     conn.commit()
 
-    app.logger.info("Risk area update：high risk = {} / medium risk = {}"
-                    .format(len(high_region_list), len(medium_region_list)))
+    Kit.write_log(logging.INFO, "risk_update", "system", "success", "Risk area update",
+                  "High num: {}. Medium num: {}".format(len(high_region_list), len(medium_region_list)))
 
     # 发送数据更新提示
     msg_text = "**高风险地区**\n\n"
@@ -81,7 +83,7 @@ def update_risk():
         msg_listener = Kit.get_key_val(conn, "risk_data_listener")
         msg_listener = json.loads(msg_listener)
         for (user, token) in msg_listener.items():
-            app.logger.info("Send message to {}".format(user))
+            Kit.write_log(logging.INFO, "risk_update", user, "success", "Send risk message", "Send to {}".format(user))
             msg_data["user"] = user
             params = {"token": token}
             requests.post("https://core.wolfbolin.com/message/sugar/text", json=msg_data, params=params)
