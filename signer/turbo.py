@@ -3,6 +3,7 @@ import os
 import Kit
 import time
 import json
+import uuid
 import random
 import pymysql
 import logging
@@ -78,7 +79,9 @@ def multithread_master(config, gid):
 
 def multithread_slave(config, ids, conn):
     # 初始化ELK日志组件
-    elk_logger = logging.getLogger('signer-logger-{}@{}'.format(ids[2], ids[1]))
+    elk_logger = logging.getLogger(str(uuid.uuid1()))
+    while elk_logger.hasHandlers():
+        elk_logger.removeHandler(elk_logger.handlers[0])
     elk_logger.addHandler(logstash.LogstashHandler(config["ELK"]["host"], int(config["ELK"]["port"]), version=1))
     elk_logger.setLevel(logging.INFO)
     extra = json.loads(config["ELK"]["extra"])
