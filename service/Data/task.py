@@ -2,6 +2,7 @@
 import datetime
 import json
 import logging
+import time
 
 import Kit
 import pymysql
@@ -12,6 +13,7 @@ from Data import data_blue
 from flask import current_app as app
 from cmq.queue import Message as CMQ_Message
 from cmq.account import Account as CMQ_Account
+from cmq.cmq_exception import CMQExceptionBase
 
 
 @data_blue.route('/balance')
@@ -64,22 +66,33 @@ def sign_task_post(check_time=None):
         "secretKey": app.config["CMQ"]["secret_key"],
         "debug": False,
     }
-    queue_client = CMQ_Account(**user_config)
-    sign_queue = queue_client.get_queue(app.config["CMQ"]["queue_name"])
 
     # 计算时间延迟并发布任务
-    for user in user_list:
-        if sms_control == "No":
-            user["sms"] = "No"
-        if user["rand"] == "Yes":
-            delay = random.randint(0, 3600)
-        else:
-            delay = 0
+    for count in range(3):
+        retry = False
+        queue_client = CMQ_Account(**user_config)
+        sign_queue = queue_client.get_queue(app.config["CMQ"]["queue_name"])
+        for user in user_list:
+            if sms_control == "No":
+                user["sms"] = "No"
+            if user["rand"] == "Yes":
+                delay = random.randint(0, 3600)
+            else:
+                delay = 0
 
-        message = CMQ_Message(json.dumps(user))
-        msg_res = sign_queue.send_message(message, delayTime=delay)
-        Kit.write_log(logging.INFO, "sign_task_post", user["username"], "success", "Send sign task to CMQ",
-                      "ID:{} Delay:{}".format(msg_res.msgId, delay), to_stream=False)
+            message = CMQ_Message(json.dumps(user))
+            try:
+                msg_res = sign_queue.send_message(message, delayTime=delay)
+            except CMQExceptionBase as e:
+                Kit.write_log(logging.ERROR, "sign_task_post", user["username"], "error", "Send to CMQ failed", str(e))
+                time.sleep(1)
+                retry = True
+                break
+            Kit.write_log(logging.INFO, "sign_task_post", user["username"], "success", "Send sign task to CMQ",
+                          "ID:{} Delay:{}".format(msg_res.msgId, delay), to_stream=False)
+        if retry:
+            continue
+        break
 
     app.logger.info("Post {} task to CMQ".format(len(user_list)))
 

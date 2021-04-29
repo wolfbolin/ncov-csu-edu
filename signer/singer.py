@@ -97,7 +97,7 @@ def send_sms_message(sms_token, user_name, user_phone, result):
         "token": sms_token
     }
     res = requests.post(url=url, json=data, params=params)
-    Kit.print_purple("Send SMS to {}".format(user_phone))
+    Kit.print_purple("{} Send SMS to {}".format(Kit.str_time(), user_phone))
 
 
 def user_sign_core(session, risk_area):
