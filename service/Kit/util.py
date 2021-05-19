@@ -1,12 +1,14 @@
 # coding=utf-8
 import json
 import time
+import base64
 import string
 import random
 import requests
 import datetime
 from flask import jsonify
 from functools import wraps
+from Cryptodome.Cipher import AES
 from flask import current_app as app
 
 
@@ -27,6 +29,32 @@ def check_service_time(func):
         return func(*args, **kwargs)
 
     return check_hostname
+
+
+# Encrypt tools
+def aes_encrypt(text, password):
+    # 初始化参数
+    encrypt_mode = AES.MODE_ECB
+    # 填充文本与秘钥
+    fill_block_size = AES.block_size - len(text) % AES.block_size
+    encrypt_text = text + fill_block_size * chr(fill_block_size)
+    # 进行加密操作
+    encrypt_lock = AES.new(password.encode("utf-8"), encrypt_mode)
+    ciphered_text = encrypt_lock.encrypt(encrypt_text.encode("utf-8"))
+    return base64.b64encode(ciphered_text).decode("utf-8")
+
+
+def aes_decrypt(data, password):
+    # 初始化参数
+    encrypt_mode = AES.MODE_ECB
+    # 解码文本数据
+    encrypt_data = base64.b64decode(data.encode("utf-8"))
+    # 进行加密操作
+    encrypt_lock = AES.new(password.encode("utf-8"), encrypt_mode)
+    ciphered_text = encrypt_lock.decrypt(encrypt_data)
+    # 移除填充文本
+    unpad = lambda s: s[0:-ord(s[-1])]
+    return unpad(ciphered_text.decode("utf-8"))
 
 
 # Print tools
@@ -106,6 +134,10 @@ def rand_time(rand_hour=None):
         rand_hour = random.randint(0, 6)
     rand_min = random.randint(1, 59)
     return "{:02d}:{:02d}".format(rand_hour, rand_min)
+
+
+def random_string(length, chars=string.digits + string.ascii_letters):
+    return ''.join(random.choice(chars) for _ in range(length))
 
 
 def send_sms_message(sms_token, user_name, user_phone, result):

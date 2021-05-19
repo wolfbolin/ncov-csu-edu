@@ -68,6 +68,8 @@ export default {
                     key: "host",
                     val: `http://${window.location.host.split(":")[0]}:12880/api`
                 })
+            } else if (window.location.host.indexOf("csu.icu") !== -1) {
+                this.$store.commit("setData", {key: "host", val: "https://ncov.csu.icu/api"})
             } else {
                 this.$store.commit("setData", {key: "host", val: "https://covid19.csu-edu.cn/api"})
             }
