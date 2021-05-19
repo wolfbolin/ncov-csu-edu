@@ -1,10 +1,32 @@
 # coding=utf-8
-import datetime
 import json
 import time
+import string
 import random
 import requests
+import datetime
+from flask import jsonify
+from functools import wraps
 from flask import current_app as app
+
+
+def check_service_time(func):
+    @wraps(func)
+    def check_hostname(*args, **kwargs):
+        # 分时关闭服务
+        zero_time = timestamp2datetime(str_time("%Y-%m-%d"), "%Y-%m-%d")
+        time_now_ = datetime.datetime.now()
+        dt_time = time_now_ - zero_time
+        time_now_ = dt_time.seconds
+
+        if time_now_ < 3600 * 7 or time_now_ > 3600 * 23 + 60 * 55:
+            return jsonify({
+                "status": "error",
+                "message": "服务临时关闭，流量保护<23:55 - 8:00>"
+            })
+        return func(*args, **kwargs)
+
+    return check_hostname
 
 
 # Print tools

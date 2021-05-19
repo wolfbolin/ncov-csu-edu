@@ -15,19 +15,8 @@ from User.user_info import base_info_update
 
 
 @user_blue.route('/login', methods=["POST"])
+@Kit.check_service_time
 def user_login():
-    # 分时关闭服务
-    zero_time = Kit.timestamp2datetime(Kit.str_time("%Y-%m-%d"), "%Y-%m-%d")
-    time_now = datetime.datetime.now()
-    dt_time = time_now - zero_time
-    time_now = dt_time.seconds
-
-    if time_now < 3600 * 7 or time_now > 3600 * 23 + 60 * 55:
-        return jsonify({
-            "status": "error",
-            "message": "服务临时关闭，流量保护<23:55 - 8:00>"
-        })
-
     # 检查请求数据
     user_info = request.get_data(as_text=True)
     user_info = json.loads(user_info)
