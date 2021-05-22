@@ -68,6 +68,8 @@ export default {
                     key: "host",
                     val: `http://${window.location.host.split(":")[0]}:12880/api`
                 })
+            } else if (window.location.host.indexOf("csu.icu") !== -1) {
+                this.$store.commit("setData", {key: "host", val: "https://ncov.csu.icu/api"})
             } else {
                 this.$store.commit("setData", {key: "host", val: "https://covid19.csu-edu.cn/api"})
             }
@@ -106,6 +108,16 @@ export default {
 </script>
 
 <style lang="scss">
+body {
+    filter: grayscale(100%);
+    -webkit-filter: grayscale(100%);
+    -moz-filter: grayscale(100%);
+    //-ms-filter: grayscale(100%);
+    -o-filter: grayscale(100%);
+    filter: progid:DXImageTransform.Microsoft.BasicImage(grayscale=1);
+    -webkit-filter: grayscale(1);
+}
+
 html, body {
     margin: 0;
     padding: 0;

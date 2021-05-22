@@ -12,7 +12,10 @@ pymysql = "*"
 dbutils = "*"
 flask-cors = "*"
 python-logstash = "*"
+beautifulsoup4 = "*"
+lxml = "*"
 sentry-sdk = {extras = ["flask"], version = "*"}
+pycryptodomex = "*"
 
 [requires]
 python_version = "3.8"

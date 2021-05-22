@@ -20,7 +20,7 @@ from sentry_sdk.integrations.flask import FlaskIntegration
 
 # 获取配置
 app_config = get_config()
-base_path = os.path.split(os.path.abspath(__file__))[0]
+app_config["BASE"]["abspath"] = os.path.split(os.path.abspath(__file__))[0]
 
 # Sentry
 sentry_sdk.init(
@@ -36,7 +36,7 @@ app.config.from_mapping(app_config)
 # 服务日志
 if app_config["RUN_ENV"] != 'develop':
     logger = logging.getLogger('file_log')
-    log_name = '{}/log/run_{}.log'.format(base_path, os.getpid())
+    log_name = '{}/log/run_{}.log'.format(app_config["BASE"]["abspath"], os.getpid())
     file_handler = TimedRotatingFileHandler(filename=log_name, encoding="utf-8", when='midnight', backupCount=7)
     file_handler.setFormatter(logging.Formatter('%(asctime)s:<%(levelname)s> %(message)s'))
     file_handler.extMatch = re.compile(r'^\d{4}-\d{2}-\d{2}.log')
@@ -96,19 +96,8 @@ def geo_proxy(code):
 
 
 @app.route('/api/open', methods=["GET"])
+@Kit.check_service_time
 def open_service():
-    # 分时关闭服务
-    zero_time = Kit.timestamp2datetime(Kit.str_time("%Y-%m-%d"), "%Y-%m-%d")
-    time_now = datetime.datetime.now()
-    dt_time = time_now - zero_time
-    time_now = dt_time.seconds
-
-    if time_now < 3600 * 7 or time_now > 3600 * 23 + 60 * 55:
-        return jsonify({
-            "status": "error",
-            "message": "服务临时关闭，流量保护<23:55 - 8:00>"
-        })
-
     # 服务关闭标记
     conn = app.mysql_pool.connection()
     flag = Kit.get_key_val(conn, "shutdown_login")

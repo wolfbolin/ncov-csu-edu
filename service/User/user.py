@@ -1,33 +1,25 @@
 # coding=utf-8
-import logging
-
+import os
 import Kit
 import json
+import base64
+import logging
 import pymysql
-import datetime
+import requests
 from flask import abort
 from flask import jsonify
 from flask import request
 from User import user_blue
+from requests import utils
 from flask import current_app as app
 from User.user_info import user_sso_login
 from User.user_info import base_info_update
+from User.user_info import user_sso_login_step2
 
 
 @user_blue.route('/login', methods=["POST"])
+@Kit.check_service_time
 def user_login():
-    # 分时关闭服务
-    zero_time = Kit.timestamp2datetime(Kit.str_time("%Y-%m-%d"), "%Y-%m-%d")
-    time_now = datetime.datetime.now()
-    dt_time = time_now - zero_time
-    time_now = dt_time.seconds
-
-    if time_now < 3600 * 7 or time_now > 3600 * 23 + 60 * 55:
-        return jsonify({
-            "status": "error",
-            "message": "服务临时关闭，流量保护<23:55 - 8:00>"
-        })
-
     # 检查请求数据
     user_info = request.get_data(as_text=True)
     user_info = json.loads(user_info)
@@ -67,14 +59,99 @@ def user_login():
 
     # 验证用户账号信息并获取session
     status, data, message = user_sso_login(user_info["username"], user_info["password"])
-    if status is False:
+    if status == "Failed":
         Kit.write_log(logging.WARNING, 'user_login', user_info["username"], "warning", str(data), str(message))
         return jsonify({
             "status": "error",
             "message": str(message)
         })
-    cookies = json.dumps(data.cookies.get_dict())
+    elif status == "Captcha":
+        login_session = {
+            "username": user_info["username"],
+            "auth_url": data[0],
+            "cookies": json.dumps(data[1].cookies.get_dict()),
+            "salt": data[2],
+            "exec_": data[3],
+            "image_name": data[4],
+            "unix_time": Kit.unix_time()
+        }
+        return jsonify({
+            "status": "waiting",
+            "message": str(message),
+            "login_data": Kit.aes_encrypt(json.dumps(login_session), app.config["BASE"]["aes_key"]),
+            "captcha": base64.b64encode(data[5]).decode("utf-8"),
+        })
 
+    # 写入登录日志
+    Kit.write_log(logging.INFO, 'user_login', user_info["username"], "success", "Login with password", message)
+
+    return user_login_check(conn, user_info, data)
+
+
+@user_blue.route('/login/captcha', methods=["POST"])
+@Kit.check_service_time
+def user_login_step2():
+    # 检查请求数据
+    user_info = request.get_data(as_text=True)
+    user_info = json.loads(user_info)
+    if set(user_info.keys()) != {"username", "password", "nickname", "phone", "login_data"}:
+        return abort(400)
+    if 6 <= len(user_info["username"]) <= 14 and len(user_info["password"]) != 0 and \
+            4 <= len(user_info["nickname"]) <= 16 and len(user_info["phone"]) == 11:
+        user_info["username"] = user_info["username"].strip()
+        user_info["nickname"] = user_info["nickname"].strip()
+        user_info["phone"] = user_info["phone"].strip()
+    else:
+        return abort(400)
+
+    # 检查加密传输信息
+    login_data = Kit.aes_decrypt(user_info["login_data"]["session"], app.config["BASE"]["aes_key"])
+    login_data = json.loads(login_data)
+    if login_data["username"] != user_info["username"]:
+        return jsonify({
+            "status": "error",
+            "message": "无法确认您的身份"
+        })
+    if Kit.unix_time() - int(login_data["unix_time"]) > 120:
+        return jsonify({
+            "status": "error",
+            "message": "验证码已过期失效"
+        })
+
+    # 尝试记录验证码
+    image_path = "{}/captcha/{}.jpg".format(app.config["BASE"]["abspath"], login_data["image_name"])
+    new_name = "{}-{}".format(user_info["login_data"]["captcha"], login_data["image_name"].split("-")[0])
+    captcha_path = "{}/captcha/{}.jpg".format(app.config["BASE"]["abspath"], new_name)
+    os.rename(image_path, captcha_path)
+
+    # 尝试还原登录现场
+    session = requests.Session()
+    session.headers.update({"Accept-Language": "zh-CN,zh;q=0.9"})
+    cookies = json.loads(login_data["cookies"])
+    cookies_jar = requests.utils.cookiejar_from_dict(cookies)
+    session.cookies = cookies_jar
+    app.logger.info("User try to login(captcha): {}".format(user_info["username"]))
+
+    # 尝试输入验证码登录
+    login_data["captcha"] = user_info["login_data"]["captcha"]
+    status, data, message = user_sso_login_step2(login_data["auth_url"], session,
+                                                 user_info["username"], user_info["password"], login_data)
+    if status == "Failed":
+        Kit.write_log(logging.WARNING, 'user_login', user_info["username"], "warning", str(data), str(message))
+        return jsonify({
+            "status": "error",
+            "message": str(message)
+        })
+
+    # 写入登录日志
+    Kit.write_log(logging.INFO, 'user_login', user_info["username"], "success", "Login with captcha", message)
+
+    conn = app.mysql_pool.connection()
+    return user_login_check(conn, user_info, data)
+
+
+def user_login_check(conn, user_info, session):
+    cookies = json.dumps(session.cookies.get_dict())
     # 登录成功写入session
     cursor = conn.cursor()
     sql = "INSERT `user`(`cookies`, `username`, `nickname`, `phone`, `time`) " \
@@ -85,9 +162,6 @@ def user_login():
 
     # 检查用户登录态与基本信息
     base_info_update(conn, user_info["username"], cookies)
-
-    # 写入登录日志
-    Kit.write_log(logging.INFO, 'user_login', user_info["username"], "success", "Login success", message)
 
     return jsonify({
         "status": "success",

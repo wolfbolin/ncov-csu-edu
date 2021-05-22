@@ -68,7 +68,7 @@
                         <el-form class="form" ref="form1" label-position="left" label-width="60px"
                                  v-loading="loading" :rules="rules" :model="formData">
                             <el-form-item label="账号" prop="username">
-                                <el-input v-model="formData.username" placeholder="旧版信息门户账户"
+                                <el-input v-model="formData.username" placeholder="信息门户账户"
                                           :disabled="closeOpen"></el-input>
                             </el-form-item>
                             <el-form-item label="手机" prop="phone">
@@ -76,7 +76,7 @@
                                           :disabled="closeOpen"></el-input>
                             </el-form-item>
                             <el-form-item label="密码" prop="password">
-                                <el-input v-model="formData.password" placeholder="旧版信息门户密码"
+                                <el-input v-model="formData.password" placeholder="信息门户密码"
                                           show-password :disabled="closeOpen"></el-input>
                             </el-form-item>
                             <el-form-item label="昵称" prop="nickname">
@@ -96,6 +96,13 @@
                                     <template slot="title">
                                         <el-button type="text" @click="passwdTip=true">关于登录密码错误的说明</el-button>
                                     </template>
+                                </el-alert>
+                            </div>
+                            <div class="alert">
+                                <el-alert type="success">
+                                    <router-link to="/deal">
+                                        <el-button type="text" @click="passwdTip=true">短信通知、自定时间指路</el-button>
+                                    </router-link>
                                 </el-alert>
                             </div>
                             <el-button type="success" @click="check_form('add_task')" plain :disabled="closeOpen">
@@ -186,6 +193,15 @@
                     </el-tab-pane>
                 </el-tabs>
             </div>
+            <el-dialog title="验证码" :visible.sync="captcha.dialog" center>
+                <p>请输入下图中的验证码(不可刷新)</p>
+                <img :src="captcha.data" alt="captcha" style="vertical-align:middle"/>
+                <el-input v-model="captcha.text" style="width: auto" maxlength="4"></el-input>
+                <span slot="footer" class="dialog-footer">
+                    <el-button @click="captcha.dialog = false">取 消</el-button>
+                    <el-button type="primary" @click="user_login_captcha">确 定</el-button>
+                </span>
+            </el-dialog>
 
             <div class="tips">
                 <h2>这是什么？</h2>
@@ -219,11 +235,12 @@
                 </p>
             </div>
             <el-dialog title="关于密码" width="80%" :visible.sync="passwdTip">
-                <p>打卡服务密码请使用旧版信网中心密码(改版前后密码不同步)</p>
-                <p>多次尝试失败被暂停服务时，可在一个小时后再次尝试登陆</p>
+                <p>绑定打卡服务请使用可登录中南大学信网中心的密码，暂不支持手机验证码登录</p>
+                <p>若您在一小时内多次尝试登录，无论是否成功，您将被本服务临时冻结一个小时</p>
+                <p>多次登录失败后，您可能会收到来学校临时冻结账号的通知短信，请解冻后重试</p>
                 <p>您可以在官方网站
-                    <a href="http://ca.its.csu.edu.cn/home/login/215" target="_blank">&lt;点击打开&gt;</a>
-                    尝试登陆成功后再绑定账号</p>
+                    <a href="https://my.csu.edu.cn" target="_blank">&lt;点击打开&gt;</a>
+                    尝试登陆成功后再在本平台绑定账号</p>
                 <span slot="footer" class="dialog-footer">
                     <el-button type="primary" @click="passwdTip = false">确 定</el-button>
                 </span>
@@ -244,6 +261,11 @@ export default {
             }
         };
         return {
+            captcha: {
+                dialog: false,
+                data: "",
+                text: ""
+            },
             activeTab: "bind",
             loading: false,
             passwdTip: false,
@@ -323,19 +345,19 @@ export default {
                         this.user_login();
                     }
                 })
-            }else if(task === "get_task"){
+            } else if (task === "get_task") {
                 this.$refs["form2"].validate((valid) => {
                     if (valid) {
                         this.user_task();
                     }
                 })
-            }else if(task === "mod_task"){
+            } else if (task === "mod_task") {
                 this.$refs["form2"].validate((valid) => {
                     if (valid) {
                         this.user_modify();
                     }
                 })
-            }else if(task === "del_task"){
+            } else if (task === "del_task") {
                 this.$refs["form3"].validate((valid) => {
                     if (valid) {
                         this.user_logout();
@@ -363,6 +385,67 @@ export default {
                             type: 'success'
                         });
                         that.formData.password = ""
+                    } else if (res.data.status === 'waiting') {
+                        that.loading = false;
+                        that.$message({
+                            message: res.data.message,
+                            type: 'warning'
+                        });
+                        that.captcha.text = ""
+                        that.captcha.data = "data:image/jpg;base64," + res.data["captcha"]
+                        that.captcha.session = res.data["login_data"]
+                        that.captcha.dialog = true
+                    } else {
+                        that.$message({
+                            message: res.data.message,
+                            type: 'error'
+                        });
+                    }
+                })
+                .catch(function (res) {
+                    that.loading = false;
+                    console.log(res);
+                    that.$message({
+                        message: "网络异常，请重试",
+                        type: 'error'
+                    });
+                })
+        },
+        user_login_captcha: function () {
+            let that = this;
+            this.loading = true;
+            this.captcha.dialog = false;
+            let data_host = this.$store.state.host;
+            let http_data = {
+                username: this.formData.username,
+                password: this.formData.password,
+                nickname: this.formData.nickname,
+                phone: this.formData.phone,
+                login_data: {
+                    session: this.captcha.session,
+                    captcha: this.captcha.text
+                }
+            }
+            this.$http.post(data_host + `/user/login/captcha`, http_data)
+                .then(function (res) {
+                    that.loading = false;
+                    if (res.data.status === 'success') {
+                        that.loading = false;
+                        that.$message({
+                            message: res.data.message,
+                            type: 'success'
+                        });
+                        that.formData.password = ""
+                    } else if (res.data.status === 'waiting') {
+                        that.loading = false;
+                        that.$message({
+                            message: res.data.message,
+                            type: 'warning'
+                        });
+                        that.captcha.text = ""
+                        that.captcha.data = "data:image/jpg;base64," + res.data["captcha"]
+                        that.captcha.session = res.data["login_data"]
+                        that.captcha.dialog = true
                     } else {
                         that.$message({
                             message: res.data.message,
