@@ -108,15 +108,6 @@ export default {
 </script>
 
 <style lang="scss">
-body {
-    filter: grayscale(100%);
-    -webkit-filter: grayscale(100%);
-    -moz-filter: grayscale(100%);
-    //-ms-filter: grayscale(100%);
-    -o-filter: grayscale(100%);
-    filter: progid:DXImageTransform.Microsoft.BasicImage(grayscale=1);
-    -webkit-filter: grayscale(1);
-}
 
 html, body {
     margin: 0;

@@ -94,7 +94,7 @@
                             <div class="alert">
                                 <el-alert type="warning">
                                     <template slot="title">
-                                        <el-button type="text" @click="passwdTip=true">关于登录密码错误的说明</el-button>
+                                        <el-button type="text" @click="passwdTip=true">关于更新数据方法的说明</el-button>
                                     </template>
                                 </el-alert>
                             </div>
@@ -234,13 +234,11 @@
                     @全体成员
                 </p>
             </div>
-            <el-dialog title="关于密码" width="80%" :visible.sync="passwdTip">
-                <p>绑定打卡服务请使用可登录中南大学信网中心的密码，暂不支持手机验证码登录</p>
-                <p>若您在一小时内多次尝试登录，无论是否成功，您将被本服务临时冻结一个小时</p>
-                <p>多次登录失败后，您可能会收到来学校临时冻结账号的通知短信，请解冻后重试</p>
-                <p>您可以在官方网站
-                    <a href="https://my.csu.edu.cn" target="_blank">&lt;点击打开&gt;</a>
-                    尝试登陆成功后再在本平台绑定账号</p>
+            <el-dialog title="数据更新" width="80%" :visible.sync="passwdTip">
+                <p>打卡服务会自动获取您前一日的打卡信息，作为打卡数据进行提交</p>
+                <p>若您需要更新自己的打卡信息，可以在系统自动打卡之前手动打卡</p>
+                <p>手动打卡数据不会被自动打卡数据覆盖，因此您无需频繁解除绑定</p>
+                <p>目前已知基础信息、定位信息、疫苗信息均可以按照上述逻辑运行</p>
                 <span slot="footer" class="dialog-footer">
                     <el-button type="primary" @click="passwdTip = false">确 定</el-button>
                 </span>
