@@ -35,7 +35,7 @@ def user_sign(config, conn, user_info, risk_area, elk_logger):
     cursor = conn.cursor()
 
     # 检查登录状态
-    if result == "lost_status":
+    if result in ["lost_status", "error"]:
         user_login_lost(config, conn, user_info["username"], elk_logger, status, message)
 
     # 检查数据更新
