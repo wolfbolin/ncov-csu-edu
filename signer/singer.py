@@ -34,6 +34,10 @@ def user_sign(config, conn, user_info, risk_area, elk_logger):
     # 连接数据库
     cursor = conn.cursor()
 
+    # 检查登录状态
+    if result in ["lost_status", "error"]:
+        user_login_lost(config, conn, user_info["username"], elk_logger, status, message)
+
     # 检查数据更新
     session_cookies = session.cookies.get_dict()
     if session_cookies != cookies and len(session_cookies.keys()) != 0:
@@ -62,8 +66,8 @@ def user_sign(config, conn, user_info, risk_area, elk_logger):
         "result": result,
         "status": status,
         "message": message
-
     }
+
     if result == "success":
         log_data["status"] = "User sign success"
         log_data["message"] += " @ {}".format(status)
@@ -110,7 +114,7 @@ def user_sign_core(session, risk_area):
     # 获取历史数据
     url = "https://wxxy.csu.edu.cn/ncov/wap/default/index"
     try:
-        http_result = session.get(url, proxies={"https": None})
+        http_result = session.get(url, proxies={"https": None}, allow_redirects=False)
     except requests.exceptions.ReadTimeout:
         run_err = "requests.exceptions.ReadTimeout:[%s]" % url
         Kit.print_red(run_err)
@@ -119,6 +123,9 @@ def user_sign_core(session, risk_area):
         run_err = "requests.exceptions.ConnectionError:[%s]" % url
         Kit.print_red(run_err)
         return "error", run_err, "自动登录失败"
+
+    if http_result.status_code == 302:
+        return "lost_status", "User login status lost", "绑定登录失效"
 
     # 历史数据解析
     regex = r'oldInfo: (.*),'
@@ -189,3 +196,19 @@ def user_sign_core(session, risk_area):
     elif sign_res["e"] == 1 and sign_res["m"] == "今天已经填报了":
         return "success", json.dumps(location, ensure_ascii=False), sign_res["m"]
     return "error", "Unknown situation", sign_res["m"]
+
+
+def user_login_lost(config, conn, username, elk_logger, status, message):
+    cursor = conn.cursor()
+    sql = "UPDATE `user` SET `online`='Lost' WHERE `username`=%s"
+    cursor.execute(sql, args=[username])
+
+    extra = json.loads(config["ELK"]["extra"])
+    log_data = {
+        "function": "login_lost",
+        "username": username,
+        "result": "success",
+        "status": status,
+        "message": message
+    }
+    elk_logger.info(json.dumps(log_data), extra=extra)

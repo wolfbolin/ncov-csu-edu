@@ -10,3 +10,5 @@ service/Config/recalc_list.csv
 service/captcha/
 
 service/demo.py
+
+signer/log/
