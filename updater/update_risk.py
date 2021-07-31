@@ -64,7 +64,7 @@ def open_website(driver_path, headless):
 def get_region_info(config, browser, local_data_time):
     # Get update time
     remote_data_time = browser.find_element_by_class_name("r-time").text
-    remote_data_time = re.search(r'\d{4}-\d{2}-\d{2}', remote_data_time)
+    remote_data_time = re.search(r'\d{4}-\d{2}-\d{2} \d{2}:00', remote_data_time)
     remote_data_time = remote_data_time.group(0)
     print("[INFO]", "Remote update time:", remote_data_time)
 
