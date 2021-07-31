@@ -64,8 +64,8 @@ def open_website(driver_path, headless):
 def get_region_info(config, browser, local_data_time):
     # Get update time
     remote_data_time = browser.find_element_by_class_name("r-time").text
-    remote_data_time = re.search(r'\d{4}-\d{2}-\d{2} \d{2}:00', remote_data_time)
-    remote_data_time = remote_data_time.group(0)
+    remote_data_time = re.search(r'\d{4}-\d{2}-\d{2} \d{2}', remote_data_time)
+    remote_data_time = remote_data_time.group(0) + ":00"
     print("[INFO]", "Remote update time:", remote_data_time)
 
     if local_data_time == remote_data_time and config["RUN_ENV"] != "develop":
@@ -74,7 +74,7 @@ def get_region_info(config, browser, local_data_time):
 
     change_tab = browser.find_element_by_class_name("r-high")
     change_tab.click()
-    time.sleep(1)
+    time.sleep(2)
 
     # Get high risk area
     high_risk_list = []
@@ -86,14 +86,14 @@ def get_region_info(config, browser, local_data_time):
         next_button = high_risk_dom.find_element_by_id("nextPage")
         if next_button.is_enabled():
             next_button.click()
-            time.sleep(1)
+            time.sleep(2)
         else:
             break
     print("[INFO]", "Remote high risk num:", len(high_risk_list))
 
     change_tab = browser.find_element_by_class_name("r-middle")
     change_tab.click()
-    time.sleep(1)
+    time.sleep(2)
 
     # Get medium risk area
     medium_risk_list = []
@@ -105,7 +105,7 @@ def get_region_info(config, browser, local_data_time):
         next_button = medium_risk_dom.find_element_by_id("nextPage")
         if next_button.is_enabled():
             next_button.click()
-            time.sleep(1)
+            time.sleep(2)
         else:
             break
     print("[INFO]", "Remote medium risk num:", len(medium_risk_list))
