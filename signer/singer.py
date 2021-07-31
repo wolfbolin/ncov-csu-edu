@@ -9,14 +9,15 @@ from requests import utils
 
 def read_risk_area(conn):
     cursor = conn.cursor(pymysql.cursors.DictCursor)
-    sql = "SELECT DISTINCT `province`, `city`, `level` FROM `region_risk`"
+    sql = "SELECT DISTINCT `province`, `city`, `block`, `level` FROM `region_risk`"
     cursor.execute(sql)
 
     risk_area = {}
     for area in cursor.fetchall():
         risk_area.setdefault(area["province"], {})
         risk_area[area["province"]].setdefault(area["city"], {})
-        risk_area[area["province"]][area["city"]] = area["level"]
+        risk_area[area["province"]][area["city"]].setdefault(area["block"], {})
+        risk_area[area["province"]][area["city"]][area["block"]] = area["level"]
 
     return risk_area
 
@@ -173,7 +174,7 @@ def user_sign_core(session, risk_area):
 
     # 检查打卡位置
     risk_data = risk_area.get(location["province"], {})
-    risk_data = risk_data.get(location["city"], None)
+    risk_data = risk_data.get(location["city"], {})
     risk_data = risk_data.get(location["district"], None)
     if risk_data is not None:
         return "risk_area", json.dumps(location, ensure_ascii=False), "风险地区".format(risk_data)
