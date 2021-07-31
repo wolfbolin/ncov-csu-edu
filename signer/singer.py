@@ -174,8 +174,9 @@ def user_sign_core(session, risk_area):
     # 检查打卡位置
     risk_data = risk_area.get(location["province"], {})
     risk_data = risk_data.get(location["city"], None)
+    risk_data = risk_data.get(location["district"], None)
     if risk_data is not None:
-        return "risk_area", json.dumps(location, ensure_ascii=False), "中高风险地区".format(risk_data)
+        return "risk_area", json.dumps(location, ensure_ascii=False), "风险地区".format(risk_data)
 
     # 重发数据完成签到
     url = "https://wxxy.csu.edu.cn/ncov/wap/default/save"
