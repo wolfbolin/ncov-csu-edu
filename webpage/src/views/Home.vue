@@ -149,6 +149,14 @@
                                 </el-row>
                                 <el-row class="item">
                                     <el-col :span="12" class="key">
+                                        <p>账户状态</p>
+                                    </el-col>
+                                    <el-col :span="12" class="val">
+                                        <p>{{ taskInfo.status }}</p>
+                                    </el-col>
+                                </el-row>
+                                <el-row class="item">
+                                    <el-col :span="12" class="key">
                                         <p>打卡时间</p>
                                     </el-col>
                                     <el-col :span="12" class="val">
@@ -511,6 +519,11 @@ export default {
                         that.formData.time = that.taskInfo["taskTime"].split(":")[0]
                         if (that.taskInfo.randOpt === 'Yes') {
                             that.taskInfo.taskTime = "时段随机"
+                        }
+                        if (that.taskInfo.status === 'Yes') {
+                            that.taskInfo.status = "正常服务"
+                        } else if (that.taskInfo.status === 'Lost') {
+                            that.taskInfo.status = "绑定失效"
                         }
                     } else {
                         that.$message({

@@ -36,6 +36,12 @@ def user_login():
 
     # 查询并写入数据
     conn = app.mysql_pool.connection()
+    flag = Kit.get_key_val(conn, "shutdown_login")
+    if flag != "open":
+        return jsonify({
+            "status": "error",
+            "message": "登录服务临时关闭"
+        })
 
     # 简单反Dos攻击
     cursor = conn.cursor()
@@ -213,7 +219,8 @@ def get_task_info():
     # 检查并获取任务
     conn = app.mysql_pool.connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
-    sql = "SELECT `nickname`, `time`, `rand`, `sms` FROM `user` WHERE `username`=%s AND `phone`=%s AND `online`='Yes'"
+    sql = "SELECT `nickname`, `online`, `time`, `rand`, `sms` FROM `user` WHERE `username`=%s AND `phone`=%s " \
+          "AND (`online`='Yes' OR `online`='Lost')"
     cursor.execute(sql, args=[username, phone])
     res = cursor.fetchone()
     if res is None:
@@ -229,6 +236,7 @@ def get_task_info():
             "taskTime": res["time"],
             "randOpt": res["rand"],
             "smsOpt": res["sms"],
+            "status": res["online"],
         }
     })
 
