@@ -29,11 +29,16 @@ def user_sign(config, conn, user_info, risk_area, elk_logger):
     cookies_jar = requests.utils.cookiejar_from_dict(cookies)
     session.cookies = cookies_jar
 
-    # 执行签到任务
-    result, status, message = user_sign_core(session, risk_area)
-
     # 连接数据库
     cursor = conn.cursor()
+    sql = "SELECT `val` FROM `kvdb` WHERE `key`='vvip_list'"
+    cursor.execute(sql)
+    vvip_list = cursor.fetchone()[0]
+    vvip_list = json.loads(vvip_list)
+    vip_user = user_info["username"] in vvip_list
+
+    # 执行签到任务
+    result, status, message = user_sign_core(session, risk_area, vip_user)
 
     # 检查登录状态
     if result in ["lost_status", "error"]:
@@ -57,7 +62,7 @@ def user_sign(config, conn, user_info, risk_area, elk_logger):
     # 向用户发送短信
     if user_info["sms"] == "Yes":
         sms_message = (result, status, message)
-        send_sms_message(config["BASE"]["sms_token"], user_info["nickname"], user_info["phone"], sms_message)
+        send_sms_message(config["BASE"]["sms_token"], user_info["nickname"], user_info["phone"], sms_message, vip_user)
 
     # 上报打卡日志
     extra = json.loads(config["ELK"]["extra"])
@@ -79,7 +84,7 @@ def user_sign(config, conn, user_info, risk_area, elk_logger):
     elk_logger.info(json.dumps(log_data), extra=extra)
 
 
-def send_sms_message(sms_token, user_name, user_phone, result):
+def send_sms_message(sms_token, user_name, user_phone, result, vip_user):
     # 位置信息
     if result[0] in ["success", "risk_area"]:
         location = json.loads(result[1])
@@ -90,7 +95,7 @@ def send_sms_message(sms_token, user_name, user_phone, result):
     url = "https://core.wolfbolin.com/message/sms/send/%s" % user_phone
     data = {
         "phone": user_phone,
-        "template": 805977,
+        "template": 1076591,
         "params": [
             user_name,
             Kit.str_time("%H:%M"),
@@ -98,18 +103,21 @@ def send_sms_message(sms_token, user_name, user_phone, result):
             location
         ]
     }
+    if vip_user:
+        data["template"] = 1076596
     params = {
         "token": sms_token
     }
-    res = requests.post(url=url, json=data, params=params)
+    requests.post(url=url, json=data, params=params)
     Kit.print_purple("{} Send SMS to {}".format(Kit.str_time(), user_phone))
 
 
-def user_sign_core(session, risk_area):
+def user_sign_core(session, risk_area, vip_user):
     """
     完成打卡数据获取与打卡全流程
     :param session: 网络连接session
     :param risk_area: 风险区域信息
+    :param vip_user: 限制措施排除
     :return: 打卡成功(Boolean) 响应信息 响应描述
     """
     # 获取历史数据
@@ -176,8 +184,8 @@ def user_sign_core(session, risk_area):
     risk_data = risk_area.get(location["province"], {})
     risk_data = risk_data.get(location["city"], {})
     risk_data = risk_data.get(location["district"], None)
-    if risk_data is not None:
-        return "risk_area", json.dumps(location, ensure_ascii=False), "风险地区".format(risk_data)
+    if risk_data is not None and vip_user is False:
+        return "risk_area", json.dumps(location, ensure_ascii=False), "风险地区自动暂停"
 
     # 重发数据完成签到
     url = "https://wxxy.csu.edu.cn/ncov/wap/default/save"

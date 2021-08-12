@@ -228,21 +228,6 @@
 
             <div class="tips">
                 <h2>这是什么？</h2>
-                <p>
-                    下列内容中枚举了当前系统拒绝自动打卡的范围<br/>
-                    数据来源为【国家卫生健康委】+【突发疫情信息】<br/>
-                    数据接口：https://covid19.csu-edu.cn/api/data/risk<br/>
-                </p>
-                <el-table border :data="risk_data" :row-class-name="risk_color">
-                    <el-table-column prop="province" label="省份"></el-table-column>
-                    <el-table-column prop="city" label="城市"></el-table-column>
-                    <el-table-column prop="block" label="地区"></el-table-column>
-                    <el-table-column prop="level" label="风险"></el-table-column>
-                </el-table>
-            </div>
-
-            <div class="tips">
-                <h2>这是什么？</h2>
                 <p>懂的都懂<br/>
                     不懂的我也不解释<br/>
                     这里水很深，利益牵扯太大<br/>
