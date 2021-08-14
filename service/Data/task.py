@@ -76,7 +76,10 @@ def sign_task_post(check_time=None):
             if sms_control == "No":
                 user["sms"] = "No"
             if user["rand"] == "Yes":
-                delay = random.randint(0, 3600)
+                if time_now.split(":")[0] == "00":
+                    delay = random.randint(600, 3600)
+                else:
+                    delay = random.randint(0, 3600)
             else:
                 delay = 0
 
