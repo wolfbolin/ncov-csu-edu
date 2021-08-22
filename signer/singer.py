@@ -123,11 +123,11 @@ def user_sign_core(session, risk_area, vip_user):
     # 获取历史数据
     url = "https://wxxy.csu.edu.cn/ncov/wap/default/index"
     try:
-        http_result = session.get(url, proxies={"https": None}, allow_redirects=False)
+        http_result = session.get(url, proxies={"https": None}, allow_redirects=False, timeout=(5, 15))
     except requests.exceptions.ReadTimeout:
         run_err = "requests.exceptions.ReadTimeout:[%s]" % url
         Kit.print_red(run_err)
-        return "error", run_err, "自动登录失败"
+        return "error", run_err, "自动登录超时"
     except requests.exceptions.ConnectionError:
         run_err = "requests.exceptions.ConnectionError:[%s]" % url
         Kit.print_red(run_err)
@@ -190,11 +190,11 @@ def user_sign_core(session, risk_area, vip_user):
     # 重发数据完成签到
     url = "https://wxxy.csu.edu.cn/ncov/wap/default/save"
     try:
-        http_result = session.post(url, data=sign_data, proxies={"https": None})
+        http_result = session.post(url, data=sign_data, proxies={"https": None}, timeout=(5, 15))
     except requests.exceptions.ReadTimeout:
         run_err = "requests.exceptions.ReadTimeout:[%s]" % url
         Kit.print_red(run_err)
-        return "error", run_err, "自动签到失败"
+        return "error", run_err, "自动签到超时"
     except requests.exceptions.ConnectionError:
         run_err = "requests.exceptions.ConnectionError:[%s]" % url
         Kit.print_red(run_err)
