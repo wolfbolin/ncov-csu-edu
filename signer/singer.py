@@ -41,7 +41,7 @@ def user_sign(config, conn, user_info, risk_area, elk_logger):
     result, status, message = user_sign_core(session, risk_area, vip_user)
 
     # 检查登录状态
-    if result in ["lost_status", "error"]:
+    if result in ["lost_status"]:
         user_login_lost(config, conn, user_info["username"], elk_logger, status, message)
 
     # 检查数据更新
@@ -121,20 +121,22 @@ def user_sign_core(session, risk_area, vip_user):
     :return: 打卡成功(Boolean) 响应信息 响应描述
     """
     # 获取历史数据
+    run_err = None
+    http_result = None
     url = "https://wxxy.csu.edu.cn/ncov/wap/default/index"
-    try:
-        http_result = session.get(url, proxies={"https": None}, allow_redirects=False, timeout=(5, 15))
-    except requests.exceptions.ReadTimeout:
-        run_err = "requests.exceptions.ReadTimeout:[%s]" % url
-        Kit.print_red(run_err)
-        return "error", run_err, "自动登录超时"
-    except requests.exceptions.ConnectionError:
-        run_err = "requests.exceptions.ConnectionError:[%s]" % url
-        Kit.print_red(run_err)
-        return "error", run_err, "自动登录失败"
-
-    if http_result.status_code == 302:
-        return "lost_status", "User login status lost", "绑定登录失效"
+    for t in range(3):
+        try:
+            http_result = session.get(url, proxies={"https": None}, allow_redirects=False, timeout=(3, 10))
+            if http_result.status_code == 302:
+                return "lost_status", "User login status lost", "绑定登录失效"
+        except requests.exceptions.ReadTimeout:
+            run_err = ("requests.exceptions.ReadTimeout:[%s]" % url, "自动登录超时")
+            Kit.print_red("Login-{}：{}".format(t, run_err[0]))
+        except requests.exceptions.ConnectionError:
+            run_err = ("requests.exceptions.ConnectionError:[%s]" % url, "自动登录失败")
+            Kit.print_red("Login-{}：{}".format(t, run_err[0]))
+    if run_err is not None:
+        return "error", run_err[0], run_err[1]
 
     # 历史数据解析
     regex = r'oldInfo: (.*),'
@@ -188,17 +190,20 @@ def user_sign_core(session, risk_area, vip_user):
         return "risk_area", json.dumps(location, ensure_ascii=False), "风险地区自动暂停"
 
     # 重发数据完成签到
+    run_err = None
+    http_result = None
     url = "https://wxxy.csu.edu.cn/ncov/wap/default/save"
-    try:
-        http_result = session.post(url, data=sign_data, proxies={"https": None}, timeout=(5, 15))
-    except requests.exceptions.ReadTimeout:
-        run_err = "requests.exceptions.ReadTimeout:[%s]" % url
-        Kit.print_red(run_err)
-        return "error", run_err, "自动签到超时"
-    except requests.exceptions.ConnectionError:
-        run_err = "requests.exceptions.ConnectionError:[%s]" % url
-        Kit.print_red(run_err)
-        return "error", run_err, "自动签到失败"
+    for t in range(3):
+        try:
+            http_result = session.post(url, data=sign_data, proxies={"https": None}, timeout=(3, 10))
+        except requests.exceptions.ReadTimeout:
+            run_err = ("requests.exceptions.ReadTimeout:[%s]" % url, "自动登录超时")
+            Kit.print_red("Sign-{}：{}".format(t, run_err[0]))
+        except requests.exceptions.ConnectionError:
+            run_err = ("requests.exceptions.ConnectionError:[%s]" % url, "自动签到失败")
+            Kit.print_red("Sign-{}：{}".format(t, run_err[0]))
+    if run_err is not None:
+        return "error", run_err[0], run_err[1]
 
     sign_res = json.loads(http_result.text)
     if sign_res["e"] == 0:
