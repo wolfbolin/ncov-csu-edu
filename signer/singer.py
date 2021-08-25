@@ -9,14 +9,15 @@ from requests import utils
 
 def read_risk_area(conn):
     cursor = conn.cursor(pymysql.cursors.DictCursor)
-    sql = "SELECT DISTINCT `province`, `city`, `level` FROM `region_risk`"
+    sql = "SELECT DISTINCT `province`, `city`, `block`, `level` FROM `region_risk`"
     cursor.execute(sql)
 
     risk_area = {}
     for area in cursor.fetchall():
         risk_area.setdefault(area["province"], {})
         risk_area[area["province"]].setdefault(area["city"], {})
-        risk_area[area["province"]][area["city"]] = area["level"]
+        risk_area[area["province"]][area["city"]].setdefault(area["block"], {})
+        risk_area[area["province"]][area["city"]][area["block"]] = area["level"]
 
     return risk_area
 
@@ -28,14 +29,19 @@ def user_sign(config, conn, user_info, risk_area, elk_logger):
     cookies_jar = requests.utils.cookiejar_from_dict(cookies)
     session.cookies = cookies_jar
 
-    # 执行签到任务
-    result, status, message = user_sign_core(session, risk_area)
-
     # 连接数据库
     cursor = conn.cursor()
+    sql = "SELECT `val` FROM `kvdb` WHERE `key`='vvip_list'"
+    cursor.execute(sql)
+    vvip_list = cursor.fetchone()[0]
+    vvip_list = json.loads(vvip_list)
+    vip_user = user_info["username"] in vvip_list
+
+    # 执行签到任务
+    result, status, message = user_sign_core(session, risk_area, vip_user)
 
     # 检查登录状态
-    if result in ["lost_status", "error"]:
+    if result in ["lost_status"]:
         user_login_lost(config, conn, user_info["username"], elk_logger, status, message)
 
     # 检查数据更新
@@ -56,7 +62,7 @@ def user_sign(config, conn, user_info, risk_area, elk_logger):
     # 向用户发送短信
     if user_info["sms"] == "Yes":
         sms_message = (result, status, message)
-        send_sms_message(config["BASE"]["sms_token"], user_info["nickname"], user_info["phone"], sms_message)
+        send_sms_message(config["BASE"]["sms_token"], user_info["nickname"], user_info["phone"], sms_message, vip_user)
 
     # 上报打卡日志
     extra = json.loads(config["ELK"]["extra"])
@@ -78,7 +84,7 @@ def user_sign(config, conn, user_info, risk_area, elk_logger):
     elk_logger.info(json.dumps(log_data), extra=extra)
 
 
-def send_sms_message(sms_token, user_name, user_phone, result):
+def send_sms_message(sms_token, user_name, user_phone, result, vip_user):
     # 位置信息
     if result[0] in ["success", "risk_area"]:
         location = json.loads(result[1])
@@ -89,7 +95,7 @@ def send_sms_message(sms_token, user_name, user_phone, result):
     url = "https://core.wolfbolin.com/message/sms/send/%s" % user_phone
     data = {
         "phone": user_phone,
-        "template": 805977,
+        "template": 1076591,
         "params": [
             user_name,
             Kit.str_time("%H:%M"),
@@ -97,35 +103,40 @@ def send_sms_message(sms_token, user_name, user_phone, result):
             location
         ]
     }
+    if vip_user:
+        data["template"] = 1076596
     params = {
         "token": sms_token
     }
-    res = requests.post(url=url, json=data, params=params)
+    requests.post(url=url, json=data, params=params)
     Kit.print_purple("{} Send SMS to {}".format(Kit.str_time(), user_phone))
 
 
-def user_sign_core(session, risk_area):
+def user_sign_core(session, risk_area, vip_user):
     """
     完成打卡数据获取与打卡全流程
     :param session: 网络连接session
     :param risk_area: 风险区域信息
+    :param vip_user: 限制措施排除
     :return: 打卡成功(Boolean) 响应信息 响应描述
     """
     # 获取历史数据
+    run_err = None
+    http_result = None
     url = "https://wxxy.csu.edu.cn/ncov/wap/default/index"
-    try:
-        http_result = session.get(url, proxies={"https": None}, allow_redirects=False)
-    except requests.exceptions.ReadTimeout:
-        run_err = "requests.exceptions.ReadTimeout:[%s]" % url
-        Kit.print_red(run_err)
-        return "error", run_err, "自动登录失败"
-    except requests.exceptions.ConnectionError:
-        run_err = "requests.exceptions.ConnectionError:[%s]" % url
-        Kit.print_red(run_err)
-        return "error", run_err, "自动登录失败"
-
-    if http_result.status_code == 302:
-        return "lost_status", "User login status lost", "绑定登录失效"
+    for t in range(3):
+        try:
+            http_result = session.get(url, proxies={"https": None}, allow_redirects=False, timeout=(3, 10))
+            if http_result.status_code == 302:
+                return "lost_status", "User login status lost", "绑定登录失效"
+        except requests.exceptions.ReadTimeout:
+            run_err = ("requests.exceptions.ReadTimeout:[%s]" % url, "自动登录超时")
+            Kit.print_red("Login-{}：{}".format(t, run_err[0]))
+        except requests.exceptions.ConnectionError:
+            run_err = ("requests.exceptions.ConnectionError:[%s]" % url, "自动登录失败")
+            Kit.print_red("Login-{}：{}".format(t, run_err[0]))
+    if run_err is not None:
+        return "error", run_err[0], run_err[1]
 
     # 历史数据解析
     regex = r'oldInfo: (.*),'
@@ -173,22 +184,26 @@ def user_sign_core(session, risk_area):
 
     # 检查打卡位置
     risk_data = risk_area.get(location["province"], {})
-    risk_data = risk_data.get(location["city"], None)
-    if risk_data is not None:
-        return "risk_area", json.dumps(location, ensure_ascii=False), "中高风险地区".format(risk_data)
+    risk_data = risk_data.get(location["city"], {})
+    risk_data = risk_data.get(location["district"], None)
+    if risk_data is not None and vip_user is False:
+        return "risk_area", json.dumps(location, ensure_ascii=False), "风险地区自动暂停"
 
     # 重发数据完成签到
+    run_err = None
+    http_result = None
     url = "https://wxxy.csu.edu.cn/ncov/wap/default/save"
-    try:
-        http_result = session.post(url, data=sign_data, proxies={"https": None})
-    except requests.exceptions.ReadTimeout:
-        run_err = "requests.exceptions.ReadTimeout:[%s]" % url
-        Kit.print_red(run_err)
-        return "error", run_err, "自动签到失败"
-    except requests.exceptions.ConnectionError:
-        run_err = "requests.exceptions.ConnectionError:[%s]" % url
-        Kit.print_red(run_err)
-        return "error", run_err, "自动签到失败"
+    for t in range(3):
+        try:
+            http_result = session.post(url, data=sign_data, proxies={"https": None}, timeout=(3, 10))
+        except requests.exceptions.ReadTimeout:
+            run_err = ("requests.exceptions.ReadTimeout:[%s]" % url, "自动登录超时")
+            Kit.print_red("Sign-{}：{}".format(t, run_err[0]))
+        except requests.exceptions.ConnectionError:
+            run_err = ("requests.exceptions.ConnectionError:[%s]" % url, "自动签到失败")
+            Kit.print_red("Sign-{}：{}".format(t, run_err[0]))
+    if run_err is not None:
+        return "error", run_err[0], run_err[1]
 
     sign_res = json.loads(http_result.text)
     if sign_res["e"] == 0:

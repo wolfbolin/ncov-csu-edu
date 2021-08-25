@@ -3,7 +3,6 @@ import os
 import re
 import Kit
 import stat
-import time
 import zipfile
 import requests
 import subprocess

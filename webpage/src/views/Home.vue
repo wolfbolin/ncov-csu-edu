@@ -149,6 +149,14 @@
                                 </el-row>
                                 <el-row class="item">
                                     <el-col :span="12" class="key">
+                                        <p>账户状态</p>
+                                    </el-col>
+                                    <el-col :span="12" class="val">
+                                        <p>{{ taskInfo.status }}</p>
+                                    </el-col>
+                                </el-row>
+                                <el-row class="item">
+                                    <el-col :span="12" class="key">
                                         <p>打卡时间</p>
                                     </el-col>
                                     <el-col :span="12" class="val">
@@ -202,6 +210,21 @@
                     <el-button type="primary" @click="user_login_captcha">确 定</el-button>
                 </span>
             </el-dialog>
+
+            <div class="tips">
+                <h2>防控地区</h2>
+                <p>
+                    下列内容中枚举了当前系统拒绝自动打卡的范围<br/>
+                    数据来源为【国家卫生健康委】+【突发疫情信息】<br/>
+                    数据接口：https://covid19.csu-edu.cn/api/data/risk
+                </p>
+                <el-table border :data="risk_data" :row-class-name="risk_color">
+                    <el-table-column prop="province" label="省份"></el-table-column>
+                    <el-table-column prop="city" label="城市"></el-table-column>
+                    <el-table-column prop="block" label="地区"></el-table-column>
+                    <el-table-column prop="level" label="风险"></el-table-column>
+                </el-table>
+            </div>
 
             <div class="tips">
                 <h2>这是什么？</h2>
@@ -264,6 +287,7 @@ export default {
                 data: "",
                 text: ""
             },
+            risk_data: [],
             activeTab: "bind",
             loading: false,
             passwdTip: false,
@@ -333,6 +357,8 @@ export default {
                 })
                 .catch(function (res) {
                     that.loading = false;
+                    that.closeOpen = true
+                    that.closeInfo = "无法连接到服务器"
                     console.log(res);
                 })
         },
@@ -479,6 +505,11 @@ export default {
                         if (that.taskInfo.randOpt === 'Yes') {
                             that.taskInfo.taskTime = "时段随机"
                         }
+                        if (that.taskInfo.status === 'Yes') {
+                            that.taskInfo.status = "正常服务"
+                        } else if (that.taskInfo.status === 'Lost') {
+                            that.taskInfo.status = "绑定失效"
+                        }
                     } else {
                         that.$message({
                             message: res.data.message,
@@ -560,15 +591,43 @@ export default {
                         type: 'error'
                     });
                 })
+        },
+        risk_area: function () {
+            let that = this;
+            let data_host = this.$store.state.host;
+            this.$http.get(data_host + `/data/risk`)
+                .then(function (res) {
+                    console.log(res);
+                    that.risk_data = res.data["risk_list"];
+                })
+                .catch(function (res) {
+                    console.log(res);
+                    that.$message({
+                        message: "获取防控地区失败",
+                        type: 'error'
+                    });
+                })
+        },
+        risk_color({row, rowIndex}) {
+            console.log(rowIndex, row);
+            if (row.level === "高风险") {
+                return 'high-risk';
+            } else if (row.level === "中风险") {
+                return 'medium-risk';
+            } else if (row.level === "有风险") {
+                return 'temp-risk';
+            }
+            return 'temp-risk';
         }
     },
     mounted() {
         this.check_open()
+        this.risk_area()
     }
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .wb-home {
     .panel {
         width: 90%;
@@ -608,6 +667,24 @@ export default {
                 min-height: 38px;
                 background-color: rgba(145, 190, 240, 0.1);
             }
+        }
+    }
+
+
+    .el-table {
+        width: 80%;
+        margin: 0 auto;
+
+        .high-risk {
+            background: rgba(223, 113, 27, 0.1);
+        }
+
+        .medium-risk {
+            background: rgba(255, 183, 64, 0.1);
+        }
+
+        .temp-risk {
+            background: rgba(253, 228, 156, 0.1);
         }
     }
 

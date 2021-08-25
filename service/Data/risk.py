@@ -38,7 +38,7 @@ def risk_update():
     # 更新风险信息
     conn = app.mysql_pool.connection()
     cursor = conn.cursor()
-    sql = "DELETE FROM `region_risk`"
+    sql = "DELETE FROM `region_risk` WHERE `level`!='有风险'"
     cursor.execute(sql)
 
     sql = "REPLACE `region_risk`(`province`,`city`,`block`,`level`) VALUES (%s,%s,%s,%s)"

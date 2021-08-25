@@ -81,6 +81,8 @@ def user_sso_login_step2(auth_url, session, username, password, params):
 
     if html_title == "健康打卡":
         return "Success", session, "信息门户SSO登录成功"
+    elif html_title == "完善资料":
+        return "Failed", "Incomplete user data", "连接SSO失败(个人信息未完善)"
     elif html_title == "统一身份认证平台":
         try:
             soup = BeautifulSoup(http_result.text, 'lxml')
