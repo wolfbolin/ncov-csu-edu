@@ -71,27 +71,43 @@ def sign_task_post(check_time=None):
     for count in range(3):
         retry = False
         queue_client = CMQ_Account(**user_config)
+        queue_client.logger.setLevel(logging.CRITICAL)
+        queue_client.cmq_client.logger.setLevel(logging.CRITICAL)
         sign_queue = queue_client.get_queue(app.config["CMQ"]["queue_name"])
-        for user in user_list:
+        for user_data in user_list:
+            # 设置短信发送参数
             if sms_control == "No":
-                user["sms"] = "No"
-            if user["rand"] == "Yes":
+                user_data["sms"] = "No"
+            # 设置随机时间参数
+            if user_data["rand"] == "Yes":
                 if time_now.split(":")[0] == "00":
                     delay = random.randint(600, 3600)
                 else:
                     delay = random.randint(0, 3600)
             else:
                 delay = 0
+            # 设置打卡重试计数
+            user_data["trace"] = 0
+            # 打包消息（共用消息队列）
+            message = CMQ_Message(
+                json.dumps(
+                    {
+                        "type": "task",
+                        "data": user_data,
+                        "user": user_data["username"]
+                    }
+                )
+            )
 
-            message = CMQ_Message(json.dumps(user))
             try:
                 msg_res = sign_queue.send_message(message, delayTime=delay)
             except CMQExceptionBase as e:
-                Kit.write_log(logging.ERROR, "sign_task_post", user["username"], "error", "Send to CMQ failed", str(e))
+                Kit.write_log(logging.ERROR, "sign_task_post", user_data["username"],
+                              "error", "Send to CMQ failed", str(e))
                 time.sleep(1)
                 retry = True
                 break
-            Kit.write_log(logging.INFO, "sign_task_post", user["username"], "success", "Send sign task to CMQ",
+            Kit.write_log(logging.INFO, "sign_task_post", user_data["username"], "success", "Send sign task to CMQ",
                           "ID:{} Delay:{}".format(msg_res.msgId, delay), to_stream=False)
         if retry:
             continue
