@@ -69,6 +69,7 @@ def user_sign(user_info, risk_area):
     cookies = json.loads(user_info["cookies"])
     cookies_jar = requests.utils.cookiejar_from_dict(cookies)
     session.cookies = cookies_jar
+    user_info["cookies_update"] = "No"
 
     # 获取历史数据
     url = "https://wxxy.csu.edu.cn/ncov/wap/default/index"
@@ -154,8 +155,6 @@ def user_sign(user_info, risk_area):
         new_cookies = json.dumps(session_cookies)
         user_info["cookies_update"] = "Yes"
         user_info["cookies_data"] = new_cookies
-    else:
-        user_info["cookies_update"] = "No"
 
     # 解析响应数据
     sign_res = json.loads(http_result.text)

@@ -35,7 +35,7 @@ def handle_sign_result(config, conn, flow_data, elk_logger):
 
         # 记录用户打卡位置
         sql = "INSERT `location`(date,user,location) VALUES(%s,%s,%s)"
-        cursor.execute(sql, args=[Kit.str_time("%Y-%m-%d"), user_info["username"], status])
+        cursor.execute(sql, args=[Kit.str_time("%Y-%m-%d"), user_info["username"], flow_data["status"]])
         log_data["status"].append("insert_location")
     else:
         log_data["status"].append("unknown_flow")

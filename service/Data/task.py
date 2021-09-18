@@ -1,12 +1,10 @@
 # coding=utf-8
-import datetime
-import json
-import logging
-import time
-
 import Kit
-import pymysql
+import time
+import json
 import random
+import pymysql
+import logging
 from flask import abort
 from flask import request
 from Data import data_blue
