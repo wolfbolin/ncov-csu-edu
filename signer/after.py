@@ -30,7 +30,8 @@ def handle_sign_result(config, conn, flow_data, elk_logger):
 
         # 向用户发送短信通知
         if user_info["sms"] == "Yes":
-            send_sms_message(config, user_info, flow_data["result"], flow_data["status"])
+
+            send_sms_message(config, user_info, flow_data)
             log_data["status"].append("send_message")
 
         # 记录用户打卡位置
@@ -44,11 +45,11 @@ def handle_sign_result(config, conn, flow_data, elk_logger):
     elk_logger.info(json.dumps(log_data), extra=extra)
 
 
-def send_sms_message(config, user_info, result, location):
+def send_sms_message(config, user_info, flow_data):
     sms_token = config["BASE"]["sms_token"]
     # 位置信息
-    if result in ["success", "stop_sign", "risk_area"]:
-        location = json.loads(location)
+    if flow_data["result"] in ["success", "stop_sign", "risk_area"]:
+        location = json.loads(flow_data["status"])
         location = "{}-{}".format(location["province"], location["city"])
     else:
         location = "未知"
@@ -60,7 +61,7 @@ def send_sms_message(config, user_info, result, location):
         "params": [
             user_info["nickname"],
             Kit.str_time("%H:%M"),
-            str(result[2]),
+            str(flow_data["message"]),
             location
         ]
     }
