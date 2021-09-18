@@ -36,7 +36,7 @@ def handle_sign_task(config, risk_area, user_info, elk_logger):
     }
     elk_logger.info(json.dumps(log_data), extra=json.loads(config["ELK"]["extra"]))
 
-    # 处理后续流程
+    # 处理后续流程计划
     if result in ["content_error", "response_error"]:
         return None
     elif result == "connect_error":

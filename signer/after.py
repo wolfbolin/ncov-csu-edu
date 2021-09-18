@@ -12,7 +12,7 @@ def handle_sign_result(config, conn, flow_data, elk_logger):
         "username": user_info["username"],
         "result": "success",
         "status": [flow_data["result"]],
-        "message": "Handle flow data after sign"
+        "message": "处理打卡后续流程"
     }
 
     if flow_data["result"] == "lost_status":
@@ -41,6 +41,7 @@ def handle_sign_result(config, conn, flow_data, elk_logger):
     else:
         log_data["status"].append("unknown_flow")
 
+    conn.commit()
     extra = json.loads(config["ELK"]["extra"])
     elk_logger.info(json.dumps(log_data), extra=extra)
 
