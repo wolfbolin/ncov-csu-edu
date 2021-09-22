@@ -1,11 +1,13 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import Host from './host_config.json'
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
     state: {
         host: "",
+        host_config: Host,
         group: "839482549"
     },
     mutations: {
