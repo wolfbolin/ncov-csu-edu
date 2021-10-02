@@ -107,7 +107,8 @@ def user_sign(user_info, risk_area):
             def_data[def_key] = sign_data[def_key]
 
     # 提取打卡位置
-    if len(def_data["geo_api_info"].strip()) == 0:
+    if "geo_api_info" not in def_data.keys() or \
+            len(def_data["geo_api_info"].strip()) == 0:
         return "content_error", "Missing location data", "缺少定位数据"
     api_data = json.loads(def_data["geo_api_info"].replace(r'\"', '"'))
     user_location = {
