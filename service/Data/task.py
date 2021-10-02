@@ -34,6 +34,12 @@ def balance_task():
 @data_blue.route('/poster')
 @data_blue.route('/poster/<string:check_time>')
 def sign_task_post(check_time=None):
+    conn = app.mysql_pool.connection()
+    admin_token = request.args.get("token", "")
+    verify_token = Kit.get_key_val(conn, "token")
+    if admin_token != verify_token:
+        return abort(400)
+
     sms_control = request.args.get("sms", "Yes")
     if check_time is None:
         time_now = Kit.str_time("%H:%M")
@@ -43,7 +49,6 @@ def sign_task_post(check_time=None):
     app.logger.info("Service check time {}".format(time_now))
 
     # 连接至数据库
-    conn = app.mysql_pool.connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
 
     if time_now.endswith(":00"):
