@@ -68,7 +68,7 @@
                 })
                 for (let host of hostList) {
                     if (window.location.host.indexOf(host["keyword"]) !== -1) {
-                        this.$store.commit("setData", {key: "host", val: host["hostname"]})
+                        this.$store.commit("setData", {key: "host", val: host["service"]})
                     }
                 }
                 console.log("Server location:", this.$store.state.host);

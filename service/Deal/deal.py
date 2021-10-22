@@ -333,7 +333,7 @@ def close_inactive_service():
 
     return jsonify({
         "status": "success",
-        "message": "At {}, {} service active, {} service live".format(Kit.str_time("%m-%d"), keep_count, close_count)
+        "message": "At last two months before {}, {} service active, {} service closed".format(Kit.str_time("%m-%d"), keep_count, close_count)
     })
 
 

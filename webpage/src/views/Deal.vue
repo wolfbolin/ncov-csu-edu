@@ -1,7 +1,7 @@
 <template>
     <div class="wb-deal">
         <div class="inner">
-            <img src="@/assets/logo.png" class="logo" alt="logo"/>
+            <img src="../assets/logo.png" class="logo" alt="logo"/>
             <h1>CSU-COVID19-SIGN</h1>
             <p>让我们一起建立更加深刻的契约吧</p>
             <div class="alert">

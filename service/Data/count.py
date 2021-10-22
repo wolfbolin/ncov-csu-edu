@@ -9,6 +9,56 @@ from Data import data_blue
 from flask import current_app as app
 
 
+@data_blue.route('/notice', methods=["GET"])
+def fetch_notice_info():
+    conn = app.mysql_pool.connection()
+    notice = Kit.get_key_val(conn, "notice")
+
+    return jsonify({
+        "status": "success",
+        "message": notice
+    })
+
+
+@data_blue.route('/version', methods=["GET"])
+def fetch_version_list():
+    conn = app.mysql_pool.connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    sql = "SELECT * FROM `version`"
+    cursor.execute(query=sql)
+    version_list = cursor.fetchall()
+    for version in version_list:
+        version["date"] = Kit.datetime2unix(version["date"])
+        version["feature"] = json.loads(version["feature"])
+        version["update"] = json.loads(version["update"])
+        version["bugfix"] = json.loads(version["bugfix"])
+
+    return jsonify(version_list)
+
+
+@data_blue.route('/version/<string:version>/action/<string:action>', methods=["POST"])
+def user_version_action(version, action):
+    if action not in ["love", "like", "star", "hate"]:
+        return abort(400)
+
+    conn = app.mysql_pool.connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    sql = "UPDATE `version` SET `{}` = `{}` + 1 WHERE `version`=%s".format(str(action), str(action))
+    cursor.execute(query=sql, args=[version])
+    conn.commit()
+
+    if cursor.rowcount > 0:
+        return jsonify({
+            "status": "success",
+            "message": "您的反馈已记录~"
+        })
+    else:
+        return jsonify({
+            "status": "error",
+            "message": "反馈的数据出错了"
+        })
+
+
 @data_blue.route('/count', methods=["POST"])
 def update_count_data():
     # 本地数据校验

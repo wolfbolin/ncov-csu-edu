@@ -13,6 +13,7 @@ import {
     Tag,
     Tabs,
     Form,
+    Icon,
     Alert,
     Input,
     Table,
@@ -26,14 +27,13 @@ import {
     FormItem,
     Message,
     Checkbox,
+    Dropdown,
     Pagination,
     TimePicker,
     TableColumn,
     CheckboxGroup,
-    Dropdown,
     DropdownItem,
     DropdownMenu,
-    Icon,
 } from 'element-ui';
 
 Vue.use(Col);
@@ -41,6 +41,7 @@ Vue.use(Row);
 Vue.use(Tag);
 Vue.use(Tabs);
 Vue.use(Form);
+Vue.use(Icon);
 Vue.use(Alert);
 Vue.use(Input);
 Vue.use(Table);
@@ -53,14 +54,13 @@ Vue.use(TabPane);
 Vue.use(Loading);
 Vue.use(FormItem);
 Vue.use(Checkbox);
+Vue.use(Dropdown);
 Vue.use(Pagination);
 Vue.use(TimePicker);
 Vue.use(TableColumn);
 Vue.use(CheckboxGroup);
-Vue.use(Dropdown);
 Vue.use(DropdownMenu);
 Vue.use(DropdownItem);
-Vue.use(Icon);
 
 Vue.use(VueAxios, axios);
 Vue.use(VueCookies)

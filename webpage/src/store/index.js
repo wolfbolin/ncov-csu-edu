@@ -7,6 +7,7 @@ Vue.use(Vuex)
 export default new Vuex.Store({
     state: {
         host: "",
+        host_config: Host,
         group: "205161441"
     },
     mutations: {
@@ -17,7 +18,7 @@ export default new Vuex.Store({
             } else if (typeof param.val == "string") {
                 val = `"${val}"`
             }
-            eval(`state.${param.key}=${val}`);
+            eval(`state.${param.key} = ${val}`);
         }
     },
     actions: {},

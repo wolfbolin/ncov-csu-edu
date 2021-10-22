@@ -1,7 +1,7 @@
 <template>
     <div class="wb-home">
         <div class="inner">
-            <img src="@/assets/logo.png" class="logo" alt="logo"/>
+            <img src="../assets/logo.png" class="logo" alt="logo"/>
             <h1>CSU-COVID19-SIGN</h1>
             <p>简单几步即可建立羁绊</p>
             <div class="alert">
