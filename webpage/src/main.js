@@ -4,6 +4,9 @@ import App from './App.vue';
 import store from './store';
 import router from './router';
 import VueAxios from 'vue-axios';
+import VueCookies from 'vue-cookies';
+import './assets/icon/version_icon/iconfont.css'
+
 import {
     Col,
     Row,
@@ -27,6 +30,10 @@ import {
     TimePicker,
     TableColumn,
     CheckboxGroup,
+    Dropdown,
+    DropdownItem,
+    DropdownMenu,
+    Icon,
 } from 'element-ui';
 
 Vue.use(Col);
@@ -50,8 +57,13 @@ Vue.use(Pagination);
 Vue.use(TimePicker);
 Vue.use(TableColumn);
 Vue.use(CheckboxGroup);
+Vue.use(Dropdown);
+Vue.use(DropdownMenu);
+Vue.use(DropdownItem);
+Vue.use(Icon);
 
 Vue.use(VueAxios, axios);
+Vue.use(VueCookies)
 Vue.config.productionTip = false;
 Vue.prototype.$message = Message;
 

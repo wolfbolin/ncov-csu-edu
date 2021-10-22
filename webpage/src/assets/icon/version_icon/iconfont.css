@@ -1,0 +1,35 @@
+@font-face {
+  font-family: "fontFamily"; /* Project id 2822558 */
+  src: url('iconfont.woff2?t=1632314140558') format('woff2'),
+       url('iconfont.woff?t=1632314140558') format('woff'),
+       url('iconfont.ttf?t=1632314140558') format('truetype');
+}
+
+.fontFamily {
+  font-family: "fontFamily" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.sim-icon-emoji:before {
+  content: "\e67c";
+}
+
+.sim-icon-love:before {
+  content: "\e675";
+}
+
+.sim-icon-like:before {
+  content: "\e67a";
+}
+
+.sim-icon-star:before {
+  content: "\e685";
+}
+
+.sim-icon-hate:before {
+  content: "\e66c";
+}
+

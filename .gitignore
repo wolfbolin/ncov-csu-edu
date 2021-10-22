@@ -12,3 +12,5 @@ service/captcha/
 service/demo.py
 
 signer/log/
+
+webpage/src/store/host_config.json

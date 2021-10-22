@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import Host from './host_config.json'
 
 Vue.use(Vuex)
 

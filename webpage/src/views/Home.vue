@@ -347,7 +347,7 @@ export default {
             this.loading = true;
             let that = this;
             let data_host = this.$store.state.host
-            this.$http.get(data_host + `/open`)
+            this.$http.get(data_host + '/open')
                 .then(function (res) {
                     that.loading = false;
                     if (res.data.status !== 'success') {
