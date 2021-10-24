@@ -6,7 +6,7 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-flask = "*"
+flask = "==2.0.2"
 requests = "*"
 pymysql = "*"
 dbutils = "*"
@@ -14,8 +14,15 @@ flask-cors = "*"
 python-logstash = "*"
 beautifulsoup4 = "*"
 lxml = "*"
-sentry-sdk = {extras = ["flask"], version = "*"}
-pycryptodomex = "*"
+sentry-sdk = "==1.4.3"
+pycryptodomex = "==3.11.0"
+idna = "==3.3"
+click = "==8.0.3"
+certifi = "==2021.10.8"
+jinja2 = "==3.0.2"
+charset-normalizer = "==2.0.7"
+werkzeug = "==2.0.2"
+urllib3 = "==1.26.7"
 
 [requires]
 python_version = "3.8"
