@@ -10,9 +10,11 @@ import logging
 import logstash
 import threading
 import multiprocessing
-from singer import user_sign
 from singer import read_risk_area
+from singer import handle_sign_task
+from after import handle_sign_result
 from dbutils.pooled_db import PooledDB
+from cmq.queue import Message as CMQ_Message
 from cmq.account import Account as CMQ_Account
 from cmq.cmq_exception import CMQExceptionBase
 
@@ -108,11 +110,11 @@ def multithread_slave(config, ids, conn):
             # Kit.print_white("<P:{0} G:{1} T:{2}> No message received".format(*ids))
             continue
 
-        # 接收到打卡数据
-        user_info = json.loads(recv_msg.msgBody)
+        # 接收消息并上报流水
+        message = json.loads(recv_msg.msgBody)
         log_data = {
-            "function": "user_sign_receiver",
-            "username": user_info["username"],
+            "function": "message_receiver",
+            "username": message["user"],
             "result": "success",
             "status": "Receive message from CMQ",
             "message": str(recv_msg.msgId)
@@ -120,23 +122,32 @@ def multithread_slave(config, ids, conn):
         elk_logger.info(json.dumps(log_data), extra=extra)
         Kit.print_white("<P:{0} G:{1} T:{2}> {3} Receive message {4}".format(*ids, Kit.str_time(), recv_msg.msgId))
 
-        # 检查风险地区更新
-        if Kit.unix_time() > risk_expire:
-            risk_area = read_risk_area(conn)
-            risk_expire = Kit.unix_time() + 600
+        if message["type"] == "task":
+            # 检查风险地区更新
+            if Kit.unix_time() > risk_expire:
+                risk_area = read_risk_area(conn)
+                risk_expire = Kit.unix_time() + 600
 
-        # 完成用户打卡并记录日志
-        try:
-            user_sign(config, conn, user_info, risk_area, elk_logger)
-        except BaseException as e:
-            log_data = {
-                "function": "user_sign",
-                "username": user_info["username"],
-                "result": "error",
-                "status": "Sign user error",
-                "message": str(e)
-            }
-            elk_logger.info(json.dumps(log_data), extra=extra)
+            # 处理打卡任务
+            next_flow = handle_sign_task(config, risk_area, message["data"], elk_logger)
 
-        # 完成后删除消息
-        sign_queue.delete_message(recv_msg.receiptHandle)
+            # 确认接收消息并决定是否重试
+            sign_queue.delete_message(recv_msg.receiptHandle)
+
+            if next_flow is None:
+                continue
+            message = CMQ_Message(json.dumps(next_flow))
+            for count in range(3):
+                try:
+                    msg_res = sign_queue.send_message(message)
+                    Kit.print_white("<P:{0} G:{1} T:{2}> {3} Send message to "
+                                    "CMQ {4}".format(*ids, Kit.str_time(), msg_res.msgId))
+                    break
+                except CMQExceptionBase as e:
+                    Kit.print_red("<P:{0} G:{1} T:{2}> {3} Send CMQ message error. "
+                                  "Retry {4} times".format(*ids, Kit.str_time(), count))
+                    time.sleep(1)
+        elif message["type"] == "done":
+            # 处理打卡后续流程
+            handle_sign_result(config, conn, message["data"], elk_logger)
+            sign_queue.delete_message(recv_msg.receiptHandle)

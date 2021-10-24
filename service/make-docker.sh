@@ -12,6 +12,7 @@ echo -e "\033[5;36mOrz 镜像重建完成\033[0m"
 docker run -itd \
 	--restart always \
 	--name ${docker_name} \
+	--log-opt max-size=50m \
 	-v $(pwd):/var/app \
 	-p 12865:80 \
 	${docker_name}:"${time_now}"

@@ -1,7 +1,7 @@
 <template>
     <div class="wb-home">
         <div class="inner">
-            <img src="@/assets/logo.png" class="logo" alt="logo"/>
+            <img src="../assets/logo.png" class="logo" alt="logo"/>
             <h1>CSU-COVID19-SIGN</h1>
             <p>简单几步即可建立羁绊</p>
             <div class="alert">
@@ -251,7 +251,7 @@
                 <p>由于用户量增加<br/>
                     防止突如其来的服务中断<br/>
                     给你本来懒惰的打卡生活增添困扰<br/>
-                    所以我建议你加入服务反馈群1158608406<br/>
+                    所以我建议你加入服务反馈群{{ this.$store.state.group }}<br/>
                     如果出现业务内容的调整与变化<br/>
                     会尽快通知各位自行调整<br/>
                     @全体成员
@@ -347,7 +347,7 @@ export default {
             this.loading = true;
             let that = this;
             let data_host = this.$store.state.host
-            this.$http.get(data_host + `/open`)
+            this.$http.get(data_host + '/open')
                 .then(function (res) {
                     that.loading = false;
                     if (res.data.status !== 'success') {

@@ -292,7 +292,7 @@ def close_inactive_service():
     # 获取订单信息
     conn = app.mysql_pool.connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
-    sql = "SELECT * FROM `order` WHERE `status`='SUCCESS'"
+    sql = "SELECT * FROM `order` WHERE `status`='SUCCESS' AND `updated_time` > SUBDATE(now(), interval 2 month)"
     cursor.execute(sql)
     order_list = cursor.fetchall()
 
@@ -323,7 +323,7 @@ def close_inactive_service():
                 cursor.execute(sql, args=[username])
             elif item == "random":
                 if expire_time < Kit.unix_time():
-                    sql = "UPDATE `user` SET `rand`='No' WHERE `username`=%s"
+                    sql = "UPDATE `user` SET `rand`='No', `time`=rand_time() WHERE `username`=%s AND `rand`='Yes'"
                     close_count += 1
                 else:
                     sql = "UPDATE `user` SET `rand`='Yes' WHERE `username`=%s"
@@ -333,7 +333,7 @@ def close_inactive_service():
 
     return jsonify({
         "status": "success",
-        "message": "At {}, {} service active, {} service live".format(Kit.str_time("%m-%d"), keep_count, close_count)
+        "message": "At last two months before {}, {} service active, {} service closed".format(Kit.str_time("%m-%d"), keep_count, close_count)
     })
 
 

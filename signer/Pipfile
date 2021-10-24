@@ -9,6 +9,7 @@ pymysql = "*"
 dbutils = "*"
 sentry-sdk = {extras = ["flask"], version = "*"}
 python-logstash = "*"
+qcloud-cmq-sdk-py3 = "*"
 
 [dev-packages]
 

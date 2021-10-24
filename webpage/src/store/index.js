@@ -1,12 +1,14 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import Host from './host_config.json'
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
     state: {
         host: "",
-        group: "839482549"
+        host_config: Host,
+        group: "205161441"
     },
     mutations: {
         setData(state, param) {
@@ -16,7 +18,7 @@ export default new Vuex.Store({
             } else if (typeof param.val == "string") {
                 val = `"${val}"`
             }
-            eval(`state.${param.key}=${val}`);
+            eval(`state.${param.key} = ${val}`);
         }
     },
     actions: {},
