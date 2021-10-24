@@ -64,7 +64,7 @@
                 let hostList = this.$store.state.host_config
                 this.$store.commit("setData", {
                     key: "host",
-                    val: `http://${window.location.host}/api`
+                    val: `${window.location.protocol}//${window.location.host}/api`
                 })
                 for (let host of hostList) {
                     if (window.location.host.indexOf(host["keyword"]) !== -1) {

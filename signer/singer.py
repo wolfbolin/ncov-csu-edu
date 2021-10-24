@@ -24,7 +24,10 @@ def read_risk_area(conn):
 
 def handle_sign_task(config, risk_area, user_info, elk_logger):
     # 执行自动打卡逻辑
-    result, status, message = user_sign(user_info, risk_area)
+    try:
+        result, status, message = user_sign(user_info, risk_area)
+    except BaseException as e:
+        result, status, message = ("unknown_error", str(e), "发生未知错误")
 
     # 上报执行结果与数据
     log_data = {
@@ -37,7 +40,7 @@ def handle_sign_task(config, risk_area, user_info, elk_logger):
     elk_logger.info(json.dumps(log_data), extra=json.loads(config["ELK"]["extra"]))
 
     # 处理后续流程计划
-    if result in ["content_error", "response_error"]:
+    if result in ["content_error", "response_error", "unknown_error"]:
         return None
     elif result == "connect_error":
         user_info["trace"] += int(1)
